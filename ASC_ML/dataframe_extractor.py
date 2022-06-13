@@ -29,7 +29,8 @@ class DataframeExtractor_csv:
         #If csv file path has been entered
         if self._directory_path.endswith(".csv"):
             print(f"Reading single csv from {self._directory_path}")
-            csv_df = dd.read_csv(self._directory_path, assume_missing = True, sample_rows=1000)
+            csv_df = dd.read_csv(self._directory_path, assume_missing = True, sample_rows=1000, delimiter=',')
+            csv_df.head()
             self._df_list.append(csv_df.loc[:, ~csv_df.columns.isin(self._label_names)])
             self._df_list.append(csv_df[self._label_names])
             
@@ -37,6 +38,7 @@ class DataframeExtractor_csv:
             csv_dir = self._get_csv_path(self._directory_path)
             self._check_dir_exists(csv_dir)
             csv_df = dd.read_csv(csv_dir, assume_missing = True, sample_rows=1000)
+            csv_df.head()
             self._df_list.append(csv_df.loc[:, ~csv_df.columns.isin(self._label_names)])
             self._df_list.append(csv_df[self._label_names])
             
@@ -60,8 +62,7 @@ class DataframeExtractor_csv:
         
         #If no datasets are found
         if not self._df_list:
-            raise EmptyListError("No Datasets found")
-            
+            raise EmptyListError("No Datasets found")            
         
     @staticmethod
     def _check_dir_exists(directory):
@@ -76,6 +77,7 @@ class DataframeExtractor_csv:
             if filename.endswith(".csv"):
                 i = i+1
         return i
+
     @staticmethod
     def _get_csv_path(directory):
         filenames = os.listdir(directory)
