@@ -22,6 +22,16 @@ class Search_Space_Gen_1:
     def all_layer_perm(self):
         # Return Model Name
         return self._all_layer_perm
+    
+    @property
+    def min_no_layers(self):
+        # Return Model Name
+        return self._min_no_layers
+    
+    @property
+    def max_no_layers(self):
+        # Return Model Name
+        return self._max_no_layers
 
     @staticmethod
     def get_layer_conf(layer_list):
