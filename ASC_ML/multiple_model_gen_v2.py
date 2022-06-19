@@ -19,6 +19,8 @@ class Multiple_Model_Gen_V2:
         self._model_confs = []
         # self.get_model_confs()
         # print(self._model_confs)
+        self._evaluate_dict_list = []
+        self._no_top_model = 10
         self._model_archs = [['model_4n', self._input_shape, 3, "relu", {"layer1":4, "layer2":4, "layer3":4}, [output_shape, output_activation]],
                              ['model_8n', self._input_shape, 3, "relu", {"layer1":8, "layer2":8, "layer3":8}, [output_shape, output_activation]], 
                              ['model_16n', self._input_shape, 3, "relu", {"layer1":16, "layer2":16, "layer3":16}, [output_shape, output_activation]],
@@ -32,6 +34,11 @@ class Multiple_Model_Gen_V2:
         # Return Model Name
         return self._model_confs
 
+    @property
+    def evaluate_dict_list(self):
+        # Return Model Name
+        return self._evaluate_dict_list
+
     def train_models(self):
        parallel_model_generator = self._parallel_model_generator()
        for parallelModel,n in parallel_model_generator:
@@ -40,7 +47,7 @@ class Multiple_Model_Gen_V2:
             input_x = []
             input_labels = []
             adam_optimizer = Adam(lr = 1e-1)
-            parallelModel.compile(loss = "mean_squared_error", optimizer = tf.keras.optimizers.Adam(), metrics = ["mean_absolute_error"])
+            parallelModel.compile(loss = "mean_squared_error", optimizer = tf.keras.optimizers.Adam())
             
             if(len(input_x) != n):
                 input_x, input_labels = self._get_train_lists(n)
@@ -49,7 +56,9 @@ class Multiple_Model_Gen_V2:
             #                         epochs=self._epochs, batch_size=self._batch_size
             #                         )
             history = parallelModel.fit(input_x, input_labels, epochs = self._epochs, batch_size = self._batch_size)
+            # print(parallelModel.name)
             # Evaluate Best Running Model
+
             scores = parallelModel.evaluate(input_x, input_labels, verbose = 0)
 
             # return parallelModel
@@ -59,9 +68,36 @@ class Multiple_Model_Gen_V2:
 
             for name,score in zip(parallelModel.metrics_names, scores):
                 print(name, " : ", score)
+            
+            self._evaluate_save_model(parallelModel=parallelModel, input_x=input_x, input_labels=input_labels, n=n)
 
-    def _evaluate_model(self, parallelModel, input_x, input_labels, n):
+    def _evaluate_save_model(self, parallelModel, input_x, input_labels, n):
+        # List of dictionaries {"model_name":"densexyz", "score":0.000, "path_weights":"/home/something"}
+
         scores = parallelModel.evaluate(input_x, input_labels, verbose = 0)
+        metric_names = parallelModel.metrics_names[1:1+n]
+        model_scores = scores[1:1+n]
+        entry_flag = False
+        for metric_name, model_score, model_no in zip(metric_names,model_scores,range(n)):
+            model_name = metric_name.removeprefix("output_layer_")
+            model_name = model_name.removesuffix("_loss")
+            curr_model_dict = {"model_name":model_name, "score":model_score, "path_weights":""}
+
+            if len(self._evaluate_dict_list) == 0:
+                self._evaluate_dict_list.append(curr_model_dict)
+            else:
+                index = 0
+                for model_dict in self._evaluate_dict_list:
+                    if(curr_model_dict["score"] < model_dict["score"]):
+                        self._evaluate_dict_list.insert(index, curr_model_dict)  
+                        entry_flag = True                      
+                        if(len(self._evaluate_dict_list) > 10): self._evaluate_dict_list = self._evaluate_dict_list[:10]
+                        break
+                    index = index + 1
+                if(not entry_flag and len(self._evaluate_dict_list) < 10):
+                    self._evaluate_dict_list.append(curr_model_dict)
+                entry_flag = False
+
 
     def _parallel_model_generator(self):
         for batch in self._model_confs:
