@@ -60,6 +60,9 @@ class Multiple_Model_Gen_V2:
             for name,score in zip(parallelModel.metrics_names, scores):
                 print(name, " : ", score)
 
+    def _evaluate_model(self, parallelModel, input_x, input_labels, n):
+        scores = parallelModel.evaluate(input_x, input_labels, verbose = 0)
+
     def _parallel_model_generator(self):
         for batch in self._model_confs:
             input_layer_list, output_layer_list = self._get_input_output_layer_list(batch)
