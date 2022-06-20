@@ -5,6 +5,8 @@ from tensorflow.keras.optimizers import Adam
 import tensorflow as tf
 import numpy as np
 
+from tensorflow.keras import backend as K
+
 class Multiple_Model_Gen_V2:
 
     def __init__(self, train_x, train_y, epochs, batch_size, input_shape, output_shape = 1, output_activation = None, model_per_batch = 10):
@@ -47,7 +49,8 @@ class Multiple_Model_Gen_V2:
             input_x = []
             input_labels = []
             adam_optimizer = Adam(lr = 1e-1)
-            parallelModel.compile(loss = "mean_squared_error", optimizer = tf.keras.optimizers.Adam())
+            # parallelModel.compile(loss = "mean_squared_error", optimizer = tf.keras.optimizers.Adam())
+            parallelModel.compile(loss = self.root_mean_squared_error, optimizer = tf.keras.optimizers.Adam())
             
             if(len(input_x) != n):
                 input_x, input_labels = self._get_train_lists(n)
@@ -70,6 +73,10 @@ class Multiple_Model_Gen_V2:
                 print(name, " : ", score)
             
             self._evaluate_save_model(parallelModel=parallelModel, input_x=input_x, input_labels=input_labels, n=n)
+
+    @staticmethod
+    def root_mean_squared_error(y_true, y_pred):
+        return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
     def _evaluate_save_model(self, parallelModel, input_x, input_labels, n):
         # List of dictionaries {"model_name":"densexyz", "score":0.000, "path_weights":"/home/something"}
