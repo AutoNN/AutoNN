@@ -9,9 +9,11 @@ from tensorflow.keras import backend as K
 
 class Multiple_Model_Gen_V2:
 
-    def __init__(self, train_x, train_y, epochs, batch_size, input_shape, output_shape = 1, output_activation = None, model_per_batch = 10):
+    def __init__(self, train_x, train_y, test_x, test_y, epochs, batch_size, input_shape, output_shape = 1, output_activation = None, model_per_batch = 10):
         self._train_x = train_x
         self._train_y = train_y
+        self._test_x = test_x
+        self._test_y = test_y
         self._input_shape = input_shape
         self._output_shape = output_shape
         self._epochs = epochs
@@ -50,36 +52,38 @@ class Multiple_Model_Gen_V2:
             input_labels = []
             adam_optimizer = Adam(lr = 1e-1)
             # parallelModel.compile(loss = "mean_squared_error", optimizer = tf.keras.optimizers.Adam())
-            parallelModel.compile(loss = self.root_mean_squared_error, optimizer = tf.keras.optimizers.Adam())
+            # parallelModel.compile(loss = self.root_mean_squared_error, optimizer = tf.keras.optimizers.Adam())
+            parallelModel.compile(loss = "mean_absolute_percentage_error", optimizer = tf.keras.optimizers.Adam())
             
             if(len(input_x) != n):
-                input_x, input_labels = self._get_train_lists(n)
-            # history = parallelModel.fit([self._train_x, self._train_x, self._train_x, self._train_x, self._train_x],
-            #                         [self._train_y, self._train_y, self._train_y, self._train_y, self._train_y],
-            #                         epochs=self._epochs, batch_size=self._batch_size
-            #                         )
+                input_x, input_labels, input_test_x, input_test_labels = self._get_train_lists(n)
+
             history = parallelModel.fit(input_x, input_labels, epochs = self._epochs, batch_size = self._batch_size)
             # print(parallelModel.name)
             # Evaluate Best Running Model
 
             scores = parallelModel.evaluate(input_x, input_labels, verbose = 0)
+            scores_test = parallelModel.evaluate(input_test_x, input_test_labels, verbose = 0)
 
             # return parallelModel
             print("\n")
             print("\n")
             print("\n")
 
-            for name,score in zip(parallelModel.metrics_names, scores):
-                print(name, " : ", score)
+            # for name,score in zip(parallelModel.metrics_names, scores):
+            #     print(name, " : ", score)
+            for name,score,score_test in zip(parallelModel.metrics_names, scores, scores_test):
+                print(name, " : ", score, ", TEST : ", score_test)
             
-            self._evaluate_save_model(parallelModel=parallelModel, input_x=input_x, input_labels=input_labels, n=n)
+            # self._evaluate_save_model(parallelModel=parallelModel, input_x=input_x, input_labels=input_labels, n=n)
+            self._evaluate_save_model(parallelModel=parallelModel, input_x=input_test_x, input_labels=input_test_labels, n=n)
 
     @staticmethod
     def root_mean_squared_error(y_true, y_pred):
         return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
     def _evaluate_save_model(self, parallelModel, input_x, input_labels, n):
-        # List of dictionaries {"model_name":"densexyz", "score":0.000, "path_weights":"/home/something"}
+        # List of dictionaries {"model_name":"densexyz", "score":0.000, "path_weights":"/home/something/dense"}
 
         scores = parallelModel.evaluate(input_x, input_labels, verbose = 0)
         metric_names = parallelModel.metrics_names[1:1+n]
@@ -120,7 +124,7 @@ class Multiple_Model_Gen_V2:
 
     def get_model_confs(self):
         model_confs = []
-        s = search.Search_Space_Gen_1(min_no_layers = 2, max_no_layers = 3, input_shape = self._input_shape)
+        s = search.Search_Space_Gen_1(node_options = [16,32,64,128,196,256], min_no_layers = 2, max_no_layers = 3, input_shape = self._input_shape)
         model_conf_batch = []
 
         print(s.all_layer_perm)
@@ -169,7 +173,11 @@ class Multiple_Model_Gen_V2:
     def _get_train_lists(self, n):
         input_x = []
         input_labels = []
+        input_test_x = []
+        input_test_labels = []
         for i in range(n):
             input_x.append(self._train_x)
             input_labels.append(self._train_y)
-        return input_x, input_labels
+            input_test_x.append(self._test_x)
+            input_test_labels.append(self._test_y)
+        return input_x, input_labels, input_test_x, input_test_labels
