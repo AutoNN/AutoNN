@@ -25,13 +25,13 @@ class Multiple_Model_Gen_V2:
         # print(self._model_confs)
         self._evaluate_dict_list = []
         self._no_top_model = 10
-        self._model_archs = [['model_4n', self._input_shape, 3, "relu", {"layer1":4, "layer2":4, "layer3":4}, [output_shape, output_activation]],
-                             ['model_8n', self._input_shape, 3, "relu", {"layer1":8, "layer2":8, "layer3":8}, [output_shape, output_activation]], 
-                             ['model_16n', self._input_shape, 3, "relu", {"layer1":16, "layer2":16, "layer3":16}, [output_shape, output_activation]],
-                             ['model_32n', self._input_shape, 3, "relu", {"layer1":32, "layer2":32, "layer3":32}, [output_shape, output_activation]],
-                             ['model_64n', self._input_shape, 3, "relu", {"layer1":64, "layer2":64, "layer3":64}, [output_shape, output_activation]],
-                             ['model_128n', self._input_shape, 3, "relu", {"layer1":128, "layer2":128, "layer3":128}, [output_shape, output_activation]]
-                             ]
+        # self._model_archs = [['model_4n', self._input_shape, 3, "relu", {"layer1":4, "layer2":4, "layer3":4}, [output_shape, output_activation]],
+        #                      ['model_8n', self._input_shape, 3, "relu", {"layer1":8, "layer2":8, "layer3":8}, [output_shape, output_activation]], 
+        #                      ['model_16n', self._input_shape, 3, "relu", {"layer1":16, "layer2":16, "layer3":16}, [output_shape, output_activation]],
+        #                      ['model_32n', self._input_shape, 3, "relu", {"layer1":32, "layer2":32, "layer3":32}, [output_shape, output_activation]],
+        #                      ['model_64n', self._input_shape, 3, "relu", {"layer1":64, "layer2":64, "layer3":64}, [output_shape, output_activation]],
+        #                      ['model_128n', self._input_shape, 3, "relu", {"layer1":128, "layer2":128, "layer3":128}, [output_shape, output_activation]]
+        #                      ]
     
     @property
     def model_confs(self):
