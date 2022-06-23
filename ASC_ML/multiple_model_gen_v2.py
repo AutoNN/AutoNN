@@ -50,10 +50,10 @@ class Multiple_Model_Gen_V2:
             
             input_x = []
             input_labels = []
-            adam_optimizer = Adam(lr = 1e-1)
-            # parallelModel.compile(loss = "mean_squared_error", optimizer = tf.keras.optimizers.Adam())
+            adam_optimizer = Adam(lr = 1e-3)
+            parallelModel.compile(loss = "mean_squared_error", optimizer = tf.keras.optimizers.Adam())
             # parallelModel.compile(loss = self.root_mean_squared_error, optimizer = tf.keras.optimizers.Adam())
-            parallelModel.compile(loss = "mean_absolute_percentage_error", optimizer = tf.keras.optimizers.Adam())
+            # parallelModel.compile(loss = "mean_absolute_percentage_error", optimizer = tf.keras.optimizers.Adam())
             
             if(len(input_x) != n):
                 input_x, input_labels, input_test_x, input_test_labels = self._get_train_lists(n)
