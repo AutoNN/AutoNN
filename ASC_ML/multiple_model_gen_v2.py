@@ -9,7 +9,7 @@ from tensorflow.keras import backend as K
 
 class Multiple_Model_Gen_V2:
 
-    def __init__(self, train_x, train_y, test_x, test_y, epochs, batch_size, input_shape, output_shape = 1, output_activation = None, model_per_batch = 10):
+    def __init__(self, train_x, train_y, test_x, test_y, epochs, batch_size, input_shape, output_shape = 1, output_activation = None, model_per_batch = 10, download_directory = ""):
         self._train_x = train_x
         self._train_y = train_y
         self._test_x = test_x
@@ -127,7 +127,7 @@ class Multiple_Model_Gen_V2:
         s = search.Search_Space_Gen_1(node_options = [16,32,64,128,196,256], min_no_layers = 2, max_no_layers = 3, input_shape = self._input_shape)
         model_conf_batch = []
 
-        print(s.all_layer_perm)
+        print(s.no_layer_perm)
         for i,layer_no_sel in zip(range(s.min_no_layers, s.max_no_layers + 1), s.all_layer_perm):
 
             layer_no_models = []
