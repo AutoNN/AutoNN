@@ -73,18 +73,24 @@ class Multiple_Model_Gen_V2:
 
             # for name,score in zip(parallelModel.metrics_names, scores):
             #     print(name, " : ", score)
-            for name,score,score_test in zip(parallelModel.metrics_names, scores, scores_test):
+
+            metrics_names = parallelModel.metrics_names
+
+            metrics_names = [metrics_names] if not isinstance(metrics_names, list) else metrics_names
+            scores = [scores] if not isinstance(scores, list) else scores
+            scores_test = [scores_test] if not isinstance(scores_test, list) else scores_test
+
+            for name,score,score_test in zip(metrics_names, scores, scores_test):
                 print(name, " : ", score, ", TEST : ", score_test)
             
             # self._evaluate_save_model(parallelModel=parallelModel, input_x=input_x, input_labels=input_labels, n=n)
-            self._evaluate_save_model(parallelModel=parallelModel, input_x=input_test_x, input_labels=input_test_labels, n=n)
-            self._save_weights()
+            self._evaluate_save_model(parallelModel=parallelModel, input_x=input_test_x, input_labels=input_test_labels, metric_names=metrics_names, scores=scores, n=n)
 
     @staticmethod
     def root_mean_squared_error(y_true, y_pred):
         return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
-    def _evaluate_save_model(self, parallelModel, input_x, input_labels, n):
+    def _evaluate_save_model(self, parallelModel, input_x, input_labels, metrics_names, scores, n):
         # n : Number of models in the parallelModel
         # List of dictionaries {"model_name":"densexyz", "score":0.000, "path_weights":"/home/something/dense"}
 
@@ -92,11 +98,12 @@ class Multiple_Model_Gen_V2:
         for i in range(n):
             sep_model_list.append(Model(inputs = parallelModel.inputs[i], outputs = parallelModel.outputs[i])) 
 
-        scores = parallelModel.evaluate(input_x, input_labels, verbose = 0)
-        metric_names = parallelModel.metrics_names[1:1+n]
+        # scores = parallelModel.evaluate(input_x, input_labels, verbose = 0)
+        # metrics_names = parallelModel.metrics_names[1:1+n]
         model_scores = scores[1:1+n]
         entry_flag = False
-        for metric_name, model_score, model in zip(metric_names,model_scores,sep_model_list):
+
+        for metric_name, model_score, model in zip(metrics_names,model_scores,sep_model_list):
             model_name = metric_name.removeprefix("output_layer_")
             model_name = model_name.removesuffix("_loss")
             curr_model_dict = {"model_name":model_name, "score":model_score, "path_weights":self._save_dir + model_name, "model":model}
@@ -116,12 +123,10 @@ class Multiple_Model_Gen_V2:
                     self._evaluate_dict_list.append(curr_model_dict)
                 entry_flag = False
 
-    def _save_weights(self):
+    def save_weights(self):
         for dict in self._evaluate_dict_list:
             model = dict["model"]
-            model.save()
-
-
+            model.save(dict["path_weights"])
 
     def _parallel_model_generator(self):
         for batch in self._model_confs:
@@ -140,7 +145,7 @@ class Multiple_Model_Gen_V2:
         s = search.Search_Space_Gen_1(node_options = [16,32,64,128,196,256], min_no_layers = 2, max_no_layers = 3, input_shape = self._input_shape)
         model_conf_batch = []
 
-        print(s.no_layer_perm)
+        print(s.no_of_perm)
         for i,layer_no_sel in zip(range(s.min_no_layers, s.max_no_layers + 1), s.all_layer_perm):
 
             layer_no_models = []
