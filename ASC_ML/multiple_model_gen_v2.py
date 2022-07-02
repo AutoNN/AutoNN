@@ -9,7 +9,7 @@ from tensorflow.keras import backend as K
 
 class Multiple_Model_Gen_V2:
 
-    def __init__(self, train_x, train_y, test_x, test_y, epochs, batch_size, input_shape, output_shape = 1, output_activation = None, model_per_batch = 10, download_directory = ""):
+    def __init__(self, train_x, train_y, test_x, test_y, epochs, batch_size, input_shape, output_shape = 1, output_activation = None, model_per_batch = 10, save_dir = ""):
         self._train_x = train_x
         self._train_y = train_y
         self._test_x = test_x
@@ -20,6 +20,7 @@ class Multiple_Model_Gen_V2:
         self._batch_size = batch_size
         self._output_activation = output_activation
         self._model_per_batch = model_per_batch
+        self._save_dir = save_dir
         self._model_confs = []
         # self.get_model_confs()
         # print(self._model_confs)
@@ -77,22 +78,28 @@ class Multiple_Model_Gen_V2:
             
             # self._evaluate_save_model(parallelModel=parallelModel, input_x=input_x, input_labels=input_labels, n=n)
             self._evaluate_save_model(parallelModel=parallelModel, input_x=input_test_x, input_labels=input_test_labels, n=n)
+            self._save_weights()
 
     @staticmethod
     def root_mean_squared_error(y_true, y_pred):
         return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
     def _evaluate_save_model(self, parallelModel, input_x, input_labels, n):
+        # n : Number of models in the parallelModel
         # List of dictionaries {"model_name":"densexyz", "score":0.000, "path_weights":"/home/something/dense"}
+
+        sep_model_list = []
+        for i in range(n):
+            sep_model_list.append(Model(inputs = parallelModel.inputs[i], outputs = parallelModel.outputs[i])) 
 
         scores = parallelModel.evaluate(input_x, input_labels, verbose = 0)
         metric_names = parallelModel.metrics_names[1:1+n]
         model_scores = scores[1:1+n]
         entry_flag = False
-        for metric_name, model_score, model_no in zip(metric_names,model_scores,range(n)):
+        for metric_name, model_score, model in zip(metric_names,model_scores,sep_model_list):
             model_name = metric_name.removeprefix("output_layer_")
             model_name = model_name.removesuffix("_loss")
-            curr_model_dict = {"model_name":model_name, "score":model_score, "path_weights":""}
+            curr_model_dict = {"model_name":model_name, "score":model_score, "path_weights":self._save_dir + model_name, "model":model}
 
             if len(self._evaluate_dict_list) == 0:
                 self._evaluate_dict_list.append(curr_model_dict)
@@ -108,6 +115,12 @@ class Multiple_Model_Gen_V2:
                 if(not entry_flag and len(self._evaluate_dict_list) < 10):
                     self._evaluate_dict_list.append(curr_model_dict)
                 entry_flag = False
+
+    def _save_weights(self):
+        for dict in self._evaluate_dict_list:
+            model = dict["model"]
+            model.save()
+
 
 
     def _parallel_model_generator(self):

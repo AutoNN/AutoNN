@@ -38,10 +38,10 @@ class Model_Parallel_Train_Test:
         input_layer_list, output_layer_list = self._get_input_output_layer_list(nn_model_list)
         parallelModel = Model(inputs = input_layer_list, outputs = output_layer_list)  
 
-        return parallelModel
+        return parallelModel, nn_model_list
 
     def train_models(self):
-        parallelModel = self.get_models()
+        parallelModel, nn_model_list = self.get_models()
 
         adam_optimizer = Adam(lr = 1e-3)
 
@@ -67,6 +67,11 @@ class Model_Parallel_Train_Test:
 
         for name,score in zip(parallelModel.metrics_names, scores):
             print(name, " : ", score)
+
+        # indi_scores = nn_model_list[0].model.evaluate([self._train_x], [self._train_y])
+        # print("1st model score : ", indi_scores)
+
+        return parallelModel
 
     @staticmethod
     def _get_input_output_layer_list(model_list):
