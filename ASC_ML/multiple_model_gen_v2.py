@@ -84,7 +84,7 @@ class Multiple_Model_Gen_V2:
                 print(name, " : ", score, ", TEST : ", score_test)
             
             # self._evaluate_save_model(parallelModel=parallelModel, input_x=input_x, input_labels=input_labels, n=n)
-            self._evaluate_save_model(parallelModel=parallelModel, input_x=input_test_x, input_labels=input_test_labels, metric_names=metrics_names, scores=scores, n=n)
+            self._evaluate_save_model(parallelModel=parallelModel, input_x=input_test_x, input_labels=input_test_labels, metrics_names=metrics_names, scores=scores, n=n)
 
     @staticmethod
     def root_mean_squared_error(y_true, y_pred):
@@ -100,6 +100,7 @@ class Multiple_Model_Gen_V2:
 
         # scores = parallelModel.evaluate(input_x, input_labels, verbose = 0)
         # metrics_names = parallelModel.metrics_names[1:1+n]
+        metrics_names = metrics_names[1:1+n]
         model_scores = scores[1:1+n]
         entry_flag = False
 
