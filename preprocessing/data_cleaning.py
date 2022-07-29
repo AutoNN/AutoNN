@@ -1,4 +1,6 @@
+from select import select
 from dask import dataframe as dd
+from numpy import int64
 from sklearn import pipeline
 
 class DataCleaning:
@@ -8,4 +10,9 @@ class DataCleaning:
         self.__label = label
 
 
-    def __ordinality()
+    def __ordinality(self, col) -> int:
+        return self.__dataset[col].nunique()
+
+    
+    def __str__(self) -> str:
+        return self.__dataset.compute()
