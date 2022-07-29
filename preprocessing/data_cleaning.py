@@ -17,7 +17,6 @@ class DataCleaning:
         return self.__dataset.compute()
 
 
-    @staticmethod
     def is_regression(self) -> bool:
         cardinal = self.__cardinality(col = self.__label)
         if cardinal > 20:
