@@ -1,6 +1,5 @@
 from select import select
 from dask import dataframe as dd
-from numpy import int64
 from sklearn import pipeline
 
 class DataCleaning:
