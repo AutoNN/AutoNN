@@ -1,4 +1,3 @@
-from select import select
 from dask import dataframe as dd
 from sklearn import pipeline
 
@@ -10,7 +9,7 @@ class DataCleaning:
         self.__label = label
 
 
-    def __cardinality(self, col) -> int:
+    def __cardinality(self, col: str) -> int:
         return self.__dataset[col].nunique()
 
     
@@ -25,3 +24,4 @@ class DataCleaning:
             return True
         else:
             return False
+
