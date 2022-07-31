@@ -156,22 +156,26 @@ class ResNet(nn.Module):
         return nn.Sequential(*layer),inchan
 
 
-def  resnet18(**kwargs):
-    return ResNet(num_residual_block=[2,2,2,2],**kwargs)
-
-def resnet34(**kwargs):
-    return ResNet(num_residual_block=[3,4,6,3],**kwargs)
-
-def resnet50(**kwargs):
-    return ResNet(num_residual_block=[3,4,6,3],block_type='bottleneck',**kwargs)
-
-def resnet101(**kwargs):
-    return ResNet(num_residual_block=[3,4,23,3],block_type='bottleneck',**kwargs)
-
-def resnet152(**kwargs):
-    return ResNet(num_residual_block=[3,8,36,3],block_type='bottleneck',**kwargs)
+def  resnet(architecture:int=18,**kwargs)->ResNet:
+    '''
+    Args:
+    architecture: choose the type of ResNet you want to use
+    example: 
+        To use ResNet50 with 10 output classes use:
+        model = resnet(architecture=50,num_class=10)
+    '''
+    if architecture ==18:
+        return ResNet(num_residual_block=[2,2,2,2],**kwargs)
+    elif architecture ==34:
+        return ResNet(num_residual_block=[3,4,6,3],**kwargs)
+    elif architecture ==50:
+        return ResNet(num_residual_block=[3,4,6,3],block_type='bottleneck',**kwargs)
+    elif architecture ==101:
+        return ResNet(num_residual_block=[3,4,23,3],block_type='bottleneck',**kwargs)
+    elif architecture ==152:
+        return ResNet(num_residual_block=[3,8,36,3],block_type='bottleneck',**kwargs)
 
 
 from torchsummary import summary
-model = resnet152(num_class=1000)
+model = resnet(50,num_class=10)
 print(summary(model.cuda(),(3,512,512)))
