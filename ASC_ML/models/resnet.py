@@ -78,7 +78,9 @@ class ResNet(nn.Module):
 
     num_residual_block = [3,4,6,3] | representes the number of blocks/bottlenecks
     in each layers 
-    >>>model = ResNet(block_type='Bottleneck',num_class=1000)
+
+    To change number of classes use the following line of code:
+    >>>model = ResNet(num_class=5)
     
     """
     def __init__(self,in_channels=3,num_residual_block=[3,4,6,3],num_class=10,block_type='normal'):
@@ -169,8 +171,3 @@ def resnet101(**kwargs):
 def resnet152(**kwargs):
     return ResNet(num_residual_block=[3,8,36,3],block_type='bottleneck',**kwargs)
 
-from torchsummary import summary 
-
-m18 = resnet18(num_class=1000)
-print(m18)
-# print(summary(m18.cuda(),(3,224,224)))
