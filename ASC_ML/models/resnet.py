@@ -114,9 +114,9 @@ class ResNet(nn.Module):
     
     def __layers(self,num_residual_block):
         layer=[]
-        layer += [BasicBlock()]*2
+        layer += [BasicBlock()]*num_residual_block[0]
         inchannels=64
-        for numOFlayers in num_residual_block:
+        for numOFlayers in num_residual_block[1:]:
             stride = [2,1]
             downsample=True
             outchannels = inchannels*2
@@ -171,3 +171,7 @@ def resnet101(**kwargs):
 def resnet152(**kwargs):
     return ResNet(num_residual_block=[3,8,36,3],block_type='bottleneck',**kwargs)
 
+
+from torchsummary import summary
+model = resnet152(num_class=1000)
+print(summary(model.cuda(),(3,512,512)))
