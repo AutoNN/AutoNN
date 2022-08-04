@@ -1,40 +1,31 @@
+from typing import List,Dict,Any,Optional
 import torch
+from torch.utils.data import DataLoader
+from torchvision.datasets import ImageFolder
 from torch import nn 
-from torchvision import models 
+from models.resnet import resnet
 from torchsummary import summary
+from torch.optim import Adam
+from __init__ import device as DEVICE
 
-'''
-General models: Efficent Net (B0 - B7)
-                Alex Net 
-                Dense Net 
-                VGG 
+from torchvision import models
 
-'''
 
-class ConvNet(nn.Module):
+# Typing alias
+Models = List[nn.Module]
 
-    def __init__(self,num_convlayers,batch_size,in_features):
-        super(self,ConvNet).__init__()
 
-        self.l1 = nn.Sequential(
-            nn.Conv2d(in_features,32,5), # n-4
-            nn.ReLU(),
-            nn.MaxPool2d(2,2), # n-4//2
+cnnmodel = resnet(18)
+cnnmodel.resnet = cnnmodel.resnet[:4]
+print(cnnmodel)
 
-        )
-        self.l2 = nn.Sequential(
-            nn.Conv2d(32,32,3), # n/2 -4
-            nn.ReLU(),
-            nn.MaxPool2d(2,2), # n/4 -2
-        )
-
-        self.l3 = nn.Sequential(
-            nn.Conv2d(32,64,5), 
-            nn.ReLU())
+def training(_model,optimizer,trainloader:DataLoader,device:Optional[torch.device]=DEVICE):
     
-    def forward(self,x):
-        
-        x = self.l1(x)
-        x = self.l2(x)
-        x = self.l3(x)
-        return x  
+    for x,y in trainloader:
+        x,y = x.to(device),y.to(device)
+
+
+def best_model(models:Models):
+
+    pass
+    

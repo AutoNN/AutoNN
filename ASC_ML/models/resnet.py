@@ -162,7 +162,86 @@ def  resnet(architecture:int=18,**kwargs)->ResNet:
     architecture: choose the type of ResNet you want to use
     example: 
         To use ResNet50 with 10 output classes use:
-        model = resnet(architecture=50,num_class=10)
+    >>> model = resnet(architecture=50,num_class=10)
+    
+    if you want to define your ResNet with custom number of blocks and then use:
+    >>> model = resnet(architecture=-1,in_channels=3,
+                num_residual_block=[3,4,6,3],
+                num_class=10,
+                block_type='normal')
+
+    Explanation: 
+    Arguments:  architecture = -1 means you can choose the #layers of your resnet
+                inchannels = number of input channels
+                num_residual_blocks = number of residual blocks in each 
+                    layer, `[3,4,6,3]` means the model has 4 layers with
+                    1st layer containing 3 residual blocks, 
+                    2nd layer --> 4 residual blocks
+                    3rd layer --> 6 residual blocks
+                    4th layer --> 3 residual blocks
+                num_class = number of classes (in this case it's 10)
+                block_type = this has two types
+                    i) 'normal'
+                    ii) 'bottleneck'
+
+                    'normal' has residual block with (3x3 conv,
+                                                      3x3 conv) in that order
+                    'botleneck' has redisual block with (1x1 conv,
+                                                         3x3 conv,
+                                                         1x1 conv) in that order
+    
+
+    Returns: Resnet() with desires number of layers and residual blocks
+
+    example: 
+    >>> model = resnet(-1,num_residual_blocks=[2,1],num_class = 4,bllock_type='bottleneck')
+    
+    output: ResNet(
+  (conv1): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+  (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (relu): ReLU(inplace=True)
+  (maxpool): MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)
+  (resnet): Sequential(
+    (0): Bottleneck(
+      (conv1): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+      (downSample): Sequential(
+        (0): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (1): Bottleneck(
+      (conv1): Conv2d(256, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (2): Bottleneck(
+      (conv1): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+      (downSample): Sequential(
+        (0): Conv2d(256, 512, kernel_size=(1, 1), stride=(2, 2), bias=False)
+        (1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+  )
+  (avgpool): AdaptiveAvgPool2d(output_size=(1, 1))
+  (fc): Linear(in_features=512, out_features=4, bias=True)
+)
+
     '''
     if architecture ==18:
         return ResNet(num_residual_block=[2,2,2,2],**kwargs)
@@ -174,8 +253,6 @@ def  resnet(architecture:int=18,**kwargs)->ResNet:
         return ResNet(num_residual_block=[3,4,23,3],block_type='bottleneck',**kwargs)
     elif architecture ==152:
         return ResNet(num_residual_block=[3,8,36,3],block_type='bottleneck',**kwargs)
+    else:
+        return ResNet(**kwargs)
 
-
-from torchsummary import summary
-model = resnet(50,num_class=10)
-print(summary(model.cuda(),(3,512,512)))
