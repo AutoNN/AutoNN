@@ -4,13 +4,14 @@ from sklearn.model_selection import train_test_split
 
 class DataCleaning:
 
-    def __init__(self, label: str, train_dataframe: dd, validation_dataframe = None, test_dataframe = None, override = True) -> None:
+    def __init__(self, label: str, train_dataframe: dd, validation_dataframe = None, test_dataframe = None, override = True, threshold = 20) -> None:
         self.__train_dataset = train_dataframe
         self.__validation_dataset = validation_dataframe
         self.__test_dataset = test_dataframe
         self.__pipeline = None
         self.__label = label
         self.__override = override
+        self.__regression_threshold = threshold
 
     
     def __is_override(self) -> bool:
@@ -29,7 +30,7 @@ class DataCleaning:
 
     def is_regression(self) -> bool:
         cardinal = self.__cardinality(col = self.__label)
-        if cardinal > 20:
+        if cardinal > self.__regression_threshold:
             return True
         else:
             return False
