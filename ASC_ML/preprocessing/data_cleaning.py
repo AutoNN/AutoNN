@@ -35,20 +35,16 @@ class DataCleaning:
             return False
 
     def train_test_split(self, test_split = 0.2, validation_split = None, shuffle = True, random_state = None) -> None:
-        if self.__is_override:
-            self.__train_dataset, self.__test_dataset = train_test_split(test_size=test_split, shuffle=shuffle, random_state=random_state)
-        elif self.__test_dataset == None:
-            self.__train_dataset, self.__test_dataset = train_test_split(test_size=test_split, shuffle=shuffle, random_state=random_state)
+        if self.__is_override or self.__test_dataset == None:
+            self.__train_dataset, self.__test_dataset = train_test_split(self.__train_dataset, test_size=test_split, shuffle=shuffle, random_state=random_state)
         else:
             pass
 
         if validation_split != None:
-            self.train_validation_split(validation_split*0.125, shuffle, random_state)
+            self.train_validation_split(validation_split*((1-test_split)**-1), shuffle, random_state)
 
     def train_validation_split(self, validation_split = 0.1, shuffle = True, random_state = None) -> None:
-        if self.__is_override:
-            self.__train_dataset, self.__validation_dataset = train_test_split(test_size=validation_split, shuffle=shuffle, random_state=random_state)
-        elif self.__validation_dataset == None:
-            self.__train_dataset, self.__validation_dataset = train_test_split(test_size=validation_split, shuffle=shuffle, random_state=random_state)
+        if self.__is_override or self.__validation_dataset == None:
+            self.__train_dataset, self.__validation_dataset = train_test_split(self.__train_dataset, test_size=validation_split, shuffle=shuffle, random_state=random_state)
         else:
             pass
