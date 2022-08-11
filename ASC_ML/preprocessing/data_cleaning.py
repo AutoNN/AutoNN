@@ -1,51 +1,20 @@
 from dask import dataframe as dd
 from sklearn import pipeline
-from sklearn.model_selection import train_test_split
+from dataset_container import DatasetContainer
+from column_info import ColumnInfo
 
 class DataCleaning:
 
-    def __init__(self, label: str, train_dataframe: dd, validation_dataframe = None, test_dataframe = None, override = True, threshold = 20) -> None:
-        self.__train_dataset = train_dataframe
-        self.__validation_dataset = validation_dataframe
-        self.__test_dataset = test_dataframe
+    def __init__(self, label: str, train_dataframe: dd, validation_dataframe = None, test_dataframe = None, override = False, threshold = 20) -> None:
+        self.__dataset = DatasetContainer(label, train_dataframe, validation_dataframe, test_dataframe, override)
+        self.__col_info = ColumnInfo(self.__dataset)
         self.__pipeline = None
-        self.__label = label
-        self.__override = override
         self.__regression_threshold = threshold
 
-    
-    def __is_override(self) -> bool:
-        return self.__override
-
-
-    def __cardinality(self, col: str) -> int:
-        return self.__train_dataset[col].nunique()
-
-    
-    def __str__(self) -> str:
-        return self.__train_dataset.compute()
-
-    def get(self) -> dd:
-        return self.__train_dataset, self.__validation_dataset, self.__test_dataset
 
     def is_regression(self) -> bool:
-        cardinal = self.__cardinality(col = self.__label)
+        cardinal = self.__col_info(self.__dataset.get_label())['cardinality']
         if cardinal > self.__regression_threshold:
             return True
         else:
             return False
-
-    def train_test_split(self, test_split = 0.2, validation_split = None, shuffle = True, random_state = None) -> None:
-        if self.__is_override or self.__test_dataset == None:
-            self.__train_dataset, self.__test_dataset = train_test_split(self.__train_dataset, test_size=test_split, shuffle=shuffle, random_state=random_state)
-        else:
-            pass
-
-        if validation_split != None:
-            self.train_validation_split(validation_split*((1-test_split)**-1), shuffle, random_state)
-
-    def train_validation_split(self, validation_split = 0.1, shuffle = True, random_state = None) -> None:
-        if self.__is_override or self.__validation_dataset == None:
-            self.__train_dataset, self.__validation_dataset = train_test_split(self.__train_dataset, test_size=validation_split, shuffle=shuffle, random_state=random_state)
-        else:
-            pass
