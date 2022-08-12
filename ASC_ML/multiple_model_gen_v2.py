@@ -9,7 +9,20 @@ from tensorflow.keras import backend as K
 
 class Multiple_Model_Gen_V2:
 
-    def __init__(self, train_x, train_y, test_x, test_y, epochs, batch_size, input_shape, output_shape = 1, output_activation = None, model_per_batch = 10, save_dir = ""):
+    def __init__(self, train_x, train_y, test_x, test_y, epochs, batch_size, input_shape, output_shape = 1, output_activation = None, max_no_layers = 3, model_per_batch = 10, save_dir = ""):
+        """Creates all parallel models using base models from model_generation, trains and evaluates each model, stores best models.
+        Parameters
+        ----------
+        train_x : numpy array
+            Final processed Training Dataset in numpy array format
+        train_y : numpy array
+            Final processed Labels
+        epochs : Number of epochs run per parallel model
+            batch_size : Batch Size of training data for training
+        Returns
+        -------
+        
+        """
         self._train_x = train_x
         self._train_y = train_y
         self._test_x = test_x
@@ -19,13 +32,14 @@ class Multiple_Model_Gen_V2:
         self._epochs = epochs
         self._batch_size = batch_size
         self._output_activation = output_activation
+        self._max_no_layers = max_no_layers
         self._model_per_batch = model_per_batch
         self._save_dir = save_dir
         self._model_confs = []
         # self.get_model_confs()
         # print(self._model_confs)
         self._evaluate_dict_list = []
-        self._no_top_model = 10
+        self._no_top_model = 20
         # self._model_archs = [['model_4n', self._input_shape, 3, "relu", {"layer1":4, "layer2":4, "layer3":4}, [output_shape, output_activation]],
         #                      ['model_8n', self._input_shape, 3, "relu", {"layer1":8, "layer2":8, "layer3":8}, [output_shape, output_activation]], 
         #                      ['model_16n', self._input_shape, 3, "relu", {"layer1":16, "layer2":16, "layer3":16}, [output_shape, output_activation]],
@@ -52,8 +66,8 @@ class Multiple_Model_Gen_V2:
             input_x = []
             input_labels = []
             adam_optimizer = Adam(lr = 1e-3)
-            parallelModel.compile(loss = "mean_squared_error", optimizer = tf.keras.optimizers.Adam())
-            # parallelModel.compile(loss = self.root_mean_squared_error, optimizer = tf.keras.optimizers.Adam())
+            # parallelModel.compile(loss = "mean_squared_error", optimizer = tf.keras.optimizers.Adam())
+            parallelModel.compile(loss = self.root_mean_squared_error, optimizer = tf.keras.optimizers.Adam())
             # parallelModel.compile(loss = "mean_absolute_percentage_error", optimizer = tf.keras.optimizers.Adam())
             
             if(len(input_x) != n):
@@ -117,10 +131,10 @@ class Multiple_Model_Gen_V2:
                     if(curr_model_dict["score"] < model_dict["score"]):
                         self._evaluate_dict_list.insert(index, curr_model_dict)  
                         entry_flag = True                      
-                        if(len(self._evaluate_dict_list) > 10): self._evaluate_dict_list = self._evaluate_dict_list[:10]
+                        if(len(self._evaluate_dict_list) > self._no_top_model): self._evaluate_dict_list = self._evaluate_dict_list[:10]
                         break
                     index = index + 1
-                if(not entry_flag and len(self._evaluate_dict_list) < 10):
+                if(not entry_flag and len(self._evaluate_dict_list) < self._no_top_model):
                     self._evaluate_dict_list.append(curr_model_dict)
                 entry_flag = False
 
@@ -143,15 +157,15 @@ class Multiple_Model_Gen_V2:
 
     def get_model_confs(self):
         model_confs = []
-        s = search.Search_Space_Gen_1(node_options = [16,32,64,128,196,256], min_no_layers = 2, max_no_layers = 3, input_shape = self._input_shape)
+        s = search.Search_Space_Gen_1(node_options = [16,32,64,128,196,256], min_no_layers = 2, max_no_layers = self._max_no_layers, input_shape = self._input_shape)
         model_conf_batch = []
 
-        print(s.no_of_perm)
+        # print(s.no_of_perm)
         for i,layer_no_sel in zip(range(s.min_no_layers, s.max_no_layers + 1), s.all_layer_perm):
 
             layer_no_models = []
             n = 0
-            print(layer_no_sel)
+            # print(layer_no_sel)
 
             for layer_list in layer_no_sel:
                 layer_conf = s.get_layer_conf(layer_list)
@@ -162,7 +176,7 @@ class Multiple_Model_Gen_V2:
                 n = n + 1
                 
                 if(n == self._model_per_batch or layer_list == layer_no_sel[-1]):
-                    print(model_conf_batch)
+                    # print(model_conf_batch)
                     model_confs.append(model_conf_batch)
                     model_conf_batch = []
                     n = 0
@@ -177,7 +191,7 @@ class Multiple_Model_Gen_V2:
         for layer_size, i in zip(layer_sizes, range(1,len(layer_sizes)+1)):
             layer_name = "layer" + str(i)
             d.update({layer_name:layer_size})
-        print(d)
+        # print(d)
 
     @staticmethod
     def _get_input_output_layer_list(model_list):
