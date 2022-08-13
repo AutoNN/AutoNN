@@ -1,5 +1,6 @@
 from ASC_ML import model_generation as model_gen
 from ASC_ML import search_space_gen_v1 as search
+from ASC_ML import hyperparameter_optimization as hyp_opt
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler
@@ -54,14 +55,6 @@ class Multiple_Model_Gen_V3:
         # Logic to get loss funtion
         # return "mean_absolute_percentage_error"
         return self.root_mean_squared_error
-    
-    # def get_best_lr(self, input_x, input_labels, Pmodel, loss_fn):
-    #     lr_schedule = LearningRateScheduler(lambda epoch : 1e-8 * 10**(epoch/20))
-    #     history = Pmodel.fit(input_x, input_labels, epochs = self._epochs, batch_size = self._batch_size, callbacks = [lr_schedule])
-    #     lrs = 1e-8 * 10**(np.arange(150)/20)
-    #     history.history["loss"]
-    #     optimizer = Adam(lr = best_lr)
-    #     Pmodel.compile(loss = loss_fn, optimizer = optimizer)
 
     def get_best_models(self):
         loss_fn = self.get_loss_function()
@@ -86,27 +79,18 @@ class Multiple_Model_Gen_V3:
     def train_model(self, input_data, Pmodel, n_model, epochs, loss_fn, lrschedule = False, random = False):
 
         input_x, input_labels, input_test_x, input_test_labels = input_data
-        optimizer = Adam(lr = 1e-3)
-        Pmodel.compile(loss = loss_fn, optimizer = optimizer)
+        lr = 1e-3
 
         # if lrschedule == True: lr with batch_size optimization
         #     Pmodel,lr = self.get_best_lr(input_x, input_labels, Pmodel, loss_fn)
         # if random == True: reinitialize model weights and optimize random seed
+        if lrschedule == True:
+            h = hyp_opt.Hyperparameter_Optimization(input_x, input_labels, Pmodel, loss_fn)
+            lr = h.get_best_lr()
 
+        optimizer = Adam(lr = 1e-3)
+        Pmodel.compile(loss = loss_fn, optimizer = optimizer)
         history = Pmodel.fit(input_x, input_labels, epochs = self._epochs, batch_size = self._batch_size)
-
-        # scores = Pmodel.evaluate(input_x, input_labels, verbose = 0)
-        # scores_test = Pmodel.evaluate(input_test_x, input_test_labels, verbose = 0)
-
-        # print("\n \n \n")
-
-        # metrics_names = Pmodel.metrics_names
-        # metrics_names = [metrics_names] if not isinstance(metrics_names, list) else metrics_names
-        # scores = [scores] if not isinstance(scores, list) else scores
-        # scores_test = [scores_test] if not isinstance(scores_test, list) else scores_test
-
-        # for name,score,score_test in zip(metrics_names, scores, scores_test):
-        #     print(name, " : ", score, ", TEST : ", score_test)
 
         metrics_names, scores, scores_test = self.print_scores(Pmodel, input_data)
         
