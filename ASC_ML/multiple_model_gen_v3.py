@@ -71,15 +71,15 @@ class Multiple_Model_Gen_V3:
         for dict in self._evaluate_dict_list:
             model = dict["model"]
             Pmodel, metrics_names, scores, scores_test = self.train_model(input_data = input_data, Pmodel = parallelModel,
-                                                                            epochs = 100, n_model = n, loss_fn = loss_fn)
+                                                                            epochs = 100, n_model = n, loss_fn = loss_fn,
+                                                                            lrschedule=True)
             # print(dict["model"].summary())
-
-
 
     def train_model(self, input_data, Pmodel, n_model, epochs, loss_fn, lrschedule = False, random = False):
 
         input_x, input_labels, input_test_x, input_test_labels = input_data
         lr = 1e-3
+        epochs = self._epochs
 
         # if lrschedule == True: lr with batch_size optimization
         #     Pmodel,lr = self.get_best_lr(input_x, input_labels, Pmodel, loss_fn)
@@ -87,10 +87,12 @@ class Multiple_Model_Gen_V3:
         if lrschedule == True:
             h = hyp_opt.Hyperparameter_Optimization(input_x, input_labels, Pmodel, loss_fn)
             lr = h.get_best_lr()
+            epochs = 100
+            self._reinitialize_model(Pmodel)
 
-        optimizer = Adam(lr = 1e-3)
+        optimizer = Adam(lr = lr)
         Pmodel.compile(loss = loss_fn, optimizer = optimizer)
-        history = Pmodel.fit(input_x, input_labels, epochs = self._epochs, batch_size = self._batch_size)
+        history = Pmodel.fit(input_x, input_labels, epochs = epochs, batch_size = self._batch_size)
 
         metrics_names, scores, scores_test = self.print_scores(Pmodel, input_data)
         
@@ -223,3 +225,8 @@ class Multiple_Model_Gen_V3:
             input_test_x.append(self._test_x)
             input_test_labels.append(self._test_y)
         return [input_x, input_labels, input_test_x, input_test_labels]
+
+    @staticmethod
+    def _reinitialize_model(model, initializer = tf.keras.initializers.random_uniform()):
+        for layer in model.layers:
+            layer.set_weights([initializer(shape=w.shape) for w in layer.get_weights()])
