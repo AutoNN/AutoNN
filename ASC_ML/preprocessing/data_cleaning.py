@@ -15,6 +15,6 @@ class DataCleaning:
     def is_regression(self) -> bool:
         cardinal = self.__col_info(self.__dataset.get_label())['cardinality']
         if cardinal > self.__regression_threshold:
-            return True
+            return [1, -1]
         else:
-            return False
+            return [0, cardinal]
