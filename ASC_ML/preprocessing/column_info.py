@@ -1,7 +1,5 @@
-from dataset_container import DatasetContainer as dc
-
 class ColumnInfo:
-    def __init__(self, dataset: dc) -> None:
+    def __init__(self, dataset) -> None:
         self.__dataset = dataset
         self.__columns = dataset.get_columns()
 

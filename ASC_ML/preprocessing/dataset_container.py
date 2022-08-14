@@ -14,11 +14,8 @@ class DatasetContainer:
     def __is_override(self) -> bool:
         return self.__override
 
-    def get_columns(self, types = ['train']):
-        dataset = list()
-        for type in types:
-            dataset.append(self.__dataset[type])
-        return dataset
+    def get_columns(self) -> list:
+        return list(self.__dataset['train'].columns)
 
     def get_label(self) -> str:
         return self.__label
@@ -26,8 +23,11 @@ class DatasetContainer:
     def set(self, dataset: dd, type = 'train'):
         self.__dataset[type] = dataset
 
-    def get(self) -> dd:
-        return self.__dataset
+    def get(self, types = ['train']) -> dd:
+        dataset = list()
+        for type in types:
+            dataset.append(self.__dataset[type])
+        return dataset
 
 
     def train_test_split(self, test_split = 0.2, validation_split = None, shuffle = True, random_state = None) -> None:
