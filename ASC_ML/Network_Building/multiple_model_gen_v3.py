@@ -39,7 +39,7 @@ class Multiple_Model_Gen_V3:
         self._save_dir = save_dir
         self._model_confs = []
         self._evaluate_dict_list = []
-        self._no_top_model = 20
+        self._no_top_model = 10
     
     @property
     def model_confs(self):
@@ -86,13 +86,13 @@ class Multiple_Model_Gen_V3:
         # if random == True: reinitialize model weights and optimize random seed
         if lrschedule == True:
             h = hyp_opt.Hyperparameter_Optimization(input_x, input_labels, Pmodel, loss_fn)
-            lr = h.get_best_lr()
+            lr, self._batch_size = h.set_batch_size()
             epochs = 100
             self._reinitialize_model(Pmodel)
 
         optimizer = Adam(lr = lr)
         Pmodel.compile(loss = loss_fn, optimizer = optimizer)
-        history = Pmodel.fit(input_x, input_labels, epochs = epochs, batch_size = self._batch_size)
+        history = Pmodel.fit(input_x, input_labels, epochs = epochs, batch_size = self._batch_size, verbose = 0)
 
         metrics_names, scores, scores_test = self.print_scores(Pmodel, input_data)
         

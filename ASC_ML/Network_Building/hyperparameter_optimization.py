@@ -1,6 +1,8 @@
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler
+from numpy.random import seed
+from tensorflow import set_random_seed
 import tensorflow as tf
 import numpy as np
 
@@ -27,7 +29,7 @@ class Hyperparameter_Optimization:
         optimizer = Adam(lr = 1e-3)
         self._model.compile(loss = self._loss_fn, optimizer = optimizer)
         lr_schedule = LearningRateScheduler(lambda epoch : 1e-5 * 10**(epoch/10))
-        history = self._model.fit(self._train_X, self._train_Y, epochs = epoch, batch_size = batch_size, callbacks = [lr_schedule])
+        history = self._model.fit(self._train_X, self._train_Y, epochs = epoch, batch_size = batch_size, callbacks = [lr_schedule], verbose = 0)
 
         # Select best Learning Rate
         lrs = 1e-5 * 10**(np.arange(epoch)/10)
@@ -45,13 +47,23 @@ class Hyperparameter_Optimization:
         return best_lr, min_loss
 
     def set_batch_size(self):
-        batch_size_list = [16,32,64]
-        best_lr_batch_size = []
+        print("----------------------------------------------------------------------------------------------------------------")
+        batch_size_list = [16,32,64,128]
+        best_lr_list = []
+        best_loss_list = []
         for batch_size in batch_size_list:
-            best_lr_list.append(self.get_best_lr(batch_size))
-        return 
+            print(f"\nSETTING BATCH SIZE TO {batch_size}")
+            best_lr_batch, best_loss_batch = self.get_best_lr(batch_size)
+            best_lr_list.append(best_lr_batch)
+            best_loss_list.append(best_loss_batch)
+
+        best_lr = best_lr_list[best_loss_list.index(min(best_loss_list))]
+        best_batch_size = batch_size_list[best_loss_list.index(min(best_loss_list))]
+
+        print(f"BEST LR = {best_lr}    BEST BATCH SIZE = {best_batch_size}")
+        return best_lr, best_batch_size
     
-    def get_best_hyperparameters(self):
+    # def get_best_hyperparameters(self):
 
 
 
