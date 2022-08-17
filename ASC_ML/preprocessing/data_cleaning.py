@@ -5,7 +5,7 @@ from column_info import ColumnInfo
 
 class DataCleaning:
 
-    def __init__(self, label: str, train_dataframe: dd, validation_dataframe = None, test_dataframe = None, override = False, threshold = 20) -> None:
+    def __init__(self, label: list(), train_dataframe: dd, validation_dataframe = None, test_dataframe = None, override = False, threshold = 20) -> None:
         self.__dataset = DatasetContainer(label, train_dataframe, validation_dataframe, test_dataframe, override)
         self.__col_info = ColumnInfo(self.__dataset)
         self.__pipeline = None
