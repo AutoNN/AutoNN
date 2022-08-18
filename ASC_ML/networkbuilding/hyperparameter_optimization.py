@@ -85,7 +85,7 @@ class Hyperparameter_Optimization:
     
     def get_best_hyperparameters(self):
 
-        best_loss = None
+        best_loss = 0
         best_lr = None
         best_activation = None
         best_batch_size = None
@@ -95,25 +95,31 @@ class Hyperparameter_Optimization:
         i = 0
         if self._activation_opt == True:
             for activation in activation_list:
-                best_loss = 0
                 self._set_activation(activation)
                 if self._initializer_opt == True:
                     for initializer in intializer_list[i]:
                         self._reinitialize_model(initializer_str=initializer)
                         lr, batch_size, loss = self.lr_batch_optimization()
                         if(best_loss == 0 or loss<best_loss):
-                            best_loss = loss, best_lr = lr, best_batch_size = batch_size, best_activation = activation, best_initializer = initializer
+                            best_loss = loss
+                            best_lr = lr
+                            best_batch_size = batch_size
+                            best_activation = activation
+                            best_initializer = initializer
                 else:
                     lr, batch_size, loss = self.lr_batch_optimization()
                     if(best_loss == 0 or loss<best_loss): 
-                            best_loss = loss, best_lr = lr, best_batch_size = batch_size, best_activation = activation
+                            best_loss = loss
+                            best_lr = lr
+                            best_batch_size = batch_size
+                            best_activation = activation
                 i = i+1
         else:
             best_lr, best_batch_size, best_loss = self.lr_batch_optimization()
         
         print("----------------------------------------------------------------------------------------------------------------")
         print(f"BEST HYPERPARAMETERS : BEST_LOSS : {best_loss}, BEST_ACTIVATION : {best_activation}, BEST_INITIALIZER : {best_initializer}, BEST_LEARINING_RATE : {best_lr}, BEST_BATCHSIZE : {best_batch_size}")
-        return best_lr, best_batch_size
+        return best_lr, best_batch_size, best_loss
         
     def lr_batch_optimization(self):
         if self._lr_opt == True and self._batch_opt == False:
