@@ -4,7 +4,7 @@ from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.activations import tanh, relu
 from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal
 from numpy.random import seed
-from tensorflow import set_random_seed
+# tensorflow.random.set_seed
 import tensorflow as tf
 import numpy as np
 
@@ -35,7 +35,17 @@ class Hyperparameter_Optimization:
         for layer in self._model.layers:
             layer.activation = activation
     
-    def _reinitialize_model(self, initializer = RandomUniform(seed = 420)):
+    def _reinitialize_model(self, initializer_str = "RandomUniform"):
+        if initializer_str == "RandomUniform":
+            initializer = RandomUniform(seed = 420)
+        elif initializer_str == "GlorotUniform":
+            initializer = GlorotUniform(seed = 420)
+        elif initializer_str == "HeUniform":
+            initializer = HeUniform(seed = 420)
+        elif initializer_str == "GlorotNormal":
+            initializer = GlorotNormal(seed = 420)
+        elif initializer_str == "HeNormal":
+            initializer = HeNormal(seed = 420)
         for layer in self._model.layers:
             layer.set_weights([initializer(shape=w.shape) for w in layer.get_weights()])
     
@@ -57,12 +67,11 @@ class Hyperparameter_Optimization:
         return best_lr, min_loss
 
     def get_best_batch_size_lr(self):
-        print("----------------------------------------------------------------------------------------------------------------")
         batch_size_list = [16,32,64,128]
         best_lr_list = []
         best_loss_list = []
         for batch_size in batch_size_list:
-            print(f"\nSETTING BATCH SIZE TO {batch_size}")
+            # print(f"\nSETTING BATCH SIZE TO {batch_size}")
             best_lr_batch, best_loss_batch = self.get_best_lr(batch_size)
             best_lr_list.append(best_lr_batch)
             best_loss_list.append(best_loss_batch)
@@ -71,27 +80,49 @@ class Hyperparameter_Optimization:
         best_batch_size = batch_size_list[best_loss_list.index(min(best_loss_list))]
         min_loss = min(best_loss_list)
 
-        print(f"BEST LR = {best_lr}    BEST BATCH SIZE = {best_batch_size}")
+        # print(f"BEST LR = {best_lr}    BEST BATCH SIZE = {best_batch_size}")
         return best_lr, best_batch_size, min_loss
     
     def get_best_hyperparameters(self):
 
+        best_loss = None
+        best_lr = None
+        best_activation = None
+        best_batch_size = None
+        best_initializer = None
         activation_list = [relu,tanh]
-        intializer_list = [[GlorotUniform,GlorotNormal],[HeUniform,HeNormal]]
-
+        intializer_list = [["GlorotUniform","GlorotNormal"],["HeUniform","HeNormal"]]
+        i = 0
         if self._activation_opt == True:
             for activation in activation_list:
+                best_loss = 0
                 self._set_activation(activation)
                 if self._initializer_opt == True:
-                    
-                self._reinitialize_model(initializer=)
-                if self._lr_opt == True and self._batch_opt == False:
-                    best_lr,best_loss = self.get_best_lr(batch_size=32)
-                    best_batch_size = None
-                elif self._batch_opt == True and self._lr_opt == True:
-                    best_lr, best_batch_size, best_loss = self.get_best_batch_size_lr()
-                best_relu_loss = best_loss
-                self._set_activation(tanh)
+                    for initializer in intializer_list[i]:
+                        self._reinitialize_model(initializer_str=initializer)
+                        lr, batch_size, loss = self.lr_batch_optimization()
+                        if(best_loss == 0 or loss<best_loss):
+                            best_loss = loss, best_lr = lr, best_batch_size = batch_size, best_activation = activation, best_initializer = initializer
+                else:
+                    lr, batch_size, loss = self.lr_batch_optimization()
+                    if(best_loss == 0 or loss<best_loss): 
+                            best_loss = loss, best_lr = lr, best_batch_size = batch_size, best_activation = activation
+                i = i+1
+        else:
+            best_lr, best_batch_size, best_loss = self.lr_batch_optimization()
+        
+        print("----------------------------------------------------------------------------------------------------------------")
+        print(f"BEST HYPERPARAMETERS : BEST_LOSS : {best_loss}, BEST_ACTIVATION : {best_activation}, BEST_INITIALIZER : {best_initializer}, BEST_LEARINING_RATE : {best_lr}, BEST_BATCHSIZE : {best_batch_size}")
+        return best_lr, best_batch_size
+        
+    def lr_batch_optimization(self):
+        if self._lr_opt == True and self._batch_opt == False:
+            best_lr,best_loss = self.get_best_lr(batch_size=32)
+            best_batch_size = 32
+        elif self._batch_opt == True and self._lr_opt == True:
+            best_lr, best_batch_size, best_loss = self.get_best_batch_size_lr()
+
+        return best_lr, best_batch_size, best_loss
         
 
 

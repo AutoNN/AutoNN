@@ -1,5 +1,5 @@
 import itertools
-from ASC_ML import model_generation as model_gen
+from ASC_ML.networkbuilding import model_generation as model_gen
 
 class Search_Space_Gen_1:
 

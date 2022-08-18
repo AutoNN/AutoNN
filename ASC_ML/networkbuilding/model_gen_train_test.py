@@ -1,4 +1,4 @@
-from ASC_ML import model_generation as model_gen
+from ASC_ML.networkbuilding import model_generation as model_gen
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 import tensorflow as tf

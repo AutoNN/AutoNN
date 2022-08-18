@@ -1,13 +1,15 @@
-from ASC_ML import model_generation as model_gen
-from ASC_ML import search_space_gen_v1 as search
+from ASC_ML.networkbuilding import model_generation as model_gen
+from ASC_ML.networkbuilding import search_space_gen_v1 as search
+from ASC_ML.networkbuilding import hyperparameter_optimization as hyp_opt
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import LearningRateScheduler
 import tensorflow as tf
 import numpy as np
 
 from tensorflow.keras import backend as K
 
-class Multiple_Model_Gen_V2:
+class Multiple_Model_Gen_V3:
 
     def __init__(self, train_x, train_y, test_x, test_y, epochs, batch_size, input_shape, output_shape = 1, output_activation = None, max_no_layers = 3, model_per_batch = 10, save_dir = ""):
         """Creates all parallel models using base models from model_generation, trains and evaluates each model, stores best models.
@@ -36,17 +38,8 @@ class Multiple_Model_Gen_V2:
         self._model_per_batch = model_per_batch
         self._save_dir = save_dir
         self._model_confs = []
-        # self.get_model_confs()
-        # print(self._model_confs)
         self._evaluate_dict_list = []
-        self._no_top_model = 20
-        # self._model_archs = [['model_4n', self._input_shape, 3, "relu", {"layer1":4, "layer2":4, "layer3":4}, [output_shape, output_activation]],
-        #                      ['model_8n', self._input_shape, 3, "relu", {"layer1":8, "layer2":8, "layer3":8}, [output_shape, output_activation]], 
-        #                      ['model_16n', self._input_shape, 3, "relu", {"layer1":16, "layer2":16, "layer3":16}, [output_shape, output_activation]],
-        #                      ['model_32n', self._input_shape, 3, "relu", {"layer1":32, "layer2":32, "layer3":32}, [output_shape, output_activation]],
-        #                      ['model_64n', self._input_shape, 3, "relu", {"layer1":64, "layer2":64, "layer3":64}, [output_shape, output_activation]],
-        #                      ['model_128n', self._input_shape, 3, "relu", {"layer1":128, "layer2":128, "layer3":128}, [output_shape, output_activation]]
-        #                      ]
+        self._no_top_model = 10
     
     @property
     def model_confs(self):
@@ -58,62 +51,83 @@ class Multiple_Model_Gen_V2:
         # Return Model Name
         return self._evaluate_dict_list
 
-    def train_models(self):
-       parallel_model_generator = self._parallel_model_generator()
-       for parallelModel,n in parallel_model_generator:
-            print(parallelModel.summary())       
-            
-            input_x = []
-            input_labels = []
-            adam_optimizer = Adam(lr = 1e-3)
-            # parallelModel.compile(loss = "mean_squared_error", optimizer = tf.keras.optimizers.Adam())
-            parallelModel.compile(loss = self.root_mean_squared_error, optimizer = tf.keras.optimizers.Adam())
-            # parallelModel.compile(loss = "mean_absolute_percentage_error", optimizer = tf.keras.optimizers.Adam())
-            
-            if(len(input_x) != n):
-                input_x, input_labels, input_test_x, input_test_labels = self._get_train_lists(n)
+    def get_loss_function(self):
+        # Logic to get loss funtion
+        # return "mean_absolute_percentage_error"
+        return self.root_mean_squared_error
 
-            history = parallelModel.fit(input_x, input_labels, epochs = self._epochs, batch_size = self._batch_size)
-            # print(parallelModel.name)
-            # Evaluate Best Running Model
+    def get_best_models(self):
+        loss_fn = self.get_loss_function()
+        parallel_model_generator = self._parallel_model_generator()
 
-            scores = parallelModel.evaluate(input_x, input_labels, verbose = 0)
-            scores_test = parallelModel.evaluate(input_test_x, input_test_labels, verbose = 0)
+        # 1st Loop, Get best model architectures
+        for parallelModel,n in parallel_model_generator:
+            input_data = self._get_train_lists(n)
+            Pmodel, metrics_names, scores, scores_test = self.train_model(input_data = input_data, Pmodel = parallelModel, 
+                                                                            epochs = 10, n_model = n, loss_fn = loss_fn)
+            self._evaluate_save_model(input_data = input_data, parallelModel = Pmodel, metrics_names=metrics_names, scores=scores, n=n)
+        
+        # 2nd Loop, Tune best model architectures
+        for dict in self._evaluate_dict_list:
+            model = dict["model"]
+            Pmodel, metrics_names, scores, scores_test = self.train_model(input_data = input_data, Pmodel = parallelModel,
+                                                                            epochs = 100, n_model = n, loss_fn = loss_fn,
+                                                                            lrschedule=True)
+            # print(dict["model"].summary())
 
-            # return parallelModel
-            print("\n")
-            print("\n")
-            print("\n")
+    def train_model(self, input_data, Pmodel, n_model, epochs, loss_fn, lrschedule = False, random = False):
 
-            # for name,score in zip(parallelModel.metrics_names, scores):
-            #     print(name, " : ", score)
+        input_x, input_labels, input_test_x, input_test_labels = input_data
+        lr = 1e-3
+        epochs = self._epochs
 
-            metrics_names = parallelModel.metrics_names
+        # if lrschedule == True: lr with batch_size optimization
+        #     Pmodel,lr = self.get_best_lr(input_x, input_labels, Pmodel, loss_fn)
+        # if random == True: reinitialize model weights and optimize random seed
+        if lrschedule == True:
+            h = hyp_opt.Hyperparameter_Optimization(input_x, input_labels, Pmodel, loss_fn)
+            lr, self._batch_size, best_loss = h.get_best_hyperparameters()
+            epochs = 5
+            self._reinitialize_model(Pmodel)
 
-            metrics_names = [metrics_names] if not isinstance(metrics_names, list) else metrics_names
-            scores = [scores] if not isinstance(scores, list) else scores
-            scores_test = [scores_test] if not isinstance(scores_test, list) else scores_test
+        optimizer = Adam(lr = lr)
+        Pmodel.compile(loss = loss_fn, optimizer = optimizer)
+        history = Pmodel.fit(input_x, input_labels, epochs = epochs, batch_size = self._batch_size, verbose = 0)
 
-            for name,score,score_test in zip(metrics_names, scores, scores_test):
-                print(name, " : ", score, ", TEST : ", score_test)
-            
-            # self._evaluate_save_model(parallelModel=parallelModel, input_x=input_x, input_labels=input_labels, n=n)
-            self._evaluate_save_model(parallelModel=parallelModel, input_x=input_test_x, input_labels=input_test_labels, metrics_names=metrics_names, scores=scores, n=n)
+        metrics_names, scores, scores_test = self.print_scores(Pmodel, input_data)
+        
+        return Pmodel, metrics_names, scores, scores_test
+
+    def print_scores(self, Pmodel, input_data):
+        input_x, input_labels, input_test_x, input_test_labels = input_data
+        scores = Pmodel.evaluate(input_x, input_labels, verbose = 0)
+        scores_test = Pmodel.evaluate(input_test_x, input_test_labels, verbose = 0)
+
+        print("\n \n \n")
+
+        metrics_names = Pmodel.metrics_names
+        metrics_names = [metrics_names] if not isinstance(metrics_names, list) else metrics_names
+        scores = [scores] if not isinstance(scores, list) else scores
+        scores_test = [scores_test] if not isinstance(scores_test, list) else scores_test
+
+        for name,score,score_test in zip(metrics_names, scores, scores_test):
+            print(name, " : ", score, ", TEST : ", score_test)
+        return metrics_names, scores, scores_test
+        
+
 
     @staticmethod
     def root_mean_squared_error(y_true, y_pred):
         return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
-    def _evaluate_save_model(self, parallelModel, input_x, input_labels, metrics_names, scores, n):
+    def _evaluate_save_model(self, input_data, parallelModel, metrics_names, scores, n):
         # n : Number of models in the parallelModel
         # List of dictionaries {"model_name":"densexyz", "score":0.000, "path_weights":"/home/something/dense"}
-
+        input_x, input_labels, _, _ = input_data
         sep_model_list = []
         for i in range(n):
             sep_model_list.append(Model(inputs = parallelModel.inputs[i], outputs = parallelModel.outputs[i])) 
 
-        # scores = parallelModel.evaluate(input_x, input_labels, verbose = 0)
-        # metrics_names = parallelModel.metrics_names[1:1+n]
         metrics_names = metrics_names[1:1+n]
         model_scores = scores[1:1+n]
         entry_flag = False
@@ -180,8 +194,6 @@ class Multiple_Model_Gen_V2:
                     model_confs.append(model_conf_batch)
                     model_conf_batch = []
                     n = 0
-                    # break
-            # break
         
         self._model_confs = model_confs
 
@@ -191,7 +203,6 @@ class Multiple_Model_Gen_V2:
         for layer_size, i in zip(layer_sizes, range(1,len(layer_sizes)+1)):
             layer_name = "layer" + str(i)
             d.update({layer_name:layer_size})
-        # print(d)
 
     @staticmethod
     def _get_input_output_layer_list(model_list):
@@ -213,4 +224,9 @@ class Multiple_Model_Gen_V2:
             input_labels.append(self._train_y)
             input_test_x.append(self._test_x)
             input_test_labels.append(self._test_y)
-        return input_x, input_labels, input_test_x, input_test_labels
+        return [input_x, input_labels, input_test_x, input_test_labels]
+
+    @staticmethod
+    def _reinitialize_model(model, initializer = tf.keras.initializers.random_uniform()):
+        for layer in model.layers:
+            layer.set_weights([initializer(shape=w.shape) for w in layer.get_weights()])

@@ -1,5 +1,5 @@
-from ASC_ML import model_generation as model_gen
-from ASC_ML.search_space_gen_v1 import Search_Space_Gen_1 as search
+from ASC_ML.networkbuilding import model_generation as model_gen
+from ASC_ML.networkbuilding.search_space_gen_v1 import Search_Space_Gen_1 as search
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 import tensorflow as tf
