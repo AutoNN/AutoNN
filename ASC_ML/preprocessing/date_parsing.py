@@ -3,14 +3,15 @@ import re
 
 class DateTime_Parsing:
 
-    def __init__(self) -> None:
+    def __init__(self, dataset) -> None:
         self.__rows_to_parse = dict()
+        self.__dset_container = dataset
 
     def fit_transform(self, dataframe) -> dd:
         self.fit(dataframe)
         return self.transform(dataframe)
 
-    def fit(self, dataframe):
+    def fit(self, dataframe) -> None:
         cols = dataframe.columns
         for col in cols:
             if bool(re.search("\\bdt_(.*)", col)):
@@ -23,3 +24,10 @@ class DateTime_Parsing:
         for col in self.__rows_to_parse.keys():
             dataframe[self.__rows_to_parse[col]] = dd.to_datetime(dataframe.pop(col))
         return dataframe
+
+    def parse_dates(self) -> None:
+        self.fit(self.__dset_container.get()[0])
+        types = ['train', 'validation', 'test']
+        for type in types:
+            if self.__dset_container.get([type])[0] is not None:
+                self.__dset_container.set(self.transform(self.__dset_container.get([type])[0]), type)

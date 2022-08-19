@@ -1,11 +1,14 @@
 from dask import dataframe as dd
 from preprocessing import dataset_container as dc
+from preprocessing import date_parsing as dp
 from preprocessing import column_info as ci
 
 class DataCleaning:
 
     def __init__(self, label: list(), train_dataframe: dd, validation_dataframe = None, test_dataframe = None, override = False, threshold = 20) -> None:
         self.__dataset = dc.DatasetContainer(label, train_dataframe, validation_dataframe, test_dataframe, override)
+        date_parse = dp.DateTime_Parsing(self.__dataset)
+        date_parse.parse_dates()
         colinf = ci.ColumnInfo(self.__dataset)
         colinf.generate_info()
         self.__col_info = colinf.column_info
