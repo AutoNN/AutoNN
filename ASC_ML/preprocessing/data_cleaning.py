@@ -23,8 +23,10 @@ class DataCleaning:
     def get_label(self):
         return self.__dataset.get_label()
 
-    def get_dataset(self):
+    @property
+    def dataset(self):
         return self.__dataset
 
-    def get_column_info(self):
+    @property
+    def col_info(self):
         return self.__col_info

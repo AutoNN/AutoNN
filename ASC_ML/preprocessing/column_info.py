@@ -13,11 +13,17 @@ class ColumnInfo:
         return self.__dataset.get(['train'])[0][col_name].isnull().mean().compute()
 
     
+    def __datatype(self, col_name):
+        return self.__dataset.get(['train'])[0][col_name].dtype
+
+    
     def generate_info(self):
         for col in self.__columns:
+            self.__column_info[col]['dtype'] = self.__datatype(col)
             self.__column_info[col]['is_label'] = col in self.__dataset.get_label()
             self.__column_info[col]['missing'] = self.__percentage_missing(col)
             self.__column_info[col]['cardinality'] = self.__cardinality(col)
-
-    def get_info(self) -> dict:
+    
+    @property
+    def column_info(self) -> dict:
         return self.__column_info
