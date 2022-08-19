@@ -1,7 +1,7 @@
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler
-from tensorflow.keras.activations import tanh, relu
+from tensorflow.keras.activations import tanh, relu, selu
 from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal
 from numpy.random import seed
 # tensorflow.random.set_seed
@@ -30,8 +30,11 @@ class Hyperparameter_Optimization:
         self._current_activation = self._model.layers[-2].get_config()["activation"]
         return self._current_activation
     
-    def _set_activation(self, activation):
-        # activation = activation function not string
+    def _set_activation(self, activation_str):
+        # activation = activation string
+        if activation_str == "relu" : activation = relu
+        elif activation_str == "tanh" : activation = tanh
+        elif activation_str == "selu" : activation = selu
         for layer in self._model.layers:
             layer.activation = activation
     
@@ -51,7 +54,7 @@ class Hyperparameter_Optimization:
     
     def get_best_lr(self, batch_size):
         # Get Range of Learning Rate vs loss funtion
-        self._reinitialize_model()
+        # self._reinitialize_model()
         epoch = 50
         optimizer = Adam(lr = 1e-3)
         self._model.compile(loss = self._loss_fn, optimizer = optimizer)
@@ -90,8 +93,10 @@ class Hyperparameter_Optimization:
         best_activation = None
         best_batch_size = None
         best_initializer = None
-        activation_list = [relu,tanh]
-        intializer_list = [["GlorotUniform","GlorotNormal"],["HeUniform","HeNormal"]]
+        # activation_list = ["relu","tanh","selu"]
+        activation_list = ["relu","selu"]
+        # intializer_list = [["GlorotUniform","GlorotNormal"],["HeUniform","HeNormal"],["GlorotUniform","GlorotNormal"]]
+        intializer_list = [["GlorotUniform","GlorotNormal"],["GlorotUniform","GlorotNormal"]]
         i = 0
         if self._activation_opt == True:
             for activation in activation_list:
@@ -119,7 +124,7 @@ class Hyperparameter_Optimization:
         
         print("----------------------------------------------------------------------------------------------------------------")
         print(f"BEST HYPERPARAMETERS : BEST_LOSS : {best_loss}, BEST_ACTIVATION : {best_activation}, BEST_INITIALIZER : {best_initializer}, BEST_LEARINING_RATE : {best_lr}, BEST_BATCHSIZE : {best_batch_size}")
-        return best_lr, best_batch_size, best_loss
+        return best_lr, best_batch_size, best_activation, best_initializer
         
     def lr_batch_optimization(self):
         if self._lr_opt == True and self._batch_opt == False:

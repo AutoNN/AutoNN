@@ -1,8 +1,13 @@
 from ASC_ML.networkbuilding import model_generation as model_gen
 from ASC_ML.networkbuilding import search_space_gen_v1 as search
 from ASC_ML.networkbuilding import hyperparameter_optimization as hyp_opt
+from tensorflow.keras.activations import tanh, relu, selu
+from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.models import load_model
+from tensorflow.keras.losses import MeanSquaredError
+
 from tensorflow.keras.callbacks import LearningRateScheduler
 import tensorflow as tf
 import numpy as np
@@ -54,45 +59,65 @@ class Multiple_Model_Gen_V3:
     def get_loss_function(self):
         # Logic to get loss funtion
         # return "mean_absolute_percentage_error"
-        return self.root_mean_squared_error
+        # return self.root_mean_squared_error
+        return "mean_squared_error"
 
-    def get_best_models(self):
+    def get_best_models(self, save = False):
         loss_fn = self.get_loss_function()
         parallel_model_generator = self._parallel_model_generator()
 
         # 1st Loop, Get best model architectures
-        for parallelModel,n in parallel_model_generator:
+        for parallelModel, n, model_conf_batch_list in parallel_model_generator:
             input_data = self._get_train_lists(n)
             Pmodel, metrics_names, scores, scores_test = self.train_model(input_data = input_data, Pmodel = parallelModel, 
-                                                                            epochs = 10, n_model = n, loss_fn = loss_fn)
-            self._evaluate_save_model(input_data = input_data, parallelModel = Pmodel, metrics_names=metrics_names, scores=scores, n=n)
+                                                                            epochs = 30, n_model = n, loss_fn = loss_fn)
+            self._evaluate_save_model(input_data = input_data, parallelModel = Pmodel, metrics_names=metrics_names, scores=scores_test, n=n, model_conf_batch_list = model_conf_batch_list)
         
         # 2nd Loop, Tune best model architectures
-        for dict in self._evaluate_dict_list:
-            model = dict["model"]
-            Pmodel, metrics_names, scores, scores_test = self.train_model(input_data = input_data, Pmodel = parallelModel,
-                                                                            epochs = 100, n_model = n, loss_fn = loss_fn,
-                                                                            lrschedule=True)
-            # print(dict["model"].summary())
+        print("\n-------------------------------------------------------------------------------")
+        print(self._evaluate_dict_list)
+        if save:
+            self.save_weights()
+        print("\n-------------------------------------------------------------------------------")
+        tf.keras.backend.clear_session()
 
-    def train_model(self, input_data, Pmodel, n_model, epochs, loss_fn, lrschedule = False, random = False):
+    def get_best_models_2(self):
+        loss_fn = self.get_loss_function()
+        candidate_model_generator = self._candidate_model_generator()
+        for model in candidate_model_generator:
+            print(model.summary())
+            h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], model, loss_fn)
+            best_lr, best_batch_size, best_activation, best_initializer = h.get_best_hyperparameters()
+            _,_,_,_ = self.train_model(input_data = [self._train_x, self._train_y, self._test_x, self._test_y], Pmodel=model, n_model=1,
+                                epochs=80,loss_fn=loss_fn, lr=best_lr, batch_size=best_batch_size)
+
+    def _candidate_model_generator(self):
+        for model_dict in self._evaluate_dict_list:
+            model_conf = model_dict["model_conf"]
+            # conf = ['', self._input_shape, i, "relu", layer_conf, [self._output_shape, self._output_activation]]
+            # (self, model_name = "model_1", input_shape = 8, init_no_layers = 1, init_activation_fn = "relu", init_layer_conf = {"layer1":8}, output_layer_conf = [1,None])
+            input_layer_list, output_layer_list = self._get_input_output_layer_list([model_conf])
+            model = Model(inputs = input_layer_list, outputs = output_layer_list)
+            yield model
+        
+
+    # def _optimize_hyperparameters(self, model, loss_fn):
+        # h = hyp_opt.Hyperparameter_Optimization(self._train_x, self._train_y, model, loss_fn)
+        # best_lr, best_batch_size, best_activation, best_initializer = h.get_best_hyperparameters()
+        # return best_lr, best_batch_size, best_activation, best_initializer
+        # self._reinitialize_model(model)
+
+    def train_model(self, input_data, Pmodel, n_model, epochs, loss_fn, lr = 1e-3, batch_size = 64, activation = None, initializer = None):
+
+        # if activation != None:
+        #     Pmodel = self._set_activation(Pmodel, activation)
+        # if initializer != None:    
+        #     Pmodel = self._reinitialize_model(Pmodel, initializer)
 
         input_x, input_labels, input_test_x, input_test_labels = input_data
-        lr = 1e-3
-        epochs = self._epochs
-
-        # if lrschedule == True: lr with batch_size optimization
-        #     Pmodel,lr = self.get_best_lr(input_x, input_labels, Pmodel, loss_fn)
-        # if random == True: reinitialize model weights and optimize random seed
-        if lrschedule == True:
-            h = hyp_opt.Hyperparameter_Optimization(input_x, input_labels, Pmodel, loss_fn)
-            lr, self._batch_size, best_loss = h.get_best_hyperparameters()
-            epochs = 5
-            self._reinitialize_model(Pmodel)
-
         optimizer = Adam(lr = lr)
         Pmodel.compile(loss = loss_fn, optimizer = optimizer)
-        history = Pmodel.fit(input_x, input_labels, epochs = epochs, batch_size = self._batch_size, verbose = 0)
+        history = Pmodel.fit(input_x, input_labels, epochs = epochs, batch_size = batch_size, verbose = 0)
 
         metrics_names, scores, scores_test = self.print_scores(Pmodel, input_data)
         
@@ -120,7 +145,7 @@ class Multiple_Model_Gen_V3:
     def root_mean_squared_error(y_true, y_pred):
         return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
-    def _evaluate_save_model(self, input_data, parallelModel, metrics_names, scores, n):
+    def _evaluate_save_model(self, input_data, parallelModel, metrics_names, scores, n, model_conf_batch_list):
         # n : Number of models in the parallelModel
         # List of dictionaries {"model_name":"densexyz", "score":0.000, "path_weights":"/home/something/dense"}
         input_x, input_labels, _, _ = input_data
@@ -132,10 +157,10 @@ class Multiple_Model_Gen_V3:
         model_scores = scores[1:1+n]
         entry_flag = False
 
-        for metric_name, model_score, model in zip(metrics_names,model_scores,sep_model_list):
+        for metric_name, model_score, model, model_conf in zip(metrics_names,model_scores,sep_model_list,model_conf_batch_list):
             model_name = metric_name.removeprefix("output_layer_")
             model_name = model_name.removesuffix("_loss")
-            curr_model_dict = {"model_name":model_name, "score":model_score, "path_weights":self._save_dir + model_name, "model":model}
+            curr_model_dict = {"model_name":model_name, "score":model_score, "path_weights":self._save_dir + model_name, "model_conf":model_conf, "model":model}
 
             if len(self._evaluate_dict_list) == 0:
                 self._evaluate_dict_list.append(curr_model_dict)
@@ -162,7 +187,7 @@ class Multiple_Model_Gen_V3:
             input_layer_list, output_layer_list = self._get_input_output_layer_list(batch)
             n = len(input_layer_list)
             parallelModel = Model(inputs = input_layer_list, outputs = output_layer_list)
-            yield parallelModel, n
+            yield parallelModel, n, batch
 
     def get_all_models(self):
         parallel_model_generator = self._parallel_model_generator()
@@ -171,7 +196,8 @@ class Multiple_Model_Gen_V3:
 
     def get_model_confs(self):
         model_confs = []
-        s = search.Search_Space_Gen_1(node_options = [16,32,64,128,196,256], min_no_layers = 2, max_no_layers = self._max_no_layers, input_shape = self._input_shape)
+        # [32,64,128,256,512,1024]
+        s = search.Search_Space_Gen_1(node_options = [32,64,128], min_no_layers = 2, max_no_layers = self._max_no_layers, input_shape = self._input_shape)
         model_conf_batch = []
 
         # print(s.no_of_perm)
@@ -227,6 +253,25 @@ class Multiple_Model_Gen_V3:
         return [input_x, input_labels, input_test_x, input_test_labels]
 
     @staticmethod
-    def _reinitialize_model(model, initializer = tf.keras.initializers.random_uniform()):
+    def _reinitialize_model(model, initializer_str = "RandomUniform"):
+        if initializer_str == "RandomUniform":
+            initializer = RandomUniform(seed = 420)
+        elif initializer_str == "GlorotUniform":
+            initializer = GlorotUniform(seed = 420)
+        elif initializer_str == "HeUniform":
+            initializer = HeUniform(seed = 420)
+        elif initializer_str == "GlorotNormal":
+            initializer = GlorotNormal(seed = 420)
+        elif initializer_str == "HeNormal":
+            initializer = HeNormal(seed = 420)
         for layer in model.layers:
             layer.set_weights([initializer(shape=w.shape) for w in layer.get_weights()])
+
+    @staticmethod
+    def _set_activation(model, activation_str = "relu"):
+        # activation = activation string
+        if activation_str == "relu" : activation = relu
+        elif activation_str == "tanh" : activation = tanh
+        elif activation_str == "selu" : activation = selu
+        for layer in model.layers:
+            layer.activation = activation
