@@ -8,7 +8,7 @@ class DataCleaning:
         self.__dataset = dc.DatasetContainer(label, train_dataframe, validation_dataframe, test_dataframe, override)
         colinf = ci.ColumnInfo(self.__dataset)
         colinf.generate_info()
-        self.__col_info = colinf.get_info()
+        self.__col_info = colinf.column_info
         self.__pipeline = None
         self.__regression_threshold = threshold
 
