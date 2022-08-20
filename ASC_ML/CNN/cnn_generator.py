@@ -1,25 +1,10 @@
-from typing import List,Dict,Any,Optional
 import torch
-from torch.utils.data import DataLoader
-from torchvision.datasets import ImageFolder
-from torch import nn 
+import torchvision as tv
 from models.resnet import resnet
 from pytorchsummary import summary
 from torch.optim import Adam
 
-from torchvision import models
-
-
-# Typing alias
-Models = List[nn.Module]
-
-
-cnnmodel = resnet(18)
-cnnmodel.resnet = cnnmodel.resnet[:4]
-print(cnnmodel)
-
-
-def training(_model,LOSSfn,optimizer,trainloader:DataLoader):
+def training(_model,LOSSfn,optimizer,trainloader):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     loss_per_epoch=0
     for x,y in trainloader:
@@ -62,4 +47,17 @@ def fit(Epochs,trainloader,validloader,model,criterion,optimizer):
         validlosses.append(valloss)
         print(f'Epoch {e+1}/{Epochs} Training Loss:{trainloss} Validation Loss: {valloss} ')
     return trainlosses,validlosses 
-    
+
+def main(trainloader,validloader,criterion):
+    all_models = [tv.models.efficientnet_b0(True),resnet(),tv.models.inception_v3(True)]
+
+    all_val_loss=[]
+
+    for model in all_models:
+        optimizer = Adam(model.parameters(),lr=3e-4)
+        trainloss,vallos = fit(2,trainloader,validloader,model,criterion,optimizer)
+        all_val_loss.append(min(vallos))
+    a = torch.tensor(all_val_loss)
+
+    return all_models[torch.argmin(a,0)]
+
