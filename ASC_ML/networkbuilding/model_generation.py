@@ -41,6 +41,16 @@ class NN_ModelGeneration:
     def output_layer(self):
         # Return Input Layer
         return self._output_layer
+    
+    @property
+    def output_layer_conf(self):
+        # Return Input Layer
+        return self._output_layer_conf
+
+    @property
+    def layer_conf(self):
+        # Return Layer Conf
+        return self._layer_conf
 
     def generate_model(self):
         # Generate Initial Model from above given initial parameters
