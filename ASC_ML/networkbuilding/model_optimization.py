@@ -1,3 +1,4 @@
+from xml.sax.handler import property_dom_node
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model
@@ -32,6 +33,7 @@ class Model_Optimization:
         self._save_dir = save_dir
         self._saved_paths = []
         self._model_confs = []
+        self._best_hyp_permodel = []
 
     @property
     def saved_paths(self):
@@ -40,6 +42,10 @@ class Model_Optimization:
     @property
     def model_confs(self):
         return self._model_confs
+
+    @property
+    def best_hyp_permodel(self):
+        return self._best_hyp_permodel
 
     def get_loss_function(self):
         # Logic to get loss funtion
@@ -75,6 +81,7 @@ class Model_Optimization:
             best_lr, best_batch_size, best_activation, best_initializer = h.get_best_hyperparameters()
             self._reinitialize_model(model, best_initializer)
             self._set_activation(model, best_activation)
+            self._best_hyp_permodel.append([best_lr, best_batch_size, best_activation, best_initializer])
             model,_,_,_ = self.train_model(input_data = [self._train_x, self._train_y, self._test_x, self._test_y], Pmodel=model, n_model=1,
                                 epochs=200,loss_fn=loss_fn, lr=best_lr, batch_size=best_batch_size)
             if save==True:

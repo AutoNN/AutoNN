@@ -68,6 +68,14 @@ class Hyperparameter_Optimization:
         best_lr = round(lrs[losses.index(min(losses))],5)
 
         return best_lr, min_loss
+    
+    def _train_model(self, lr, batch_size):
+        optimizer = Adam(lr = lr)
+        self._model.compile(loss = self._loss_fn, optimizer = optimizer)
+        history = self._model.fit(self._train_X, self._train_Y, epochs = 100, batch_size = batch_size, verbose = 0)
+        score = self._model.evaluate(self._train_x, self._train_y, verbose = 0)
+        return score
+
 
     def get_best_batch_size_lr(self):
         batch_size_list = [16,32,64,128]
@@ -75,7 +83,8 @@ class Hyperparameter_Optimization:
         best_loss_list = []
         for batch_size in batch_size_list:
             # print(f"\nSETTING BATCH SIZE TO {batch_size}")
-            best_lr_batch, best_loss_batch = self.get_best_lr(batch_size)
+            best_lr_batch, _ = self.get_best_lr(batch_size)
+            best_loss_batch = self._train_model(best_lr_batch, batch_size)
             best_lr_list.append(best_lr_batch)
             best_loss_list.append(best_loss_batch)
 

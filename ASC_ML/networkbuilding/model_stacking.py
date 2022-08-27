@@ -1,17 +1,23 @@
+import os
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Dense, Input, Dropout
+from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal
+from tensorflow.keras.optimizers import Adam
 
 from ASC_ML.networkbuilding import model_generation as model_gen
 from ASC_ML.networkbuilding import hyperparameter_optimization as hyp_opt
+from ASC_ML.networkbuilding.dropout_optimization import Dropout_Optimization
 
 class Model_Stacking:
-    def __init__(self, train_x, train_y, test_x, test_y, model_path_list, model_conf_list):
+    def __init__(self, train_x, train_y, test_x, test_y, model_path_list, model_conf_list, save_dir = ""):
         self._model_path_list = model_path_list
         self._model_conf_list = model_conf_list
         self._train_x = train_x
         self._train_y = train_y
         self._test_x = test_x
         self._test_y = test_y
+        self._save_dir = save_dir
+        self._stacked_model_paths = []
     
     def get_loss_function(self):
         # Logic to get loss funtion
@@ -44,9 +50,50 @@ class Model_Stacking:
         loss_fn = self.get_loss_function()
         stacked_model_generator = self._stacked_model_generator()
         for model in stacked_model_generator:
-            # print(model.summary())
             print(model.name)
-            h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], model, loss_fn, activation_opt = False, initializer_opt = False)
-            best_lr, best_batch_size, _, _ = h.get_best_hyperparameters()
-            print(f"BEST LR STACKED {best_lr}, BEST BATCH SIZE {best_batch_size}")
+            print(model.summary())
+            h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], model, loss_fn, activation_opt = True, initializer_opt = True)
+            best_lr, best_batch_size, _, best_initializer = h.get_best_hyperparameters()
+            print(best_initializer)
+            self._reinitialize_model(model, best_initializer)
+            
+            dr = Dropout_Optimization(self._train_x, self._train_y, self._test_x, self._test_y, epochs = 100, model = model)
+            best_dropout_rates = dr.dropout_optimization(lr = best_lr, batch_size = best_batch_size, epoch = 100)
+            
+            model = self._train_models(model = model, lr = best_lr, batch_size = best_batch_size)
+            self._save_model(model)
+            
+#             print(f"BEST LR STACKED {best_lr}, BEST BATCH SIZE {best_batch_size}")
+#             dr = Dropout_Optimization(self._train_x, self._train_y, self._test_x, self._test_y, epochs = 100, model = model)
+#             dr.dropout_optimization(lr = best_lr, batch_size = best_batch_size, epoch = 100)
+    
+    def _train_models(self, model, lr, batch_size):
+        loss_fn = self.get_loss_function()
+        optimizer = Adam(lr = lr)
+        model.compile(loss = loss_fn, optimizer = optimizer)
+        history = model.fit(self._train_x, self._train_y, epochs = 100, batch_size = batch_size, verbose = 0)
 
+        scores = model.evaluate(self._train_x, self._train_y, verbose = 0)
+        scores_test = model.evaluate(self._test_x, self._test_y, verbose = 0)
+        print(f"TRAIN_LOSS = {scores}, TEST_LOSS = {scores_test}")
+        return model
+        
+    @staticmethod
+    def _reinitialize_model(model, initializer_str = "RandomUniform"):
+        if initializer_str == "RandomUniform":
+            initializer = RandomUniform(seed = 420)
+        elif initializer_str == "GlorotUniform":
+            initializer = GlorotUniform(seed = 420)
+        elif initializer_str == "HeUniform":
+            initializer = HeUniform(seed = 420)
+        elif initializer_str == "GlorotNormal":
+            initializer = GlorotNormal(seed = 420)
+        elif initializer_str == "HeNormal":
+            initializer = HeNormal(seed = 420)
+        for layer in model.layers:
+            layer.set_weights([initializer(shape=w.shape) for w in layer.get_weights()])
+            
+    def _save_model(self, model):
+        path = os.path.join(self._save_dir,model.name)
+        model.save(path)
+        self._stacked_model_paths.append(path)
