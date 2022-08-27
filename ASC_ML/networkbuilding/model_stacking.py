@@ -59,6 +59,7 @@ class Model_Stacking:
             
             dr = Dropout_Optimization(self._train_x, self._train_y, self._test_x, self._test_y, epochs = 100, model = model)
             best_dropout_rates = dr.dropout_optimization(lr = best_lr, batch_size = best_batch_size, epoch = 100)
+            print(f"DROPOUT RATES : {best_dropout_rates}")
             
             model = self._train_models(model = model, lr = best_lr, batch_size = best_batch_size)
             self._save_model(model)

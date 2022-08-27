@@ -73,18 +73,22 @@ class Hyperparameter_Optimization:
         optimizer = Adam(lr = lr)
         self._model.compile(loss = self._loss_fn, optimizer = optimizer)
         history = self._model.fit(self._train_X, self._train_Y, epochs = 100, batch_size = batch_size, verbose = 0)
-        score = self._model.evaluate(self._train_x, self._train_y, verbose = 0)
+        score = self._model.evaluate(self._train_X, self._train_Y, verbose = 0)
         return score
 
 
-    def get_best_batch_size_lr(self):
+    def get_best_batch_size_lr(self, initializer_str):
         batch_size_list = [16,32,64,128]
         best_lr_list = []
         best_loss_list = []
         for batch_size in batch_size_list:
             # print(f"\nSETTING BATCH SIZE TO {batch_size}")
+            self._reinitialize_model(initializer_str=initializer_str)
             best_lr_batch, _ = self.get_best_lr(batch_size)
+
+            self._reinitialize_model(initializer_str=initializer_str)
             best_loss_batch = self._train_model(best_lr_batch, batch_size)
+            
             best_lr_list.append(best_lr_batch)
             best_loss_list.append(best_loss_batch)
 
@@ -113,7 +117,7 @@ class Hyperparameter_Optimization:
                 if self._initializer_opt == True:
                     for initializer in intializer_list[i]:
                         self._reinitialize_model(initializer_str=initializer)
-                        lr, batch_size, loss = self.lr_batch_optimization()
+                        lr, batch_size, loss = self.lr_batch_optimization(initializer_str=initializer)
                         if(best_loss == 0 or loss<best_loss):
                             best_loss = loss
                             best_lr = lr
@@ -135,11 +139,11 @@ class Hyperparameter_Optimization:
         print(f"BEST HYPERPARAMETERS : BEST_LOSS : {best_loss}, BEST_ACTIVATION : {best_activation}, BEST_INITIALIZER : {best_initializer}, BEST_LEARINING_RATE : {best_lr}, BEST_BATCHSIZE : {best_batch_size}")
         return best_lr, best_batch_size, best_activation, best_initializer
         
-    def lr_batch_optimization(self):
+    def lr_batch_optimization(self, initializer_str = "RandomUniform"):
         if self._lr_opt == True and self._batch_opt == False:
             best_lr,best_loss = self.get_best_lr(batch_size=32)
             best_batch_size = 32
         elif self._batch_opt == True and self._lr_opt == True:
-            best_lr, best_batch_size, best_loss = self.get_best_batch_size_lr()
+            best_lr, best_batch_size, best_loss = self.get_best_batch_size_lr(initializer_str = initializer_str)
 
         return best_lr, best_batch_size, best_loss

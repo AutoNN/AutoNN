@@ -1,4 +1,3 @@
-from xml.sax.handler import property_dom_node
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model
