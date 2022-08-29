@@ -1,8 +1,11 @@
-from turtle import forward
 from torch import nn
 
+
+
 class Pooling(nn.Module):
-    def __init__(self,pool_type='maxpool') :
+    def __init__(self,pool_type='maxpool'):
+        super(Pooling,self).__init__()
+
         """
         Args:
             pool_type: 'maxpool' | nn.MaxPool2d
@@ -16,8 +19,12 @@ class Pooling(nn.Module):
     
     def forward(self,x):
         return self.pool(x)
-        
 
+class inceptionLayer(nn.Module):
+    pass 
+
+
+        
 class SkipLayer(nn.Module):
     def __init__(self,in_channels,featureMaps1,featureMaps2,kernel=(3,3),stride=(1,1),padding=1):
         super(SkipLayer,self).__init__()
@@ -28,10 +35,9 @@ class SkipLayer(nn.Module):
             nn.ReLU(),
 
             nn.Conv2d(featureMaps1,featureMaps2,kernel,stride,padding=padding),
-            nn.BatchNorm2d(featureMaps2),
-            nn.ReLU(),
+            nn.BatchNorm2d(featureMaps2)
             )
-        
+        self.relu=nn.ReLU()
         self.skip_connection = nn.Conv2d(in_channels,featureMaps2,kernel_size=(1,1),
                                         stride=stride)
 
@@ -40,4 +46,11 @@ class SkipLayer(nn.Module):
         x = self.skiplayers(x)
         x0 = self.skip_connection(x0)
         x+=x0
-        return nn.ReLU(x)
+        return self.relu(x)
+
+'''
+T individuals are initialized with the same ways
+and briefly stored into p0
+
+'''
+

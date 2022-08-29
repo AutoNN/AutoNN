@@ -1,3 +1,5 @@
 mnist_png/
 exp-notebook/
 dataset/
+*.ipynb
+*.txt
