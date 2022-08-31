@@ -1,4 +1,5 @@
 from tensorflow.keras.optimizers import Adam
+from ASC_ML.networkbuilding.utilities import get_loss_function
 
 class Dropout_Optimization():
     def __init__(self, train_x, train_y, test_x, test_y, epochs, model):
@@ -17,7 +18,8 @@ class Dropout_Optimization():
         return "mean_absolute_error"
 
     def dropout_optimization(self, lr = 1e-3, batch_size = 64, epoch = 100):
-        loss_fn = self.get_loss_function()
+        # loss_fn = self.get_loss_function()
+        loss_fn = get_loss_function()
         dropout_indices = self._get_dropout_index()
         dropout_list = [0,0.2,0.5]
         dropout_comb_list = []

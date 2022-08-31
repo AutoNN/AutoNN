@@ -1,6 +1,8 @@
 from ASC_ML.networkbuilding import model_generation as model_gen
 from ASC_ML.networkbuilding import search_space_gen_v1 as search
 from ASC_ML.networkbuilding import hyperparameter_optimization as hyp_opt
+from ASC_ML.networkbuilding.utilities import get_loss_function
+
 from tensorflow.keras.activations import tanh, relu, selu
 from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal
 from tensorflow.keras.models import Model
@@ -56,15 +58,16 @@ class Multiple_Model_Gen_V3:
         # Return Model Name
         return self._evaluate_dict_list
 
-    def get_loss_function(self):
-        # Logic to get loss funtion
-        # return "mean_absolute_percentage_error"
-        # return self.root_mean_squared_error
-        # return "mean_squared_error"
-        return "mean_absolute_error"
+    # def get_loss_function(self):
+    #     # Logic to get loss funtion
+    #     # return "mean_absolute_percentage_error"
+    #     # return self.root_mean_squared_error
+    #     # return "mean_squared_error"
+    #     return "mean_absolute_error"
 
     def get_best_models(self, save = False):
-        loss_fn = self.get_loss_function()
+        # loss_fn = self.get_loss_function()
+        loss_fn = get_loss_function()
         parallel_model_generator = self._parallel_model_generator()
 
         # 1st Loop, Get best model architectures
@@ -219,46 +222,3 @@ class Multiple_Model_Gen_V3:
             input_test_x.append(self._test_x)
             input_test_labels.append(self._test_y)
         return [input_x, input_labels, input_test_x, input_test_labels]
-
-    # @staticmethod
-    # def _reinitialize_model(model, initializer_str = "RandomUniform"):
-    #     if initializer_str == "RandomUniform":
-    #         initializer = RandomUniform(seed = 420)
-    #     elif initializer_str == "GlorotUniform":
-    #         initializer = GlorotUniform(seed = 420)
-    #     elif initializer_str == "HeUniform":
-    #         initializer = HeUniform(seed = 420)
-    #     elif initializer_str == "GlorotNormal":
-    #         initializer = GlorotNormal(seed = 420)
-    #     elif initializer_str == "HeNormal":
-    #         initializer = HeNormal(seed = 420)
-    #     for layer in model.layers:
-    #         layer.set_weights([initializer(shape=w.shape) for w in layer.get_weights()])
-
-    # @staticmethod
-    # def _set_activation(model, activation_str = "relu"):
-    #     # activation = activation string
-    #     if activation_str == "relu" : activation = relu
-    #     elif activation_str == "tanh" : activation = tanh
-    #     elif activation_str == "selu" : activation = selu
-    #     for layer in model.layers:
-    #         layer.activation = activation
-
-    # def get_best_models_2(self):
-    #     loss_fn = self.get_loss_function()
-    #     candidate_model_generator = self._candidate_model_generator()
-    #     for model in candidate_model_generator:
-    #         print(model.summary())
-    #         h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], model, loss_fn)
-    #         best_lr, best_batch_size, best_activation, best_initializer = h.get_best_hyperparameters()
-    #         _,_,_,_ = self.train_model(input_data = [self._train_x, self._train_y, self._test_x, self._test_y], Pmodel=model, n_model=1,
-    #                             epochs=80,loss_fn=loss_fn, lr=best_lr, batch_size=best_batch_size)
-
-    # def _candidate_model_generator(self):
-    #     for model_dict in self._evaluate_dict_list:
-    #         model_conf = model_dict["model_conf"]
-    #         # conf = ['', self._input_shape, i, "relu", layer_conf, [self._output_shape, self._output_activation]]
-    #         # (self, model_name = "model_1", input_shape = 8, init_no_layers = 1, init_activation_fn = "relu", init_layer_conf = {"layer1":8}, output_layer_conf = [1,None])
-    #         input_layer_list, output_layer_list = self._get_input_output_layer_list([model_conf])
-    #         model = Model(inputs = input_layer_list, outputs = output_layer_list)
-    #         yield model

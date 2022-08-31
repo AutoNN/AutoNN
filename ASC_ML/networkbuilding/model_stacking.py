@@ -7,6 +7,7 @@ from tensorflow.keras.optimizers import Adam
 from ASC_ML.networkbuilding import model_generation as model_gen
 from ASC_ML.networkbuilding import hyperparameter_optimization as hyp_opt
 from ASC_ML.networkbuilding.dropout_optimization import Dropout_Optimization
+from ASC_ML.networkbuilding.utilities import get_loss_function
 
 class Model_Stacking:
     def __init__(self, train_x, train_y, test_x, test_y, model_path_list, model_conf_list, save_dir = ""):
@@ -47,7 +48,8 @@ class Model_Stacking:
                 yield stacked_model
 
     def optimize_stacked_models(self):
-        loss_fn = self.get_loss_function()
+        # loss_fn = self.get_loss_function()
+        loss_fn = get_loss_function()
         stacked_model_generator = self._stacked_model_generator()
         for model in stacked_model_generator:
             print(model.name)
@@ -69,7 +71,8 @@ class Model_Stacking:
 #             dr.dropout_optimization(lr = best_lr, batch_size = best_batch_size, epoch = 100)
     
     def _train_models(self, model, lr, batch_size):
-        loss_fn = self.get_loss_function()
+        # loss_fn = self.get_loss_function()
+        loss_fn = get_loss_function()
         optimizer = Adam(lr = lr)
         model.compile(loss = loss_fn, optimizer = optimizer)
         history = model.fit(self._train_x, self._train_y, epochs = 100, batch_size = batch_size, verbose = 0)

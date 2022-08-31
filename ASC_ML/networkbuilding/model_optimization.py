@@ -5,6 +5,8 @@ from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNo
 from tensorflow.keras.activations import tanh, relu, selu
 from ASC_ML.networkbuilding import hyperparameter_optimization as hyp_opt
 from ASC_ML.networkbuilding import model_generation as model_gen
+from ASC_ML.networkbuilding.utilities import get_loss_function
+
 import os
 
 class Model_Optimization:
@@ -70,7 +72,8 @@ class Model_Optimization:
             yield model
     
     def optimize_models(self, save):
-        loss_fn = self.get_loss_function()
+        # loss_fn = self.get_loss_function()
+        loss_fn = get_loss_function()
         candidate_model_generator = self._candidate_model_generator()
         for model in candidate_model_generator:
             # print(model.summary())
