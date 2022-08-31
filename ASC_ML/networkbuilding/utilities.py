@@ -1,5 +1,5 @@
 
-def get_loss_function(self):
+def get_loss_function():
         # Logic to get loss funtion
         # return "mean_absolute_percentage_error"
         # return self.root_mean_squared_error

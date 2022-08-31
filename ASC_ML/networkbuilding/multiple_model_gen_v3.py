@@ -168,7 +168,7 @@ class Multiple_Model_Gen_V3:
     def get_model_confs(self):
         model_confs = []
         # [32,64,128,256,512,1024]
-        s = search.Search_Space_Gen_1(node_options = [32,64,128], min_no_layers = 2, max_no_layers = self._max_no_layers, input_shape = self._input_shape)
+        s = search.Search_Space_Gen_1(node_options = [32,64,128,256,512,1024], min_no_layers = 2, max_no_layers = self._max_no_layers, input_shape = self._input_shape)
         model_conf_batch = []
 
         # print(s.no_of_perm)

@@ -2,7 +2,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.activations import tanh, relu, selu
-from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal
+from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal, LecunNormal, LecunUniform
 from numpy.random import seed
 # tensorflow.random.set_seed
 import tensorflow as tf
@@ -49,6 +49,10 @@ class Hyperparameter_Optimization:
             initializer = GlorotNormal(seed = 420)
         elif initializer_str == "HeNormal":
             initializer = HeNormal(seed = 420)
+        elif initializer_str == "LecunNormal":
+            initializer = LecunNormal(seed = 420)
+        elif initializer_str == "LecunUniform":
+            initializer = LecunUniform(seed = 420)
         for layer in self._model.layers:
             layer.set_weights([initializer(shape=w.shape) for w in layer.get_weights()])
     
@@ -109,7 +113,7 @@ class Hyperparameter_Optimization:
         # activation_list = ["relu","tanh","selu"]
         activation_list = ["relu","selu"]
         # intializer_list = [["GlorotUniform","GlorotNormal"],["HeUniform","HeNormal"],["GlorotUniform","GlorotNormal"]]
-        intializer_list = [["GlorotUniform","GlorotNormal"],["GlorotUniform","GlorotNormal"]]
+        intializer_list = [["GlorotUniform","GlorotNormal"],["LecunUniform","LecunNormal"]]
         i = 0
         if self._activation_opt == True:
             for activation in activation_list:
@@ -135,7 +139,6 @@ class Hyperparameter_Optimization:
         else:
             best_lr, best_batch_size, best_loss = self.lr_batch_optimization()
         
-        print("----------------------------------------------------------------------------------------------------------------")
         print(f"BEST HYPERPARAMETERS : BEST_LOSS : {best_loss}, BEST_ACTIVATION : {best_activation}, BEST_INITIALIZER : {best_initializer}, BEST_LEARINING_RATE : {best_lr}, BEST_BATCHSIZE : {best_batch_size}")
         return best_lr, best_batch_size, best_activation, best_initializer
         

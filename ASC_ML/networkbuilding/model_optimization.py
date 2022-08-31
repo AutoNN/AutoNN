@@ -1,7 +1,7 @@
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model
-from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal
+from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal, LecunUniform, LecunNormal
 from tensorflow.keras.activations import tanh, relu, selu
 from ASC_ML.networkbuilding import hyperparameter_optimization as hyp_opt
 from ASC_ML.networkbuilding import model_generation as model_gen
@@ -151,6 +151,10 @@ class Model_Optimization:
             initializer = GlorotNormal(seed = 420)
         elif initializer_str == "HeNormal":
             initializer = HeNormal(seed = 420)
+        elif initializer_str == "LecunNormal":
+            initializer = LecunNormal(seed = 420)
+        elif initializer_str == "LecunUniform":
+            initializer = LecunUniform(seed = 420)
         for layer in model.layers:
             layer.set_weights([initializer(shape=w.shape) for w in layer.get_weights()])
 

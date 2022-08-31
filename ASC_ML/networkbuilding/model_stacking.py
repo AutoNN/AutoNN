@@ -1,7 +1,7 @@
 import os
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Dense, Input, Dropout
-from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal
+from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal, LecunNormal, LecunUniform
 from tensorflow.keras.optimizers import Adam
 
 from ASC_ML.networkbuilding import model_generation as model_gen
@@ -52,6 +52,7 @@ class Model_Stacking:
         loss_fn = get_loss_function()
         stacked_model_generator = self._stacked_model_generator()
         for model in stacked_model_generator:
+            print("-------------------------------------------------------------------------------------------------------------------")
             print(model.name)
             print(model.summary())
             h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], model, loss_fn, activation_opt = True, initializer_opt = True)
@@ -94,6 +95,10 @@ class Model_Stacking:
             initializer = GlorotNormal(seed = 420)
         elif initializer_str == "HeNormal":
             initializer = HeNormal(seed = 420)
+        elif initializer_str == "LecunNormal":
+            initializer = LecunNormal(seed = 420)
+        elif initializer_str == "LecunUniform":
+            initializer = LecunUniform(seed = 420)
         for layer in model.layers:
             layer.set_weights([initializer(shape=w.shape) for w in layer.get_weights()])
             
