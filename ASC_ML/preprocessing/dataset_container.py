@@ -1,27 +1,40 @@
 from dask import dataframe as dd
 from sklearn.model_selection import train_test_split
-from column_info import ColumnInfo
 
 class DatasetContainer:
-    def __init__(self, label: str, train_dataframe: dd,validation_dataframe = None, test_dataframe = None, override = False) -> None:
-        self.__dataset = dict()
-        self.__dataset['train'] = train_dataframe
-        self.__dataset['validation'] = validation_dataframe
-        self.__dataset['test'] = test_dataframe
+    def __init__(self, label: list(), train_dataframe: dd,validation_dataframe = None, test_dataframe = None, override = False) -> None:
+        self.__dataset = dict([('train', train_dataframe),('validation', validation_dataframe),('test', test_dataframe)])
         self.__label = label
         self.__override = override
+        self.__basic_cleaning()
+
+
+    def __basic_cleaning(self) -> None:
+        types = ['train', 'validation', 'test']
+        for type in types:
+            try:
+                holder = self.__dataset.get([type])[0].dropna(axis = 0, subset = self.get_label())
+                holder.reset_index(drop = True, inplace = True)
+                self.__dataset.set(type, holder)
+            except:
+                continue
+
 
     def __is_override(self) -> bool:
         return self.__override
 
+
     def get_columns(self) -> list:
         return list(self.__dataset['train'].columns)
 
-    def get_label(self) -> str:
+
+    def get_label(self) -> list:
         return self.__label
+
 
     def set(self, dataset: dd, type = 'train'):
         self.__dataset[type] = dataset
+
 
     def get(self, types = ['train']) -> dd:
         dataset = list()

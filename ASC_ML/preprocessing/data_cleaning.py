@@ -1,13 +1,17 @@
 from dask import dataframe as dd
-from sklearn import pipeline
-from dataset_container import DatasetContainer
-from column_info import ColumnInfo
+from preprocessing import dataset_container as dc
+from preprocessing import date_parsing as dp
+from preprocessing import column_info as ci
 
 class DataCleaning:
 
-    def __init__(self, label: str, train_dataframe: dd, validation_dataframe = None, test_dataframe = None, override = False, threshold = 20) -> None:
-        self.__dataset = DatasetContainer(label, train_dataframe, validation_dataframe, test_dataframe, override)
-        self.__col_info = ColumnInfo(self.__dataset)
+    def __init__(self, label: list(), train_dataframe: dd, validation_dataframe = None, test_dataframe = None, override = False, threshold = 20) -> None:
+        self.__dataset = dc.DatasetContainer(label, train_dataframe, validation_dataframe, test_dataframe, override)
+        date_parse = dp.DateTime_Parsing(self.__dataset)
+        date_parse.parse_dates()
+        colinf = ci.ColumnInfo(self.__dataset)
+        colinf.generate_info()
+        self.__col_info = colinf.column_info
         self.__pipeline = None
         self.__regression_threshold = threshold
 
@@ -18,3 +22,14 @@ class DataCleaning:
             return [1, -1]
         else:
             return [0, cardinal]
+
+    def get_label(self):
+        return self.__dataset.get_label()
+
+    @property
+    def dataset(self):
+        return self.__dataset
+
+    @property
+    def col_info(self):
+        return self.__col_info
