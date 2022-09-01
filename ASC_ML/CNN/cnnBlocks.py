@@ -37,9 +37,9 @@ class SkipLayer(nn.Module):
             nn.Conv2d(featureMaps1,featureMaps2,kernel,stride,padding=padding),
             nn.BatchNorm2d(featureMaps2)
             )
-        self.relu=nn.ReLU()
         self.skip_connection = nn.Conv2d(in_channels,featureMaps2,kernel_size=(1,1),
                                         stride=stride)
+        self.relu=nn.ReLU()
 
     def forward(self,x):
         x0 = x.clone()

@@ -4,7 +4,7 @@ from ttkbootstrap import *
 import pandas as pd 
 
 class window:
-    def __init__(self,root,title='ASC-AutoML Desktop',resolution='640x480'):
+    def __init__(self,root,title='ASC-AutoML Desktop',resolution='1280x720'):
         self.root = root
         self.root.title(title)
         self.s = Style()
@@ -15,15 +15,18 @@ class window:
         self.algorithm = ['Random Forest','Decision Tree','Linear Regression',
                         'Logistic Regression','Support Vector Machine','KNN']
         self.combo1 = ttk.Combobox(self.root,values=self.algorithm)
-        self.combo1.pack()
+        self.combo1.grid(row=1,column=0)
         
-        self.openfile = ttk.Button(self.root,text='Browse Images or csv files',command=self._selectFile)
-        self.openfile.pack()
+        self.openfile = ttk.Button(self.root,text='Open Dataset',command=self._selectFile)
+        self.openfile.grid(row=1,column=2)
+
+        # self.openfile = ttk.Button(self.root,text='Start Training',command=pass)
+        # self.openfile.grid(row=1,column=3)
 
         # ------------------------TREE VIEW----------------------------
         
         self.tree = ttk.Treeview(self.root,height=23,selectmode='extended')
-        self.tree.pack()
+        self.tree.grid(row=2,columnspan=10)
 
     def _selectFile(self):
         # try:

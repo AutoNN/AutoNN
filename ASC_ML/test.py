@@ -1,14 +1,11 @@
-from CNN.cnn_generator import Population,create_config
+from CNN.cnn_generator import CreateCNN
 
-# from pytorchsummary import summary
-# l = random.randint(3,10)
-# model = CNN(3,create_config())
-# summary((3,32,32),model)
-# print(model)
-    
+# from torch.multiprocessing import freeze_support
 
-pop = Population(10,3,4)
-# pop.print_all_architecture()
+# if __name__ == '__main__':
+#     freeze_support()
+pop = CreateCNN(3,3,10)
+# pop.print_all_cnn_configs()
 best_acc,model = pop.get_bestCNN('dataset',split_required=True)
-print(model)
+print(model, best_acc)
     

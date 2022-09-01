@@ -1,5 +1,6 @@
 import random,torch
 from torch import nn 
+from numpy import argmax,array
 from .cnnBlocks import SkipLayer,Pooling
 from typing import List,Tuple
 from torchvision.datasets import ImageFolder
@@ -29,7 +30,7 @@ def create_config(min,max)-> List[Tuple]:
     '''
     L = random.randint(min,max)
     cfg = []
-    
+
     f1 = 2**random.randint(4,9)
     f2 = 2**random.randint(4,9)
     cfg.append(('conv',f1,f2))    
@@ -75,12 +76,15 @@ class CNN(nn.Module):
     def forward(self,x):
         x = self.network(x)
         x = self.avgpool(x)
-        x = torch.flatten(start_dim=1)
+        x = torch.flatten(x,start_dim=1)
         x = self.classifier(x)
         return x
 
+    def save_model(self):
+        pass
 
-class Population:
+
+class CreateCNN:
     def __init__(self,_size:int,input_channels:int,num_classes:int) -> None:
         '''
         Args: 
@@ -91,14 +95,20 @@ class Population:
         self.size=_size
         self.ipshape = input_channels
         self.classes = num_classes
-        self.popula  = [create_config(3,10) for _ in range(_size)]
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.__create_cnns()
-
-    def __create_cnns(self):
         self.cnns=[]
+        self.__create_Cnns()
+
+    def __create_Cnns(self):
+        self.popula  = [create_config(3,10) for _ in range(self.size)]
         for i in range(self.size):
             self.cnns.append(CNN(self.ipshape,self.classes,self.popula[i]))
+
+    def print_all_cnn_configs(self): 
+        for x,i in enumerate(self.popula): 
+            print(f'cnn{x} configuration:')
+            print(i)
+            print('_'*100)
 
     def print_all_architecture(self):
         for arch in self.cnns:
@@ -112,8 +122,8 @@ class Population:
                     split_required:bool=False,
                     batch_size:int=16,
                     lossFn:str='cross-entropy',
-                    Optimizer:str='adam',
-                    LR=3e-4
+                    LR=3e-4,
+                    EPOCHS=2
                     ):
         '''
         NOTE: make sure the path to your dataset is of 
@@ -163,44 +173,71 @@ class Population:
             testlen = len(trainSet) - trainlen # rest 30%
             validlen = int(testlen*0.5) #this is 50% of remaining 30%
             testlen -= validlen  #the rest 50%
-            
+            print('Classes: ',trainSet.classes)
             trainSet,validSet,testSet= random_split(trainSet,[trainlen,validlen,testlen])
 
-            trainloader = DataLoader(trainSet,batch_size,shuffle=True,num_workers=4)
-            valloader = DataLoader(validSet,batch_size,shuffle=True,num_workers=4)
-            testloader = DataLoader(testSet,batch_size,shuffle=False,num_workers=4)
+        print(f'Training set size: {len(trainSet)} | Validation Set size: {len(validSet)} | Test Set size: {len(testSet)}')
 
-            history={}
-            # test_LOSShistory =[]
-            test_ACChistory =[]
-            for i in range(self.size):
-                if Optimizer =='adam':
-                    optimizer= torch.optim.Adam(self.cnns[i].parameters(),lr=LR)
+        trainloader = DataLoader(trainSet,batch_size,shuffle=True)
+        valloader = DataLoader(validSet,batch_size,shuffle=True)
+        testloader = DataLoader(testSet,batch_size,shuffle=False)
+
+        history={}
+        # test_LOSShistory =[]
+        test_ACChistory =[]
+
+        # optimizers 
+        optims = []
+        for i in range(self.size):
+            optims.append(torch.optim.Adam(self.cnns[i].parameters(),lr=LR))
+
+        
+        for i in range(self.size):
+            print(f'Training CNN model cnn{i}')
+            try:
                 train_performance=self.__training(self.cnns[i],trainloader,valloader,self.device,
-                                        criterion,optimizer,epochs=10)
-    
+                                        criterion,optims[i],epochs=EPOCHS)
                 history[f'cnn{i}']=train_performance
-
+            except:
+                pass
+            
+            print(f'Calculating test accuracy CNN model cnn{i}')
+            try:
                 test_performance = self.__test(self.cnns[i],testloader,self.device,criterion)
                 # returns (loss,accuracy)
                 # test_LOSShistory.append(test_performance[0])
                 test_ACChistory.append(test_performance[1])
-            
-            best_accuracy,index = torch.max(torch.tensor(test_ACChistory))
-            return best_accuracy, self.cnns[index]
+            except:
+                pass
+            print('_'*150)
+        
+        if len(test_ACChistory)<1:
+            self.__create_Cnns()
+        # best_accuracy,index = torch.max(torch.tensor(test_ACChistory).unsqueeze(0))
+        
+        
+        return max(test_ACChistory), self.cnns[argmax(array(test_ACChistory))]
+        # print(test_ACChistory)
 
-    def __training(self,model,trainloader,validloader,device,LOSS,optimizer,epochs=10):
+    def __training(self,model,trainloader,validloader,device,LOSS,optimizer,epochs):
         performance={'trainloss':[],'trainacc':[],
                     'valloss':[],'valacc':[]}
 
         for _ in tqdm(range(epochs)):
             loss_per_epoch=0
             total=correct=0
-            for x,y in trainloader:
-                x,y = x.to(device),y.to(device)
+            model= model.to(device)
+            for x,y in tqdm(trainloader):
+                # print(x.dtype,y.dtype)
+                y = y.type(torch.LongTensor)   # casting to long
+
+                x,y = x.to(device).float(),y.to(device)
+                
                 optimizer.zero_grad()
                 yhat = model(x)
-                loss = LOSS(y,yhat)
+                # print(y.shape,yhat.shape)
+                
+                loss = LOSS(yhat,y)
                 loss.backward()
                 optimizer.step()
                 loss_per_epoch+=loss.item() 
@@ -214,32 +251,41 @@ class Population:
             # for validaiton
             loss_=0
             total_=correct_=0
+            model= model.to(device)
             with torch.no_grad():
-                for x,y in validloader:
-                    x,y = x.to(device),y.to(device)
+                for x,y in tqdm(validloader):
+                    y = y.type(torch.LongTensor)   # casting to long
+                    x,y = x.to(device).float(),y.to(device)
                     yhat=model(x)
-                    loss=LOSS(y,yhat)
+                    loss=LOSS(yhat,y)
                     loss_+=loss.item()
                     total_ +=y.size(0)
                     pred=torch.max(yhat,dim=1)[1]
                     correct_ += (pred==y).sum().item()
             performance['valloss'].append(loss_/len(validloader))
             performance['valacc'].append(100*correct_/total_)
-    
+
+            # print(f'Training Accuracy: {100* correct/total}\Training Loss: {}')
+            print(f'Training Accuracy: {performance["trainacc"][_]}\t Training Loss:{performance["trainloss"][_]}')
+            print(f'Validation Accuracy: {performance["valacc"][_]}\t Validation Loss:{performance["valloss"][_]}')
+            
         return performance
 
 
     def __test(self,model,loader,device,LOSS):
         loss_=0
         total_=correct_=0
+        model= model.to(device)
         with torch.no_grad():
             for x,y in loader:
+                y = y.type(torch.LongTensor)   # casting to long
                 x,y = x.to(device),y.to(device)
                 yhat=model(x)
-                loss=LOSS(y,yhat)
+                loss=LOSS(yhat,y)
                 loss_+=loss.item()
                 total_ +=y.size(0)
                 pred=torch.max(yhat,dim=1)[1]
                 correct_ += (pred==y).sum().item()
-        
+        print(f'Test ACCuracy: {100*correct_/total_}\t Test Loss: {loss_/len(loader)}')
+        print('-'*150)
         return (loss_/len(loader),100*correct_/total_)
