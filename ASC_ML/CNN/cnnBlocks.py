@@ -1,7 +1,5 @@
 from torch import nn
 
-
-
 class Pooling(nn.Module):
     def __init__(self,pool_type='maxpool'):
         super(Pooling,self).__init__()
@@ -20,11 +18,7 @@ class Pooling(nn.Module):
     def forward(self,x):
         return self.pool(x)
 
-class inceptionLayer(nn.Module):
-    pass 
 
-
-        
 class SkipLayer(nn.Module):
     def __init__(self,in_channels,featureMaps1,featureMaps2,kernel=(3,3),stride=(1,1),padding=1):
         super(SkipLayer,self).__init__()
@@ -48,9 +42,4 @@ class SkipLayer(nn.Module):
         x+=x0
         return self.relu(x)
 
-'''
-T individuals are initialized with the same ways
-and briefly stored into p0
-
-'''
 

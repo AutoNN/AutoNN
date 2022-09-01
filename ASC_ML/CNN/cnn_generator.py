@@ -1,13 +1,12 @@
-import random,torch
+import random,torch,os
 from torch import nn 
 from numpy import argmax,array
 from .cnnBlocks import SkipLayer,Pooling
-from typing import List,Tuple
+from typing import List,Tuple,Any
 from torchvision.datasets import ImageFolder
 from torchvision import transforms
+from pytorchsummary import summary as summ
 from torch.utils.data import DataLoader,random_split
-from tqdm import tqdm
-
 
 
 def create_config(min,max)-> List[Tuple]:
@@ -80,8 +79,25 @@ class CNN(nn.Module):
         x = self.classifier(x)
         return x
 
-    def save_model(self):
-        pass
+    def save(self,path='./best_models/',filename='Model.pth'):
+        if not os.path.exists(path):
+            os.makedirs(path)
+        filename = os.path.join(path,filename)
+        torch.save(self.state_dict(),filename)
+        print(f'Model saved in directory: {path}')
+    
+    def summary(self,input_shape:tuple,border:bool=True):
+        '''
+        Args:
+            input_shape = (num_channels,height,width)
+            border = if set to false then it won't print
+                lines between layers
+        
+        '''
+        print(summ(input_shape,self,border))
+
+
+        
 
 
 class CreateCNN:
@@ -90,6 +106,7 @@ class CreateCNN:
         Args: 
             _size= population size
             input_channels = number of input channels
+            num_classes = Number of classes for classification
 
         '''
         self.size=_size
@@ -111,6 +128,11 @@ class CreateCNN:
             print('_'*100)
 
     def print_all_architecture(self):
+        '''
+        This function will print all the 
+        CNN architectures in PyTorch Format
+        
+        '''
         for arch in self.cnns:
             print(arch)
             print('_'*150)
@@ -123,8 +145,8 @@ class CreateCNN:
                     batch_size:int=16,
                     lossFn:str='cross-entropy',
                     LR=3e-4,
-                    EPOCHS=2
-                    ):
+                    EPOCHS=10
+                    )->Tuple[float,Any,list,dict]:
         '''
         NOTE: make sure the path to your dataset is of 
             format 
@@ -144,6 +166,16 @@ class CreateCNN:
                 IF YOU ONLY HAVE TEH TRAINING DATA
                 AND NOT VALIDATION SET AND TEST SET
                 THEN set this to TRUE
+        
+        Returns:
+            Tuple containing the best model, it's accuracy and configuration
+            (model_accuracy, CNN_model, model_config history_of_all_models)
+
+
+        Example:
+        >>> pop = CreateCNN(3,3,10) # first create an instance of the CreateCNN class 
+            best_acc,model,model_config,_ = pop.get_bestCNN('dataset',split_required=True)
+
         '''
 
         if lossFn == 'cross-entropy':
@@ -204,8 +236,7 @@ class CreateCNN:
             print(f'Calculating test accuracy CNN model cnn{i}')
             try:
                 test_performance = self.__test(self.cnns[i],testloader,self.device,criterion)
-                # returns (loss,accuracy)
-                # test_LOSShistory.append(test_performance[0])
+      
                 test_ACChistory.append(test_performance[1])
             except:
                 pass
@@ -213,21 +244,18 @@ class CreateCNN:
         
         if len(test_ACChistory)<1:
             self.__create_Cnns()
-        # best_accuracy,index = torch.max(torch.tensor(test_ACChistory).unsqueeze(0))
-        
-        
-        return max(test_ACChistory), self.cnns[argmax(array(test_ACChistory))]
-        # print(test_ACChistory)
+        index = argmax(array(test_ACChistory))
+        return max(test_ACChistory), self.cnns[index],self.popula[index],history
 
     def __training(self,model,trainloader,validloader,device,LOSS,optimizer,epochs):
         performance={'trainloss':[],'trainacc':[],
                     'valloss':[],'valacc':[]}
 
-        for _ in tqdm(range(epochs)):
+        for _ in range(epochs):
             loss_per_epoch=0
             total=correct=0
             model= model.to(device)
-            for x,y in tqdm(trainloader):
+            for x,y in trainloader:
                 # print(x.dtype,y.dtype)
                 y = y.type(torch.LongTensor)   # casting to long
 
@@ -253,7 +281,7 @@ class CreateCNN:
             total_=correct_=0
             model= model.to(device)
             with torch.no_grad():
-                for x,y in tqdm(validloader):
+                for x,y in validloader:
                     y = y.type(torch.LongTensor)   # casting to long
                     x,y = x.to(device).float(),y.to(device)
                     yhat=model(x)
@@ -265,7 +293,7 @@ class CreateCNN:
             performance['valloss'].append(loss_/len(validloader))
             performance['valacc'].append(100*correct_/total_)
 
-            # print(f'Training Accuracy: {100* correct/total}\Training Loss: {}')
+            print(f'Epoch: {_+1}')
             print(f'Training Accuracy: {performance["trainacc"][_]}\t Training Loss:{performance["trainloss"][_]}')
             print(f'Validation Accuracy: {performance["valacc"][_]}\t Validation Loss:{performance["valloss"][_]}')
             
