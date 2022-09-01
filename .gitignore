@@ -3,4 +3,6 @@ exp-notebook/
 dataset/
 *.ipynb
 *.txt
-ui/test.py
+**/ASC_ML/test.py
+**/__pycache__/
+ASC_ML/CNN/__pycache__/
