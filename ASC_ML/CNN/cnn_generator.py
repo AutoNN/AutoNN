@@ -48,12 +48,12 @@ def create_config(min,max)-> List[Tuple]:
     return cfg
             
 class CNN(nn.Module):
-    def __init__(self,input_shape,numClasses,config) -> None:
+    def __init__(self,in_channels,numClasses,config) -> None:
         super(CNN,self).__init__()
         layers=[]
         for i in range(len(config)):
             if config[i][0]=='conv' and i==0:
-                layers.append( SkipLayer(input_shape,config[i][1],config[i][2]))
+                layers.append( SkipLayer(in_channels,config[i][1],config[i][2]))
             elif config[i][0]=='conv':
                 layers.append( SkipLayer(config[i-1][2],config[i][1],config[i][2]))
             elif config[i][0]=='pool':
@@ -84,7 +84,7 @@ class CNN(nn.Module):
             os.makedirs(path)
         filename = os.path.join(path,filename)
         torch.save(self.state_dict(),filename)
-        print(f'Model saved in directory: {path}')
+        print(f'Model saved in directory: {path}{filename}')
     
     def summary(self,input_shape:tuple,border:bool=True):
         '''
