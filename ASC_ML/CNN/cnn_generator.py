@@ -101,25 +101,15 @@ class CNN(nn.Module):
 
 
 class CreateCNN:
-    def __init__(self,_size:int,input_channels:int,num_classes:int) -> None:
+    def __init__(self,_size:int=10) -> None:
         '''
         Args: 
             _size= population size
-            input_channels = number of input channels
-            num_classes = Number of classes for classification
 
         '''
         self.size=_size
-        self.ipshape = input_channels
-        self.classes = num_classes
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.cnns=[]
-        self.__create_Cnns()
-
-    def __create_Cnns(self):
-        self.popula  = [create_config(3,10) for _ in range(self.size)]
-        for i in range(self.size):
-            self.cnns.append(CNN(self.ipshape,self.classes,self.popula[i]))
 
     def print_all_cnn_configs(self): 
         for x,i in enumerate(self.popula): 
@@ -136,6 +126,23 @@ class CreateCNN:
         for arch in self.cnns:
             print(arch)
             print('_'*150)
+
+    def __create_Cnns(self,len_dataset,input_shape,num_channels):
+        l=len(input_shape)
+        self.popula  = [create_config(3,10) for _ in range(self.size)]
+        for i in range(self.size):
+            try:
+                m1 = CNN(l,num_channels,self.popula[i])
+                params, _,_ = summ(input_size =input_shape,model=m1,_print=False)
+                if int(params/len_dataset)==1:
+                    self.cnns.append(m1)
+        
+            except Exception as e:
+                print(e)
+                pass
+        if not self.cnns:
+            self.__create_Cnns(len_dataset,input_shape,num_channels)
+        print(len(self.cnns))
         
     def get_bestCNN(self,
                     path_trainset:str,
@@ -145,7 +152,8 @@ class CreateCNN:
                     batch_size:int=16,
                     lossFn:str='cross-entropy',
                     LR=3e-4,
-                    EPOCHS=10
+                    EPOCHS=10,
+                    **kwargs
                     )->Tuple[float,Any,list,dict]:
         '''
         NOTE: make sure the path to your dataset is of 
@@ -166,7 +174,11 @@ class CreateCNN:
                 IF YOU ONLY HAVE TEH TRAINING DATA
                 AND NOT VALIDATION SET AND TEST SET
                 THEN set this to TRUE
-        
+
+            Optional Args:
+                input_channels = number of input channels
+                num_classes = Number of classes for classification
+            
         Returns:
             Tuple containing the best model, it's accuracy and configuration
             (model_accuracy, CNN_model, model_config history_of_all_models)
@@ -178,11 +190,10 @@ class CreateCNN:
 
         '''
 
+
+
         if lossFn == 'cross-entropy':
             criterion=nn.CrossEntropyLoss()
-        
-
-
         if not split_required:
 
             trainSet = ImageFolder(path_trainset,transforms.Compose(
@@ -196,6 +207,8 @@ class CreateCNN:
             testSet = ImageFolder(path_testset,transforms.Compose(
                 [transforms.ToTensor()]
             ))
+            len_classes = len(trainSet.classes)
+            print('Classes: ',trainSet.classes)
         else:
             
             trainSet = ImageFolder(path_trainset,transforms.Compose(
@@ -204,9 +217,20 @@ class CreateCNN:
             trainlen = int(len(trainSet)*0.7)
             testlen = len(trainSet) - trainlen # rest 30%
             validlen = int(testlen*0.5) #this is 50% of remaining 30%
-            testlen -= validlen  #the rest 50%
+
+            len_classes = len(trainSet.classes)
             print('Classes: ',trainSet.classes)
+            testlen -= validlen  #the rest 50%
             trainSet,validSet,testSet= random_split(trainSet,[trainlen,validlen,testlen])
+
+        len_dataset = len(trainSet)
+        input_shape = tuple(trainSet[0][0].shape)
+# ______________________________________________________________
+        self.inChannels = kwargs.get('in_channels',input_shape[0])
+        self.numClasses = kwargs.get('num_classes',len_classes)
+        self.__create_Cnns(len_dataset,input_shape,len_classes)
+
+# ______________________________________________________________
 
         print(f'Training set size: {len(trainSet)} | Validation Set size: {len(validSet)} | Test Set size: {len(testSet)}')
 
@@ -220,17 +244,18 @@ class CreateCNN:
 
         # optimizers 
         optims = []
-        for i in range(self.size):
+        for i in range(len(self.cnns)):
             optims.append(torch.optim.Adam(self.cnns[i].parameters(),lr=LR))
 
         
-        for i in range(self.size):
+        for i in range(len(self.cnns)):
             print(f'Training CNN model cnn{i}')
             try:
                 train_performance=self.__training(self.cnns[i],trainloader,valloader,self.device,
                                         criterion,optims[i],epochs=EPOCHS)
                 history[f'cnn{i}']=train_performance
-            except:
+            except Exception as E:
+                # print(f'2nd try er exception: {E}')
                 pass
             
             print(f'Calculating test accuracy CNN model cnn{i}')
@@ -238,12 +263,15 @@ class CreateCNN:
                 test_performance = self.__test(self.cnns[i],testloader,self.device,criterion)
       
                 test_ACChistory.append(test_performance[1])
-            except:
+            except Exception as E:
+            
+                # print(f'3rd try er exception: {E}')
                 pass
             print('_'*150)
         
         if len(test_ACChistory)<1:
-            self.__create_Cnns()
+            self.__create_Cnns(len_dataset,input_shape,len_classes)
+            
         index = argmax(array(test_ACChistory))
         return max(test_ACChistory), self.cnns[index],self.popula[index],history
 
