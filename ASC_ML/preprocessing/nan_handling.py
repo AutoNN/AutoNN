@@ -9,4 +9,5 @@ class missing_data_management:
         types = ['train','valid','test']
         for type in types:
             self.__dataset_bucket.set(self.__dataset_bucket.get(types = [type]).dropna(how='all', subset=self.__dataset_bucket.get_label()))
+            
 
