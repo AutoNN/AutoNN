@@ -4,8 +4,8 @@ from ASC_ML.CNN.cnn_generator import CreateCNN
 
 # if __name__ == '__main__':
 #     freeze_support()
-pop = CreateCNN()
-best_acc,model,bestconfig,history = pop.get_bestCNN('dataset',split_required=True,EPOCHS=1)
+pop = CreateCNN(5)
+best_acc,model,bestconfig,history = pop.get_bestCNN('dataset',split_required=True,EPOCHS=5)
 # pop.print_all_cnn_configs()
 
 model.save()

@@ -96,6 +96,7 @@ class CNN(nn.Module):
         '''
         print(summ(input_shape,self,border))
 
+    
 
         
 
@@ -129,20 +130,21 @@ class CreateCNN:
 
     def __create_Cnns(self,len_dataset,input_shape,num_channels):
         l=len(input_shape)
-        self.popula  = [create_config(3,10) for _ in range(self.size)]
-        for i in range(self.size):
+        self.popula  = []
+        for _ in range(self.size):
             try:
-                m1 = CNN(l,num_channels,self.popula[i])
+                config_ = create_config(3,10)
+                m1 = CNN(l,num_channels,config_)
                 params, _,_ = summ(input_size =input_shape,model=m1,_print=False)
-                if int(params/len_dataset)==1:
+                if 0.7< params/len_dataset<1.5 :
                     self.cnns.append(m1)
-        
+                    self.popula.append(config_)
             except Exception as e:
-                print(e)
+                # print(e)
                 pass
         if not self.cnns:
             self.__create_Cnns(len_dataset,input_shape,num_channels)
-        print(len(self.cnns))
+        
         
     def get_bestCNN(self,
                     path_trainset:str,
@@ -219,7 +221,7 @@ class CreateCNN:
             validlen = int(testlen*0.5) #this is 50% of remaining 30%
 
             len_classes = len(trainSet.classes)
-            print('Classes: ',trainSet.classes)
+            print('Classes: ',trainSet.classes, '# Classes: ',len_classes)
             testlen -= validlen  #the rest 50%
             trainSet,validSet,testSet= random_split(trainSet,[trainlen,validlen,testlen])
 
@@ -247,7 +249,7 @@ class CreateCNN:
         for i in range(len(self.cnns)):
             optims.append(torch.optim.Adam(self.cnns[i].parameters(),lr=LR))
 
-        
+        print('Searching for the best model. Please be patient. Thank you....')        
         for i in range(len(self.cnns)):
             print(f'Training CNN model cnn{i}')
             try:
@@ -278,7 +280,7 @@ class CreateCNN:
     def __training(self,model,trainloader,validloader,device,LOSS,optimizer,epochs):
         performance={'trainloss':[],'trainacc':[],
                     'valloss':[],'valacc':[]}
-
+        model.train()
         for _ in range(epochs):
             loss_per_epoch=0
             total=correct=0
@@ -329,6 +331,7 @@ class CreateCNN:
 
 
     def __test(self,model,loader,device,LOSS):
+        model.eval()
         loss_=0
         total_=correct_=0
         model= model.to(device)
