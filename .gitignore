@@ -1,8 +1,9 @@
 mnist_png/
 exp-notebook/
 dataset/
+best_models/
 *.ipynb
 *.txt
-**/ASC_ML/test.py
-**/__pycache__/
+/ASC_ML/test.py
+/__pycache__/
 ASC_ML/CNN/__pycache__/
