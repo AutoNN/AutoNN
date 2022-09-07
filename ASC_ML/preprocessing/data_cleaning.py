@@ -6,6 +6,7 @@ from ASC_ML.preprocessing import encoding as enc
 from ASC_ML.preprocessing import feature_elimination as fe
 
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 
 class DataCleaning:
 
@@ -49,7 +50,11 @@ class DataCleaning:
         self.__dataset.set(enc_df, type = type)
 
     def scaling(self, type = "train"):
-        pass
+        # min max scaling
+        scaler_x = MinMaxScaler()
+        scaler_x.fit(self.__dataset.get(types = [type])[0])
+        scaled_np_arr = scaler_x.transform(self.__dataset.get(types = [type])[0])
+        # scaled np array
 
     def feature_elimination(self, type = "train", percentage_column_drop = None, override = False):
         feature_elim = fe.FeatureElimination(self.__dataset.get(types = [type])[0], self.__col_info, percentage_column_drop, override)
