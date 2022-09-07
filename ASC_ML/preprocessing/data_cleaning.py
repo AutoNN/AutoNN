@@ -3,6 +3,7 @@ from ASC_ML.preprocessing import dataset_container as dc
 from ASC_ML.preprocessing import date_parsing as dp
 from ASC_ML.preprocessing import column_info as ci
 from ASC_ML.preprocessing import encoding as enc
+from ASC_ML.preprocessing import feature_elimination as fe
 
 import numpy as np
 
@@ -12,12 +13,18 @@ class DataCleaning:
         self.__dataset = dc.DatasetContainer(label, train_dataframe, validation_dataframe, test_dataframe, override)
         date_parse = dp.DateTime_Parsing(self.__dataset)
         date_parse.parse_dates()
+        # colinf = ci.ColumnInfo(self.__dataset)
+        # colinf.generate_info()
+        self.__col_info = None
+        self.__pipeline = None
+        self.__regression_threshold = threshold
+        self.__column_sel_boolean = None
+        self.get_column_info()
+
+    def get_column_info(self):
         colinf = ci.ColumnInfo(self.__dataset)
         colinf.generate_info()
         self.__col_info = colinf.column_info
-        self.__pipeline = None
-        self.__regression_threshold = threshold
-
 
     def is_regression(self) -> bool:
         cardinal = self.__col_info(self.__dataset.get_label())['cardinality']
@@ -40,6 +47,15 @@ class DataCleaning:
 
         enc_df = encoding.encode(dataframe = self.__dataset.get(types = [type])[0], enc_type = "label")
         self.__dataset.set(enc_df, type = type)
+
+    def scaling(self, type = "train"):
+        pass
+
+    def feature_elimination(self, type = "train", percentage_column_drop = None, override = False):
+        feature_elim = fe.FeatureElimination(self.__dataset.get(types = [type])[0], self.__col_info, percentage_column_drop, override)
+        elim_df, self.__column_sel_boolean = feature_elim.recursive_feature_elimination()
+        self.__dataset.set(elim_df, type = type)
+        self.get_column_info()
 
     @property
     def dataset(self):
