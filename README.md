@@ -1,2 +1,2 @@
-# ASC-ML
-AutoML framework
+# AutoNN
+AutoNN framework
