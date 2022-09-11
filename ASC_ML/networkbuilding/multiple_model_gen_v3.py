@@ -47,6 +47,7 @@ class Multiple_Model_Gen_V3:
         self._model_confs = []
         self._evaluate_dict_list = []
         self._no_top_model = 10
+        self.get_model_confs()
     
     @property
     def model_confs(self):
