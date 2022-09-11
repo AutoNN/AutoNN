@@ -15,21 +15,17 @@ class DataCleaning:
         self.__dataset = dc.DatasetContainer(label, train_dataframe, validation_dataframe, test_dataframe, override)
         date_parse = dp.DateTime_Parsing(self.__dataset)
         date_parse.parse_dates()
-        # colinf = ci.ColumnInfo(self.__dataset)
-        # colinf.generate_info()
-        self.__col_info = None
+        colinf = ci.ColumnInfo(self.__dataset)
+        colinf.generate_info()
+        self.__col_info = colinf.column_info
+        self.__nan_handling = nanhandle.DataHandling(dataset=self.__dataset, col_inf=self.__col_info)
         self.__pipeline = None
         self.__regression_threshold = threshold
         self.__column_sel_boolean = None
         self.get_column_info()
 
     def get_column_info(self):
-        colinf = ci.ColumnInfo(self.__dataset)
-        colinf.generate_info()
-        self.__col_info = colinf.column_info
-        self.__pipeline = None
-        self.__regression_threshold = threshold
-        self.__nan_handling = nanhandle.DataHandling(dataset=self.__dataset, col_inf=self.__col_info)
+        return self.__col_info
 
 
     def is_regression(self) -> bool:
