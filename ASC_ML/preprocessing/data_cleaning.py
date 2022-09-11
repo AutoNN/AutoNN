@@ -3,6 +3,7 @@ from ASC_ML.preprocessing import dataset_container as dc
 from ASC_ML.preprocessing import date_parsing as dp
 from ASC_ML.preprocessing import column_info as ci
 from ASC_ML.preprocessing import encoding as enc
+from ASC_ML.preprocessing import nan_handling as nanhandle
 
 import numpy as np
 
@@ -17,6 +18,7 @@ class DataCleaning:
         self.__col_info = colinf.column_info
         self.__pipeline = None
         self.__regression_threshold = threshold
+        self.__nan_handling = nanhandle.DataHandling(dataset=self.__dataset, col_inf=self.__col_info)
 
 
     def is_regression(self) -> bool:

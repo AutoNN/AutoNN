@@ -1,4 +1,5 @@
-from dataset_container import DatasetContainer as dc
+from ASC_ML.preprocessing.dataset_container import DatasetContainer as dc
+from sklearn.impute import SimpleImputer, KNNImputer
 
 class DataHandling:
     def __init__(self, dataset: dc, col_inf: dict, missing_threshold = 0.2) -> None:
@@ -25,4 +26,8 @@ class DataHandling:
                     self.__unfilled.append(col)
 
     def __allocate(self):
-        pass
+        fill_in_order = list()
+        for col in self.__unfilled:
+            fill_in_order.append((self.__column_info[col]['missing'],col))
+        fill_in_order.sort()
+        print(fill_in_order)
