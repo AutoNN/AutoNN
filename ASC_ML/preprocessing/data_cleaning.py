@@ -22,11 +22,6 @@ class DataCleaning:
         self.__pipeline = None
         self.__regression_threshold = threshold
         self.__column_sel_boolean = None
-        self.get_column_info()
-
-    def get_column_info(self):
-        return self.__col_info
-
 
     def is_regression(self) -> bool:
         cardinal = self.__col_info(self.__dataset.get_label())['cardinality']
