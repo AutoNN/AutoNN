@@ -168,7 +168,6 @@ class Hyperparameter_Optimization:
             self._model.layers[-2].rate = dropout_rate
             optimizer = Adam(lr = best_lr)
             self._model.compile(loss = self._loss_fn, optimizer = optimizer)
-            print(f"DROPOUT {dropout_rate}")
             history = self._model.fit(self._train_X, self._train_Y, epochs = 50, batch_size = best_batch_size, verbose = 0)
             scores = self._model.evaluate(self._train_X, self._train_Y, verbose = 0)
             dropout_loss_list.append(scores)

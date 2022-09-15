@@ -25,7 +25,7 @@ class Model_Stacking:
         for path in self._model_path_list:
             for model_conf in self._model_conf_list:
                 model1 = load_model(path)
-                activation = model1.layers[-2].get_config()["activation"]
+                activation = model1.layers[1].get_config()["activation"]
                 reduced_model1 = Model(name = model1.name+"_reduced", inputs = model1.input, outputs = model1.layers[-2].output)
                 last_layer = reduced_model1.output
                 x = last_layer
