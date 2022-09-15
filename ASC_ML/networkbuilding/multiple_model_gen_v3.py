@@ -1,7 +1,6 @@
 from ASC_ML.networkbuilding import model_generation as model_gen
 from ASC_ML.networkbuilding import search_space_gen_v1 as search
 from ASC_ML.networkbuilding import hyperparameter_optimization as hyp_opt
-from ASC_ML.networkbuilding.utilities import get_loss_function
 
 from tensorflow.keras.activations import tanh, relu, selu
 from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal
@@ -18,7 +17,7 @@ from tensorflow.keras import backend as K
 
 class Multiple_Model_Gen_V3:
 
-    def __init__(self, train_x, train_y, test_x, test_y, epochs, batch_size, input_shape, output_shape = 1, output_activation = None, max_no_layers = 3, model_per_batch = 10, save_dir = ""):
+    def __init__(self, train_x, train_y, test_x, test_y, loss_fn, epochs, batch_size, input_shape, output_shape = 1, output_activation = None, max_no_layers = 3, model_per_batch = 10, save_dir = ""):
         """Creates all parallel models using base models from model_generation, trains and evaluates each model, stores best models.
         Parameters
         ----------
@@ -36,6 +35,7 @@ class Multiple_Model_Gen_V3:
         self._train_y = train_y
         self._test_x = test_x
         self._test_y = test_y
+        self._loss_fn = loss_fn
         self._input_shape = input_shape
         self._output_shape = output_shape
         self._epochs = epochs
@@ -46,7 +46,7 @@ class Multiple_Model_Gen_V3:
         self._save_dir = save_dir
         self._model_confs = []
         self._evaluate_dict_list = []
-        self._no_top_model = 10
+        self._no_top_model = 5
         self.get_model_confs()
     
     @property
@@ -59,23 +59,14 @@ class Multiple_Model_Gen_V3:
         # Return Model Name
         return self._evaluate_dict_list
 
-    # def get_loss_function(self):
-    #     # Logic to get loss funtion
-    #     # return "mean_absolute_percentage_error"
-    #     # return self.root_mean_squared_error
-    #     # return "mean_squared_error"
-    #     return "mean_absolute_error"
-
     def get_best_models(self, save = False):
-        # loss_fn = self.get_loss_function()
-        loss_fn = get_loss_function()
         parallel_model_generator = self._parallel_model_generator()
 
         # 1st Loop, Get best model architectures
         for parallelModel, n, model_conf_batch_list in parallel_model_generator:
             input_data = self._get_train_lists(n)
             Pmodel, metrics_names, scores, scores_test = self.train_model(input_data = input_data, Pmodel = parallelModel, 
-                                                                            epochs = self._epochs, n_model = n, loss_fn = loss_fn)
+                                                                            epochs = self._epochs, n_model = n, loss_fn = self._loss_fn)
             self._evaluate_save_model(input_data = input_data, parallelModel = Pmodel, metrics_names=metrics_names, scores=scores_test, n=n, model_conf_batch_list = model_conf_batch_list)
         
         # 2nd Loop, Tune best model architectures
@@ -142,7 +133,7 @@ class Multiple_Model_Gen_V3:
                     if(curr_model_dict["score"] < model_dict["score"]):
                         self._evaluate_dict_list.insert(index, curr_model_dict)  
                         entry_flag = True                      
-                        if(len(self._evaluate_dict_list) > self._no_top_model): self._evaluate_dict_list = self._evaluate_dict_list[:10]
+                        if(len(self._evaluate_dict_list) > self._no_top_model): self._evaluate_dict_list = self._evaluate_dict_list[:self._no_top_model]
                         break
                     index = index + 1
                 if(not entry_flag and len(self._evaluate_dict_list) < self._no_top_model):
@@ -168,8 +159,9 @@ class Multiple_Model_Gen_V3:
 
     def get_model_confs(self):
         model_confs = []
-        # [32,64,128,256,512,1024]
-        s = search.Search_Space_Gen_1(node_options = [32,64,128,256,512,1024], min_no_layers = 2, max_no_layers = self._max_no_layers, input_shape = self._input_shape)
+        # [16,32,64,128,256,512,1024]
+        # [16,64,128,512,1024]
+        s = search.Search_Space_Gen_1(node_options = [16,32,64,128,512,1024], min_no_layers = 2, max_no_layers = self._max_no_layers, input_shape = self._input_shape)
         model_conf_batch = []
 
         # print(s.no_of_perm)

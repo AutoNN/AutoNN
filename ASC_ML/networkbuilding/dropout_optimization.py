@@ -1,36 +1,31 @@
 from tensorflow.keras.optimizers import Adam
-from ASC_ML.networkbuilding.utilities import get_loss_function
 
 class Dropout_Optimization():
-    def __init__(self, train_x, train_y, test_x, test_y, epochs, model):
+    def __init__(self, train_x, train_y, test_x, test_y, loss_fn, epochs, model):
         self._train_x = train_x
         self._train_y = train_y
         self._test_x = test_x
         self._test_y = test_y
+        self._loss_fn = loss_fn
         self._epochs = epochs
         self._model = model
     
-    def get_loss_function(self):
-        # Logic to get loss funtion
-        # return "mean_absolute_percentage_error"
-        # return self.root_mean_squared_error
-        # return "mean_squared_error"
-        return "mean_absolute_error"
 
-    def dropout_optimization(self, lr = 1e-3, batch_size = 64, epoch = 100):
-        # loss_fn = self.get_loss_function()
-        loss_fn = get_loss_function()
+    def dropout_optimization(self, lr = 1e-3, batch_size = 64, activation = "relu", initializer = "RandomUniform", epoch = 100):
         dropout_indices = self._get_dropout_index()
         dropout_list = [0,0.2,0.5]
         dropout_comb_list = []
         dropout_loss_list = []
         for dropout0 in dropout_list:
             for dropout1 in dropout_list:
+                self._reinitialize_model(self._model, initializer)
+                self._set_activation(self._model, activation)
+
                 dropout_comb_list.append([dropout0,dropout1])
                 self._model.layers[dropout_indices[0]].rate = dropout0
                 self._model.layers[dropout_indices[1]].rate = dropout1
                 optimizer = Adam(lr = lr)
-                self._model.compile(loss = loss_fn, optimizer = optimizer)
+                self._model.compile(loss = self._loss_fn, optimizer = optimizer)
                 history = self._model.fit(self._train_x, self._train_y, epochs = epoch, batch_size = batch_size, verbose = 0)
 
                 scores = self._model.evaluate(self._train_x, self._train_y, verbose = 0)
@@ -52,3 +47,31 @@ class Dropout_Optimization():
                 dropout_indices.append(ind)
             ind = ind+1
         return dropout_indices
+
+    @staticmethod
+    def _reinitialize_model(model, initializer_str = "RandomUniform"):
+        if initializer_str == "RandomUniform":
+            initializer = RandomUniform(seed = 420)
+        elif initializer_str == "GlorotUniform":
+            initializer = GlorotUniform(seed = 420)
+        elif initializer_str == "HeUniform":
+            initializer = HeUniform(seed = 420)
+        elif initializer_str == "GlorotNormal":
+            initializer = GlorotNormal(seed = 420)
+        elif initializer_str == "HeNormal":
+            initializer = HeNormal(seed = 420)
+        elif initializer_str == "LecunNormal":
+            initializer = LecunNormal(seed = 420)
+        elif initializer_str == "LecunUniform":
+            initializer = LecunUniform(seed = 420)
+        for layer in model.layers:
+            layer.set_weights([initializer(shape=w.shape) for w in layer.get_weights()])
+
+    @staticmethod
+    def _set_activation(model, activation_str = "relu"):
+        # activation = activation string
+        if activation_str == "relu" : activation = relu
+        elif activation_str == "tanh" : activation = tanh
+        elif activation_str == "selu" : activation = selu
+        for layer in model.layers[1:-1]:
+            layer.activation = activation

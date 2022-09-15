@@ -11,14 +11,18 @@ from sklearn.preprocessing import MinMaxScaler
 
 class DataCleaning:
 
-    def __init__(self, label: list(), train_dataframe: dd, validation_dataframe = None, test_dataframe = None, override = False, threshold = 20) -> None:
+    def __init__(self, label: list(), train_dataframe: dd, validation_dataframe = None, test_dataframe = None, override = False, threshold = 20, override_imputer = {}) -> None:
         self.__dataset = dc.DatasetContainer(label, train_dataframe, validation_dataframe, test_dataframe, override)
         date_parse = dp.DateTime_Parsing(self.__dataset)
         date_parse.parse_dates()
         colinf = ci.ColumnInfo(self.__dataset)
         colinf.generate_info()
         self.__col_info = colinf.column_info
-        self.__nan_handling = nanhandle.DataHandling(dataset=self.__dataset, col_inf=self.__col_info)
+        # self.__nan_handling = nanhandle.DataHandling(dataset=self.__dataset, col_inf=self.__col_info, override_imputer=override_imputer)
+        # self.__dataset = self.__nan_handling.dataset
+        colinf = ci.ColumnInfo(self.__dataset)
+        colinf.generate_info()
+        self.__col_info = colinf.column_info
         self.__pipeline = None
         self.__regression_threshold = threshold
         self.__column_sel_boolean = None

@@ -1,5 +1,5 @@
 from dask import dataframe as dd
-from sklearn.model_selection import train_test_split
+from dask_ml.model_selection import train_test_split
 
 class DatasetContainer:
     def __init__(self, label: list(), train_dataframe: dd,validation_dataframe = None, test_dataframe = None, override = False) -> None:

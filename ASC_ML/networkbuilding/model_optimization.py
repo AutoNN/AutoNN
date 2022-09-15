@@ -5,13 +5,12 @@ from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNo
 from tensorflow.keras.activations import tanh, relu, selu
 from ASC_ML.networkbuilding import hyperparameter_optimization as hyp_opt
 from ASC_ML.networkbuilding import model_generation as model_gen
-from ASC_ML.networkbuilding.utilities import get_loss_function
 
 import os
 
 class Model_Optimization:
 
-    def __init__(self, train_x, train_y, test_x, test_y, epochs, model_dict_list, save_dir):
+    def __init__(self, train_x, train_y, test_x, test_y, loss_fn, epochs, model_dict_list, save_dir):
         """Creates all parallel models using base models from model_generation, trains and evaluates each model, stores best models.
         Parameters
         ----------
@@ -29,6 +28,7 @@ class Model_Optimization:
         self._train_y = train_y
         self._test_x = test_x
         self._test_y = test_y
+        self._loss_fn = loss_fn
         self._epochs = epochs
         self._model_dict_list = model_dict_list
         self._save_dir = save_dir
@@ -47,45 +47,41 @@ class Model_Optimization:
     @property
     def best_hyp_permodel(self):
         return self._best_hyp_permodel
-
-    def get_loss_function(self):
-        # Logic to get loss funtion
-        # return "mean_absolute_percentage_error"
-        # return self.root_mean_squared_error
-        # return "mean_squared_error"
-        return "mean_absolute_error"
     
-    def train_models_2(self):
-        for model_dict in self._model_dict_list:
-            model = load_model(model_dict["path_weights"])
-            optimizer = Adam(lr = 1e-3)
-            model.compile(loss = "mean_squared_error", optimizer = optimizer)
-            history = model.fit(self._train_x, self._train_y, epochs = 200, batch_size = 64)
+    # def train_models_2(self):
+    #     for model_dict in self._model_dict_list:
+    #         model = load_model(model_dict["path_weights"])
+    #         optimizer = Adam(lr = 1e-3)
+    #         model.compile(loss = self._loss_fn, optimizer = optimizer)
+    #         history = model.fit(self._train_x, self._train_y, epochs = 200, batch_size = 64)
     
     def _candidate_model_generator(self):
         for model_dict in self._model_dict_list:
             model_conf = model_dict["model_conf"]
+            model_conf.append(True)
             input_layer_list, output_layer_list = self._get_input_output_layer_list([model_conf])
-            model = Model(name = model_dict["model_name"],inputs = input_layer_list, outputs = output_layer_list)
+            model = Model(name = model_dict["model_name"]+"_dr",inputs = input_layer_list, outputs = output_layer_list)
             # model = load_model(model_dict["path_weights"])
             self._model_confs.append(model_conf)
             yield model
     
     def optimize_models(self, save):
-        # loss_fn = self.get_loss_function()
-        loss_fn = get_loss_function()
         candidate_model_generator = self._candidate_model_generator()
         for model in candidate_model_generator:
             # print(model.summary())
             print("--------------------------------------------------------------------------------")
             print(f"Model Name : {model.name}\n")
-            h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], model, loss_fn)
-            best_lr, best_batch_size, best_activation, best_initializer = h.get_best_hyperparameters()
+            h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], model, self._loss_fn, dropout_opt = True)
+            best_lr, best_batch_size, best_activation, best_initializer, best_dropout_rate = h.get_best_hyperparameters()
+
             self._reinitialize_model(model, best_initializer)
             self._set_activation(model, best_activation)
-            self._best_hyp_permodel.append([best_lr, best_batch_size, best_activation, best_initializer])
+            if best_dropout_rate != None:
+                model.layers[-2].rate = best_dropout_rate
+            self._best_hyp_permodel.append([best_lr, best_batch_size, best_activation, best_initializer, best_dropout_rate])
+
             model,_,_,_ = self.train_model(input_data = [self._train_x, self._train_y, self._test_x, self._test_y], Pmodel=model, n_model=1,
-                                epochs=200,loss_fn=loss_fn, lr=best_lr, batch_size=best_batch_size)
+                                epochs=100,lr=best_lr, batch_size=best_batch_size)
             if save==True:
                 self.save_weights(model)
     
@@ -97,7 +93,7 @@ class Model_Optimization:
         model.save(save_path)
         self._saved_paths.append(save_path)
                 
-    def train_model(self, input_data, Pmodel, n_model, epochs, loss_fn, lr = 1e-3, batch_size = 64, activation = None, initializer = None):
+    def train_model(self, input_data, Pmodel, n_model, epochs, lr = 1e-3, batch_size = 64, activation = None, initializer = None):
 
         # if activation != None:
         #     Pmodel = self._set_activation(Pmodel, activation)
@@ -106,7 +102,7 @@ class Model_Optimization:
 
         input_x, input_labels, input_test_x, input_test_labels = input_data
         optimizer = Adam(lr = lr)
-        Pmodel.compile(loss = loss_fn, optimizer = optimizer)
+        Pmodel.compile(loss = self._loss_fn, optimizer = optimizer)
         history = Pmodel.fit(input_x, input_labels, epochs = epochs, batch_size = batch_size, verbose = 0)
 
         metrics_names, scores, scores_test = self.print_scores(Pmodel, input_data)
@@ -164,5 +160,5 @@ class Model_Optimization:
         if activation_str == "relu" : activation = relu
         elif activation_str == "tanh" : activation = tanh
         elif activation_str == "selu" : activation = selu
-        for layer in model.layers:
+        for layer in model.layers[1:-1]:
             layer.activation = activation

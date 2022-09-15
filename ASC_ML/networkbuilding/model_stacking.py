@@ -10,22 +10,16 @@ from ASC_ML.networkbuilding.dropout_optimization import Dropout_Optimization
 from ASC_ML.networkbuilding.utilities import get_loss_function
 
 class Model_Stacking:
-    def __init__(self, train_x, train_y, test_x, test_y, model_path_list, model_conf_list, save_dir = ""):
+    def __init__(self, train_x, train_y, test_x, test_y, loss_fn, model_path_list, model_conf_list, save_dir = ""):
         self._model_path_list = model_path_list
         self._model_conf_list = model_conf_list
         self._train_x = train_x
         self._train_y = train_y
         self._test_x = test_x
         self._test_y = test_y
+        self._loss_fn = loss_fn
         self._save_dir = save_dir
         self._stacked_model_paths = []
-    
-    def get_loss_function(self):
-        # Logic to get loss funtion
-        # return "mean_absolute_percentage_error"
-        # return self.root_mean_squared_error
-        # return "mean_squared_error"
-        return "mean_absolute_error"
 
     def _stacked_model_generator(self):
         for path in self._model_path_list:
@@ -48,20 +42,19 @@ class Model_Stacking:
                 yield stacked_model
 
     def optimize_stacked_models(self):
-        # loss_fn = self.get_loss_function()
-        loss_fn = get_loss_function()
         stacked_model_generator = self._stacked_model_generator()
         for model in stacked_model_generator:
             print("-------------------------------------------------------------------------------------------------------------------")
             print(model.name)
             print(model.summary())
-            h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], model, loss_fn, activation_opt = True, initializer_opt = True)
+            h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], model, self._loss_fn, activation_opt = True, initializer_opt = True)
             best_lr, best_batch_size, _, best_initializer = h.get_best_hyperparameters()
             print(best_initializer)
             self._reinitialize_model(model, best_initializer)
             
-            dr = Dropout_Optimization(self._train_x, self._train_y, self._test_x, self._test_y, epochs = 100, model = model)
-            best_dropout_rates = dr.dropout_optimization(lr = best_lr, batch_size = best_batch_size, epoch = 100)
+            dr = Dropout_Optimization(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, epochs = 100, model = model)
+            best_dropout_rates = dr.dropout_optimization(lr = best_lr, batch_size = best_batch_size, 
+                                                                activation = best_activation, initializer = best_initializer, epoch = 100)
             print(f"DROPOUT RATES : {best_dropout_rates}")
             
             model = self._train_models(model = model, lr = best_lr, batch_size = best_batch_size)
@@ -72,10 +65,8 @@ class Model_Stacking:
 #             dr.dropout_optimization(lr = best_lr, batch_size = best_batch_size, epoch = 100)
     
     def _train_models(self, model, lr, batch_size):
-        # loss_fn = self.get_loss_function()
-        loss_fn = get_loss_function()
         optimizer = Adam(lr = lr)
-        model.compile(loss = loss_fn, optimizer = optimizer)
+        model.compile(loss = self._loss_fn, optimizer = optimizer)
         history = model.fit(self._train_x, self._train_y, epochs = 100, batch_size = batch_size, verbose = 0)
 
         scores = model.evaluate(self._train_x, self._train_y, verbose = 0)

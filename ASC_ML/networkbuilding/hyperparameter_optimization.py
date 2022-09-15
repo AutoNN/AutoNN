@@ -11,7 +11,7 @@ import numpy as np
 from tensorflow.keras import backend as K
 
 class Hyperparameter_Optimization:
-    def __init__(self, X, Y, model, loss_fn, lr_opt = True, batch_opt = True, activation_opt = True, initializer_opt = True, random_opt = True):
+    def __init__(self, X, Y, model, loss_fn, lr_opt = True, batch_opt = True, activation_opt = True, initializer_opt = True, dropout_opt = False):
         self._seed = 420
         self._train_X = X
         self._train_Y = Y
@@ -21,7 +21,7 @@ class Hyperparameter_Optimization:
         self._batch_opt = batch_opt
         self._activation_opt = activation_opt
         self._initializer_opt = initializer_opt
-        self._random_opt = random_opt
+        self._dropout_opt = dropout_opt
         self._current_activation = None
         self._hyperparameter_list = [] # [best_batch_size, best_lr, best_activation_function, best_initializer, best_seed]
 
@@ -35,7 +35,7 @@ class Hyperparameter_Optimization:
         if activation_str == "relu" : activation = relu
         elif activation_str == "tanh" : activation = tanh
         elif activation_str == "selu" : activation = selu
-        for layer in self._model.layers:
+        for layer in self._model.layers[1:-1]:
             layer.activation = activation
     
     def _reinitialize_model(self, initializer_str = "RandomUniform"):
@@ -76,7 +76,7 @@ class Hyperparameter_Optimization:
     def _train_model(self, lr, batch_size):
         optimizer = Adam(lr = lr)
         self._model.compile(loss = self._loss_fn, optimizer = optimizer)
-        history = self._model.fit(self._train_X, self._train_Y, epochs = 100, batch_size = batch_size, verbose = 0)
+        history = self._model.fit(self._train_X, self._train_Y, epochs = 50, batch_size = batch_size, verbose = 0)
         score = self._model.evaluate(self._train_X, self._train_Y, verbose = 0)
         return score
 
@@ -110,6 +110,7 @@ class Hyperparameter_Optimization:
         best_activation = None
         best_batch_size = None
         best_initializer = None
+        best_dropout_rate = None
         # activation_list = ["relu","tanh","selu"]
         activation_list = ["relu","selu"]
         # intializer_list = [["GlorotUniform","GlorotNormal"],["HeUniform","HeNormal"],["GlorotUniform","GlorotNormal"]]
@@ -138,9 +139,12 @@ class Hyperparameter_Optimization:
                 i = i+1
         else:
             best_lr, best_batch_size, best_loss = self.lr_batch_optimization()
-        
-        print(f"BEST HYPERPARAMETERS : BEST_LOSS : {best_loss}, BEST_ACTIVATION : {best_activation}, BEST_INITIALIZER : {best_initializer}, BEST_LEARINING_RATE : {best_lr}, BEST_BATCHSIZE : {best_batch_size}")
-        return best_lr, best_batch_size, best_activation, best_initializer
+
+        if self._dropout_opt == True:
+            best_dropout_rate, best_dropout_loss = self.get_best_dropout(best_lr, best_batch_size, best_activation, best_initializer)
+            
+        print(f"BEST HYPERPARAMETERS : BEST_LOSS : {best_loss}, BEST_ACTIVATION : {best_activation}, BEST_INITIALIZER : {best_initializer}, BEST_LEARINING_RATE : {best_lr}, BEST_BATCHSIZE : {best_batch_size}, BEST_DROPOUT_RATE : {best_dropout_rate}, BEST_DROPOUT_LOSS : {best_dropout_loss}")
+        return best_lr, best_batch_size, best_activation, best_initializer, best_dropout_rate
         
     def lr_batch_optimization(self, initializer_str = "RandomUniform"):
         if self._lr_opt == True and self._batch_opt == False:
@@ -150,3 +154,27 @@ class Hyperparameter_Optimization:
             best_lr, best_batch_size, best_loss = self.get_best_batch_size_lr(initializer_str = initializer_str)
 
         return best_lr, best_batch_size, best_loss
+
+    def get_best_dropout(self, best_lr, best_batch_size, best_activation, best_initializer):
+        dropout_list = [0.0, 0.2, 0.5]
+        dropout_loss_list = []
+        for dropout_rate in dropout_list:
+            if best_initializer == None:
+                self._reinitialize_model()
+            else: self._reinitialize_model(best_initializer)
+            if best_activation != None:
+                self._set_activation(best_activation)
+
+            self._model.layers[-2].rate = dropout_rate
+            optimizer = Adam(lr = best_lr)
+            self._model.compile(loss = self._loss_fn, optimizer = optimizer)
+            print(f"DROPOUT {dropout_rate}")
+            history = self._model.fit(self._train_X, self._train_Y, epochs = 50, batch_size = best_batch_size, verbose = 0)
+            scores = self._model.evaluate(self._train_X, self._train_Y, verbose = 0)
+            dropout_loss_list.append(scores)
+
+        best_dropout_rate = dropout_list[dropout_loss_list.index(min(dropout_loss_list))]
+        best_dropout_loss = min(dropout_loss_list)
+        self._model.layers[-2].rate = best_dropout_rate
+
+        return best_dropout_rate, best_dropout_loss
