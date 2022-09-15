@@ -111,6 +111,7 @@ class Hyperparameter_Optimization:
         best_batch_size = None
         best_initializer = None
         best_dropout_rate = None
+        best_dropout_loss = None
         # activation_list = ["relu","tanh","selu"]
         activation_list = ["relu","selu"]
         # intializer_list = [["GlorotUniform","GlorotNormal"],["HeUniform","HeNormal"],["GlorotUniform","GlorotNormal"]]
@@ -159,13 +160,14 @@ class Hyperparameter_Optimization:
         dropout_list = [0.0, 0.2, 0.5]
         dropout_loss_list = []
         for dropout_rate in dropout_list:
+            self._model.layers[-2].rate = dropout_rate
+
             if best_initializer == None:
                 self._reinitialize_model()
             else: self._reinitialize_model(best_initializer)
             if best_activation != None:
                 self._set_activation(best_activation)
 
-            self._model.layers[-2].rate = dropout_rate
             optimizer = Adam(lr = best_lr)
             self._model.compile(loss = self._loss_fn, optimizer = optimizer)
             history = self._model.fit(self._train_X, self._train_Y, epochs = 50, batch_size = best_batch_size, verbose = 0)

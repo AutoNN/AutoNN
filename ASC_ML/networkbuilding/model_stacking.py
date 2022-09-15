@@ -26,7 +26,7 @@ class Model_Stacking:
             for model_conf in self._model_conf_list:
                 model1 = load_model(path)
                 activation = model1.layers[1].get_config()["activation"]
-                reduced_model1 = Model(name = model1.name+"_reduced", inputs = model1.input, outputs = model1.layers[-2].output)
+                reduced_model1 = Model(name = model1.name+"_reduced", inputs = model1.input, outputs = model1.layers[-3].output)
                 last_layer = reduced_model1.output
                 x = last_layer
                 model2_obj = model_gen.NN_ModelGeneration(*model_conf)
@@ -48,7 +48,7 @@ class Model_Stacking:
             print(model.name)
             print(model.summary())
             h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], model, self._loss_fn, activation_opt = True, initializer_opt = True)
-            best_lr, best_batch_size, _, best_initializer = h.get_best_hyperparameters()
+            best_lr, best_batch_size, best_activation, best_initializer, _ = h.get_best_hyperparameters()
             print(best_initializer)
             self._reinitialize_model(model, best_initializer)
             
@@ -59,10 +59,6 @@ class Model_Stacking:
             
             model = self._train_models(model = model, lr = best_lr, batch_size = best_batch_size)
             self._save_model(model)
-            
-#             print(f"BEST LR STACKED {best_lr}, BEST BATCH SIZE {best_batch_size}")
-#             dr = Dropout_Optimization(self._train_x, self._train_y, self._test_x, self._test_y, epochs = 100, model = model)
-#             dr.dropout_optimization(lr = best_lr, batch_size = best_batch_size, epoch = 100)
     
     def _train_models(self, model, lr, batch_size):
         optimizer = Adam(lr = lr)

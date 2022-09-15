@@ -1,4 +1,6 @@
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal, LecunNormal, LecunUniform
+from tensorflow.keras.activations import tanh, relu, selu
 
 class Dropout_Optimization():
     def __init__(self, train_x, train_y, test_x, test_y, loss_fn, epochs, model):
@@ -18,12 +20,12 @@ class Dropout_Optimization():
         dropout_loss_list = []
         for dropout0 in dropout_list:
             for dropout1 in dropout_list:
-                self._reinitialize_model(self._model, initializer)
-                self._set_activation(self._model, activation)
-
-                dropout_comb_list.append([dropout0,dropout1])
                 self._model.layers[dropout_indices[0]].rate = dropout0
                 self._model.layers[dropout_indices[1]].rate = dropout1
+                dropout_comb_list.append([dropout0,dropout1])
+
+                self._reinitialize_model(self._model, initializer)
+                self._set_activation(self._model, activation)
                 optimizer = Adam(lr = lr)
                 self._model.compile(loss = self._loss_fn, optimizer = optimizer)
                 history = self._model.fit(self._train_x, self._train_y, epochs = epoch, batch_size = batch_size, verbose = 0)
