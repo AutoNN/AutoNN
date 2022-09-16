@@ -1,5 +1,4 @@
-from tkinter.messagebox import NO
-from ASC_ML.preprocessing.dataset_container import DatasetContainer as dc
+from AutoNN.preprocessing.dataset_container import DatasetContainer as dc
 from dask_ml.impute import SimpleImputer
 from sklearn.impute import KNNImputer
 import numpy as np

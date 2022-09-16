@@ -1,10 +1,10 @@
 from dask import dataframe as dd
-from ASC_ML.preprocessing import dataset_container as dc
-from ASC_ML.preprocessing import date_parsing as dp
-from ASC_ML.preprocessing import column_info as ci
-from ASC_ML.preprocessing import encoding as enc
-from ASC_ML.preprocessing import nan_handling as nanhandle
-from ASC_ML.preprocessing import feature_elimination as fe
+from AutoNN.preprocessing import dataset_container as dc
+from AutoNN.preprocessing import date_parsing as dp
+from AutoNN.preprocessing import column_info as ci
+from AutoNN.preprocessing import encoding as enc
+from AutoNN.preprocessing import nan_handling as nanhandle
+from AutoNN.preprocessing import feature_elimination as fe
 
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -18,8 +18,8 @@ class DataCleaning:
         colinf = ci.ColumnInfo(self.__dataset)
         colinf.generate_info()
         self.__col_info = colinf.column_info
-        # self.__nan_handling = nanhandle.DataHandling(dataset=self.__dataset, col_inf=self.__col_info, override_imputer=override_imputer)
-        # self.__dataset = self.__nan_handling.dataset
+        self.__nan_handling = nanhandle.DataHandling(dataset=self.__dataset, col_inf=self.__col_info, override_imputer=override_imputer)
+        self.__dataset = self.__nan_handling.dataset
         colinf = ci.ColumnInfo(self.__dataset)
         colinf.generate_info()
         self.__col_info = colinf.column_info
