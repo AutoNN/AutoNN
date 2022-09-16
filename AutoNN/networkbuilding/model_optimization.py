@@ -3,8 +3,8 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model
 from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal, LecunUniform, LecunNormal
 from tensorflow.keras.activations import tanh, relu, selu
-from ASC_ML.networkbuilding import hyperparameter_optimization as hyp_opt
-from ASC_ML.networkbuilding import model_generation as model_gen
+from AutoNN.networkbuilding import hyperparameter_optimization as hyp_opt
+from AutoNN.networkbuilding import model_generation as model_gen
 
 import os
 

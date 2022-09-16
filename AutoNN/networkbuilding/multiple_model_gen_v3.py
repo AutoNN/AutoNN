@@ -1,6 +1,6 @@
-from ASC_ML.networkbuilding import model_generation as model_gen
-from ASC_ML.networkbuilding import search_space_gen_v1 as search
-from ASC_ML.networkbuilding import hyperparameter_optimization as hyp_opt
+from AutoNN.networkbuilding import model_generation as model_gen
+from AutoNN.networkbuilding import search_space_gen_v1 as search
+from AutoNN.networkbuilding import hyperparameter_optimization as hyp_opt
 
 from tensorflow.keras.activations import tanh, relu, selu
 from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal
