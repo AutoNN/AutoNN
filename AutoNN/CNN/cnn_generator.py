@@ -96,10 +96,6 @@ class CNN(nn.Module):
         '''
         print(summ(input_shape,self,border))
 
-    
-
-        
-
 
 class CreateCNN:
     def __init__(self,_size:int=10) -> None:
@@ -145,7 +141,24 @@ class CreateCNN:
         if not self.cnns:
             self.__create_Cnns(len_dataset,input_shape,num_channels)
         
+    # def __meanNstd(self,path,loader=None):
+    #     '''
+    #     calculates the mean and std of an image dataset
+    #     image has to be RGB image
+    #     '''
+    #     channelSum,channel2sum,batch = 0,0,0
+
+    #     for X, _ in loader:
         
+    #         channelSum += torch.mean(X,dim=[0,2,3])
+    #         channel2sum += torch.mean(X**2,dim=[0,2,3])
+    #         batch+=1
+    #     mean= channelSum/batch
+    #     std = (channel2sum/batch -mean**2)**0.5
+        
+    #     return mean,std
+
+
     def get_bestCNN(self,
                     path_trainset:str,
                     path_validationset:str=None,
@@ -155,6 +168,7 @@ class CreateCNN:
                     lossFn:str='cross-entropy',
                     LR=3e-4,
                     EPOCHS=10,
+                    image_shape:tuple=(28,28),
                     **kwargs
                     )->Tuple[float,Any,list,dict]:
         '''
@@ -176,6 +190,7 @@ class CreateCNN:
                 IF YOU ONLY HAVE TEH TRAINING DATA
                 AND NOT VALIDATION SET AND TEST SET
                 THEN set this to TRUE
+            image_shape: (height,width) of the input image
 
             Optional Args:
                 input_channels = number of input channels
@@ -199,22 +214,22 @@ class CreateCNN:
         if not split_required:
 
             trainSet = ImageFolder(path_trainset,transforms.Compose(
-                [transforms.ToTensor()]
+                [transforms.ToTensor(),transforms.Resize(image_shape)]
             ))
             
             validSet = ImageFolder(path_validationset,transforms.Compose(
-                [transforms.ToTensor()]
+                [transforms.ToTensor(),transforms.Resize(image_shape)]
             ))
             
             testSet = ImageFolder(path_testset,transforms.Compose(
-                [transforms.ToTensor()]
+                [transforms.ToTensor(),transforms.Resize(image_shape)]
             ))
             len_classes = len(trainSet.classes)
             print('Classes: ',trainSet.classes)
         else:
             
             trainSet = ImageFolder(path_trainset,transforms.Compose(
-                [transforms.ToTensor()]
+                [transforms.ToTensor(),transforms.Resize(image_shape)]
             ))
             trainlen = int(len(trainSet)*0.7)
             testlen = len(trainSet) - trainlen # rest 30%
@@ -228,6 +243,7 @@ class CreateCNN:
         len_dataset = len(trainSet)
         input_shape = tuple(trainSet[0][0].shape)
 # ______________________________________________________________
+        # self.val2 = kwargs.get('val2',"default value")
         self.inChannels = kwargs.get('in_channels',input_shape[0])
         self.numClasses = kwargs.get('num_classes',len_classes)
         self.__create_Cnns(len_dataset,input_shape,len_classes)
