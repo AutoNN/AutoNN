@@ -1,5 +1,4 @@
 mnist_png/
-exp-notebook/
 dataset/
 best_models/
 *.ipynb
