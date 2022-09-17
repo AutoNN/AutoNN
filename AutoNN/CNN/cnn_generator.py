@@ -141,6 +141,7 @@ class CreateCNN:
         if not self.cnns:
             self.__create_Cnns(len_dataset,input_shape,num_channels)
         
+        
     # def __meanNstd(self,path,loader=None):
     #     '''
     #     calculates the mean and std of an image dataset
@@ -206,7 +207,7 @@ class CreateCNN:
             best_acc,model,model_config,_ = pop.get_bestCNN('dataset',split_required=True)
 
         '''
-
+        print(f'Default computing platform: {self.device}')
 
 
         if lossFn == 'cross-entropy':
@@ -247,6 +248,7 @@ class CreateCNN:
         self.inChannels = kwargs.get('in_channels',input_shape[0])
         self.numClasses = kwargs.get('num_classes',len_classes)
         self.__create_Cnns(len_dataset,input_shape,len_classes)
+        print("Architecture search Complete..!")
 
 # ______________________________________________________________
 
@@ -268,6 +270,7 @@ class CreateCNN:
         print('Searching for the best model. Please be patient. Thank you....')        
         for i in range(len(self.cnns)):
             print(f'Training CNN model cnn{i}')
+            
             try:
                 train_performance=self.__training(self.cnns[i],trainloader,valloader,self.device,
                                         criterion,optims[i],epochs=EPOCHS)

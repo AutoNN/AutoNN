@@ -4,6 +4,6 @@ dataset/
 best_models/
 *.ipynb
 *.txt
-/ASC_ML/test.py
+/AutoNN/test.py
 /__pycache__/
-ASC_ML/CNN/__pycache__/
+AutoNN/CNN/__pycache__/

@@ -1,14 +1,10 @@
-from ASC_ML.CNN.cnn_generator import CreateCNN
+from AutoNN.CNN.cnn_generator import CreateCNN
 
-# from torch.multiprocessing import freeze_support
-
-# if __name__ == '__main__':
-#     freeze_support()
 pop = CreateCNN(5)
-best_acc,model,bestconfig,history = pop.get_bestCNN('dataset',split_required=True,EPOCHS=5)
+best_acc,model,bestconfig,history = pop.get_bestCNN('D:/Personal/dac c dac/autoML/ASC-ML/dataset',split_required=True,EPOCHS=5)
 # pop.print_all_cnn_configs()
 
-model.save()
+# model.save()
 model.summary((3,28,28))
 
 print(model)
