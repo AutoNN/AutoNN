@@ -1,8 +1,0 @@
-mnist_png/
-dataset/
-best_models/
-*.ipynb
-*.txt
-/AutoNN/test.py
-/__pycache__/
-AutoNN/CNN/__pycache__/
