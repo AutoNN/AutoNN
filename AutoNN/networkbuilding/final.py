@@ -30,5 +30,5 @@ class Final:
         m.get_best_models(save = False)
         opt = model_opt.Model_Optimization(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, 200, m.evaluate_dict_list, save_dir = "/home/anish/AutoNN_test_weights/candidate_models/")
         opt.optimize_models(save=True)
-        stacked_models = model_stacking.Model_Stacking(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, opt.saved_paths, opt.model_confs, save_dir = "/home/anish/AutoNN_test_weights/stacked_models/")
+        stacked_models = model_stacking.Model_Stacking(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, opt.saved_paths, opt.opt_model_confs, save_dir = "/home/anish/AutoNN_test_weights/stacked_models/")
         stacked_models.optimize_stacked_models()

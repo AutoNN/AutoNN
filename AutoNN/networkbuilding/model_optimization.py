@@ -34,7 +34,10 @@ class Model_Optimization:
         self._save_dir = save_dir
         self._saved_paths = []
         self._model_confs = []
+        self._opt_model_confs = []
         self._best_hyp_permodel = []
+        self._no_top_model = 3
+        self._evaluate_dict_list = []
 
     @property
     def saved_paths(self):
@@ -43,6 +46,10 @@ class Model_Optimization:
     @property
     def model_confs(self):
         return self._model_confs
+    
+    @property
+    def opt_model_confs(self):
+        return self._opt_model_confs
 
     @property
     def best_hyp_permodel(self):
@@ -63,15 +70,15 @@ class Model_Optimization:
             model = Model(name = model_dict["model_name"]+"_dr",inputs = input_layer_list, outputs = output_layer_list)
             # model = load_model(model_dict["path_weights"])
             self._model_confs.append(model_conf)
-            yield model
+            yield model, model_conf
     
     def optimize_models(self, save):
         candidate_model_generator = self._candidate_model_generator()
-        for model in candidate_model_generator:
+        for model, model_conf in candidate_model_generator:
             # print(model.summary())
             print("--------------------------------------------------------------------------------")
             print(f"Model Name : {model.name}\n")
-            h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], model, self._loss_fn, dropout_opt = True)
+            h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], [self._test_x], [self._test_y], model, self._loss_fn, dropout_opt = True)
             best_lr, best_batch_size, best_activation, best_initializer, best_dropout_rate = h.get_best_hyperparameters()
 
             self._reinitialize_model(model, best_initializer)
@@ -80,18 +87,28 @@ class Model_Optimization:
                 model.layers[-2].rate = best_dropout_rate
             self._best_hyp_permodel.append([best_lr, best_batch_size, best_activation, best_initializer, best_dropout_rate])
 
-            model,_,_,_ = self.train_model(input_data = [self._train_x, self._train_y, self._test_x, self._test_y], Pmodel=model, n_model=1,
+            model, metrics_names, scores, scores_test = self.train_model(input_data = [self._train_x, self._train_y, self._test_x, self._test_y], Pmodel=model, n_model=1,
                                 epochs=100,lr=best_lr, batch_size=best_batch_size)
-            if save==True:
-                self.save_weights(model)
+            self._evaluate_save_model(Model = model, model_conf = model_conf, metrics_names=metrics_names, scores=scores_test)
+            # if save==True:
+            #     self.save_weights(model)
+        print(self._evaluate_dict_list)
+        self.save_weights()
     
-    def save_weights(self, model):
-        # save_dir = os.path.join(self._save_dir,"/candidate_models")
-        save_path = os.path.join(self._save_dir, model.name)
-        # if os.path.isdir(save_dir):
-        #     os.mkdir(save_dir)
-        model.save(save_path)
-        self._saved_paths.append(save_path)
+    # def save_weights(self, model):
+    #     # save_dir = os.path.join(self._save_dir,"/candidate_models")
+    #     save_path = os.path.join(self._save_dir, model.name)
+    #     # if os.path.isdir(save_dir):
+    #     #     os.mkdir(save_dir)
+    #     model.save(save_path)
+    #     self._saved_paths.append(save_path)
+
+    def save_weights(self):
+        for dicti in self._evaluate_dict_list:
+            model = dicti["model"]
+            model.save(dicti["path_weights"])
+            self._saved_paths.append(dicti["path_weights"])
+            self._opt_model_confs.append(dicti["model_conf"])
                 
     def train_model(self, input_data, Pmodel, n_model, epochs, lr = 1e-3, batch_size = 64, activation = None, initializer = None):
 
@@ -124,6 +141,33 @@ class Model_Optimization:
         for name,score,score_test in zip(metrics_names, scores, scores_test):
             print(name, " : ", score, ", TEST : ", score_test)
         return metrics_names, scores, scores_test
+
+    def _evaluate_save_model(self, Model, model_conf, metrics_names, scores):
+        # n : Number of models in the Model
+        # List of dictionaries {"model_name":"densexyz", "score":0.000, "path_weights":"/home/something/dense"}
+
+        metrics_name = metrics_names[0]
+        model_score = scores[0]
+        entry_flag = False
+
+        model_name = Model.name
+        model_name = model_name.removesuffix("_loss")
+        curr_model_dict = {"model_name":model_name, "score":model_score, "path_weights":self._save_dir + model_name, "model_conf":model_conf, "model":Model}
+
+        if len(self._evaluate_dict_list) == 0:
+            self._evaluate_dict_list.append(curr_model_dict)
+        else:
+            index = 0
+            for model_dict in self._evaluate_dict_list:
+                if(curr_model_dict["score"] < model_dict["score"]):
+                    self._evaluate_dict_list.insert(index, curr_model_dict)  
+                    entry_flag = True                      
+                    if(len(self._evaluate_dict_list) > self._no_top_model): self._evaluate_dict_list = self._evaluate_dict_list[:self._no_top_model]
+                    break
+                index = index + 1
+            if(not entry_flag and len(self._evaluate_dict_list) < self._no_top_model):
+                self._evaluate_dict_list.append(curr_model_dict)
+            entry_flag = False
 
     @staticmethod
     def _get_input_output_layer_list(model_list):

@@ -48,6 +48,7 @@ class DataCleaning:
 
         enc_df = encoding.encode(dataframe = self.__dataset.get(types = [type])[0], enc_type = "label")
         self.__dataset.set(enc_df, type = type)
+        print(encoding.key_dict)
 
     def scaling(self, type = "train"):
         # min max scaling

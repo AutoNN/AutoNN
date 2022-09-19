@@ -13,11 +13,12 @@ class Dropout_Optimization():
         self._model = model
     
 
-    def dropout_optimization(self, lr = 1e-3, batch_size = 64, activation = "relu", initializer = "RandomUniform", epoch = 100):
+    def dropout_optimization(self, lr = 1e-3, batch_size = 64, activation = "relu", initializer = "RandomUniform", epoch = 75):
         dropout_indices = self._get_dropout_index()
         dropout_list = [0,0.2,0.5]
         dropout_comb_list = []
-        dropout_loss_list = []
+        # dropout_loss_list = []
+        dropout_loss_diff_list = []
         for dropout0 in dropout_list:
             for dropout1 in dropout_list:
                 self._model.layers[dropout_indices[0]].rate = dropout0
@@ -33,9 +34,10 @@ class Dropout_Optimization():
                 scores = self._model.evaluate(self._train_x, self._train_y, verbose = 0)
                 scores_test = self._model.evaluate(self._test_x, self._test_y, verbose = 0)
 #                 print(f"For Dropouts D0 = {dropout0}, D1 = {dropout1}, TRAIN_LOSS = {scores}, TEST_LOSS = {scores_test}")
-                dropout_loss_list.append(scores_test)
+                dropout_loss_diff_list.append(scores_test - scores)
                 
-        best_dropout_rates = dropout_comb_list[dropout_loss_list.index(min(dropout_loss_list))]
+        # best_dropout_rates = dropout_comb_list[dropout_loss_list.index(min(dropout_loss_list))]
+        best_dropout_rates = dropout_comb_list[dropout_loss_diff_list.index(min(dropout_loss_diff_list))]
         self._model.layers[dropout_indices[0]].rate = best_dropout_rates[0]
         self._model.layers[dropout_indices[1]].rate = best_dropout_rates[1]
         return best_dropout_rates

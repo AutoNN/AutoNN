@@ -11,10 +11,12 @@ import numpy as np
 from tensorflow.keras import backend as K
 
 class Hyperparameter_Optimization:
-    def __init__(self, X, Y, model, loss_fn, lr_opt = True, batch_opt = True, activation_opt = True, initializer_opt = True, dropout_opt = False):
+    def __init__(self, X, Y, test_X, test_Y, model, loss_fn, lr_opt = True, batch_opt = True, activation_opt = True, initializer_opt = True, dropout_opt = False):
         self._seed = 420
         self._train_X = X
         self._train_Y = Y
+        self._test_X = test_X
+        self._test_Y = test_Y
         self._model = model
         self._loss_fn = loss_fn
         self._lr_opt = lr_opt
@@ -172,6 +174,7 @@ class Hyperparameter_Optimization:
             self._model.compile(loss = self._loss_fn, optimizer = optimizer)
             history = self._model.fit(self._train_X, self._train_Y, epochs = 50, batch_size = best_batch_size, verbose = 0)
             scores = self._model.evaluate(self._train_X, self._train_Y, verbose = 0)
+            scores_test = self._model.evaluate(self._test_X, self._test_Y, verbose = 0)
             dropout_loss_list.append(scores)
 
         best_dropout_rate = dropout_list[dropout_loss_list.index(min(dropout_loss_list))]
