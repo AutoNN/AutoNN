@@ -1,0 +1,5 @@
+AutoNN/__pycache__
+AutoNN/networkbuilding/__pycache__/
+AutoNN/preprocessing/__pycache__/
+AutoNN/CNN/__pycache__/
+*.ipynb
