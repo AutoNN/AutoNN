@@ -7,7 +7,7 @@ from torchvision.datasets import ImageFolder
 from torchvision import transforms
 from pytorchsummary import summary as summ
 from torch.utils.data import DataLoader,random_split
-
+from tqdm import tqdm
 
 def create_config(min,max)-> List[Tuple]:
     '''
@@ -109,7 +109,7 @@ class CreateCNN:
         self.cnns=[]
 
     def print_all_cnn_configs(self): 
-        for x,i in enumerate(self.popula): 
+        for x,i in enumerate(self.configuration): 
             print(f'cnn{x} configuration:')
             print(i)
             print('_'*100)
@@ -126,7 +126,7 @@ class CreateCNN:
 
     def __create_Cnns(self,len_dataset,input_shape,num_channels):
         l=len(input_shape)
-        self.popula  = []
+        self.configuration  = []
         for _ in range(self.size):
             try:
                 config_ = create_config(3,10)
@@ -134,7 +134,7 @@ class CreateCNN:
                 params, _,_ = summ(input_size =input_shape,model=m1,_print=False)
                 if 0.7< params/len_dataset<1.5 :
                     self.cnns.append(m1)
-                    self.popula.append(config_)
+                    self.configuration.append(config_)
             except Exception as e:
                 # print(e)
                 pass
@@ -259,7 +259,6 @@ class CreateCNN:
         testloader = DataLoader(testSet,batch_size,shuffle=False)
 
         history={}
-        # test_LOSShistory =[]
         test_ACChistory =[]
 
         # optimizers 
@@ -267,7 +266,10 @@ class CreateCNN:
         for i in range(len(self.cnns)):
             optims.append(torch.optim.Adam(self.cnns[i].parameters(),lr=LR))
 
-        print('Searching for the best model. Please be patient. Thank you....')        
+        print('Searching for the best model. Please be patient. Thank you....')   
+
+        print(f'Number of models generated: {len(self.cnns)}')
+
         for i in range(len(self.cnns)):
             print(f'Training CNN model cnn{i}')
             
@@ -294,17 +296,19 @@ class CreateCNN:
             self.__create_Cnns(len_dataset,input_shape,len_classes)
             
         index = argmax(array(test_ACChistory))
-        return max(test_ACChistory), self.cnns[index],self.popula[index],history
+        print('Best test accuracy achieved by model cnn{index}: ',max(test_ACChistory))
+        return  self.cnns[index],self.configuration[index],history
 
     def __training(self,model,trainloader,validloader,device,LOSS,optimizer,epochs):
         performance={'trainloss':[],'trainacc':[],
                     'valloss':[],'valacc':[]}
         model.train()
         for _ in range(epochs):
+            print(f'Epoch: {_+1}')
             loss_per_epoch=0
             total=correct=0
             model= model.to(device)
-            for x,y in trainloader:
+            for x,y in tqdm(trainloader):
                 # print(x.dtype,y.dtype)
                 y = y.type(torch.LongTensor)   # casting to long
 
@@ -324,13 +328,15 @@ class CreateCNN:
 
             performance['trainacc'].append(100* correct/total)
             performance['trainloss'].append(loss_per_epoch/len(trainloader))
+            print(f'Training Accuracy: {performance["trainacc"][_]}\t Training Loss:{performance["trainloss"][_]}')
             
-            # for validaiton
+            # for val        idaiton
+            model.eval()
             loss_=0
             total_=correct_=0
             model= model.to(device)
             with torch.no_grad():
-                for x,y in validloader:
+                for x,y in tqdm(validloader):
                     y = y.type(torch.LongTensor)   # casting to long
                     x,y = x.to(device).float(),y.to(device)
                     yhat=model(x)
@@ -342,10 +348,12 @@ class CreateCNN:
             performance['valloss'].append(loss_/len(validloader))
             performance['valacc'].append(100*correct_/total_)
 
-            print(f'Epoch: {_+1}')
-            print(f'Training Accuracy: {performance["trainacc"][_]}\t Training Loss:{performance["trainloss"][_]}')
+            if _>0:
+                if performance['valloss'][_]<performance['valloss'][_-1]:
+                    torch.save(model.state_dict(),'temp.pth')
+
             print(f'Validation Accuracy: {performance["valacc"][_]}\t Validation Loss:{performance["valloss"][_]}')
-            
+        model.load_state_dict(torch.load('temp.pth'))    
         return performance
 
 

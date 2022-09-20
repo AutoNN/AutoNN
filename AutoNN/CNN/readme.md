@@ -3,7 +3,7 @@
 ```python
 from AutoNN.CNN.cnn_generator import CreateCNN
 pop = CreateCNN(3,3,10)
-best_acc,model,bestconfig,history = pop.get_bestCNN('dataset',split_required=True,EPOCHS=1)
+model,bestconfig,history = pop.get_bestCNN('dataset',split_required=True,EPOCHS=1)
 ```
 ### Output:
 ```
