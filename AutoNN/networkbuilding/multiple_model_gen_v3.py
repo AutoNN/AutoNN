@@ -46,7 +46,7 @@ class Multiple_Model_Gen_V3:
         self._save_dir = save_dir
         self._model_confs = []
         self._evaluate_dict_list = []
-        self._no_top_model = 2
+        self._no_top_model = 5
         self.get_model_confs()
     
     @property
@@ -161,7 +161,7 @@ class Multiple_Model_Gen_V3:
         model_confs = []
         # [16,32,64,128,256,512,1024]
         # [16,32,64,128,512,1024]
-        s = search.Search_Space_Gen_1(node_options = [16,64], min_no_layers = 2, max_no_layers = self._max_no_layers, input_shape = self._input_shape)
+        s = search.Search_Space_Gen_1(node_options = [16,64,128,512,1024], min_no_layers = 2, max_no_layers = self._max_no_layers, input_shape = self._input_shape)
         model_conf_batch = []
 
         # print(s.no_of_perm)

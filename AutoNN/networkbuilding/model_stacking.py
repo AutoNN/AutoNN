@@ -24,6 +24,8 @@ class Model_Stacking:
     def _stacked_model_generator(self):
         for path in self._model_path_list:
             for model_conf in self._model_conf_list:
+                if self._model_path_list.index(path) == self._model_conf_list.index(model_conf):
+                    continue
                 model1 = load_model(path)
                 activation = model1.layers[1].get_config()["activation"]
                 reduced_model1 = Model(name = model1.name+"_reduced", inputs = model1.input, outputs = model1.layers[-3].output)
@@ -47,7 +49,7 @@ class Model_Stacking:
             print("-------------------------------------------------------------------------------------------------------------------")
             print(model.name)
             print(model.summary())
-            h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], model, self._loss_fn, activation_opt = True, initializer_opt = True)
+            h = hyp_opt.Hyperparameter_Optimization([self._train_x], [self._train_y], [self._test_x], [self._test_y], model, self._loss_fn, activation_opt = True, initializer_opt = True)
             best_lr, best_batch_size, best_activation, best_initializer, _ = h.get_best_hyperparameters()
             print(best_initializer)
             self._reinitialize_model(model, best_initializer)

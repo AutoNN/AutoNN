@@ -7,5 +7,5 @@ print('''
 ▒█░▒█ ░▀▀▀ ░░▀░░ ▀▀▀▀ ▒█░░▀█ ▒█░░▀█
 
 An AutoML framework by
-Rajarshi Banerjee, Sagnik Nayak, Anish Konar, Arjun Ghosh.
+Anish Konar, Arjun Ghosh, Rajarshi Banerjee, Sagnik Nayak.
 ''')

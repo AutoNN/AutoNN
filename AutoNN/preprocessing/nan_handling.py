@@ -1,12 +1,13 @@
 from AutoNN.preprocessing.dataset_container import DatasetContainer as dc
 from dask_ml.impute import SimpleImputer
 from sklearn.impute import KNNImputer
+from dask_ml.preprocessing import LabelEncoder
 import numpy as np
 from dask import dataframe as dd
 import pandas as pd
 
 class DataHandling:
-    def __init__(self, dataset: dc, col_inf: dict, missing_threshold = 0.2, override_imputer = {}) -> None:
+    def __init__(self, dataset: dc, col_inf: dict, missing_threshold = 0.2) -> None:
         self.__bucket = dataset
         self.__column_info = col_inf
         self.__dropped = list()
@@ -15,8 +16,11 @@ class DataHandling:
         self.__label = list()
         self.__imputer = dict()
         self.__threshold = missing_threshold
+        self.__label_encoder = dict()
         self.__determine_type()
         self.__drop_unwanted()
+
+    def run_cleaner(self, override_imputer = {}):
         self.__allocate(override_imputer)
 
     def __drop_unwanted(self):
@@ -52,6 +56,12 @@ class DataHandling:
         dset = dd.multi.concat([dset,imputed_dset], axis = 1, interleave_partitions=True, ignore_unknown_divisions=True)
         return dset
     
+    def __label_encode(self, data, column_name):
+        return self.__label_encoder[column_name].transform(data)
+
+    def __inverse_label_encode(self, column_name):
+        pass
+    
     def __allocate(self, override = {}):
         fill_in_order = list()
         imputerlist = {'simple':SimpleImputer(strategy='median'), 'KNN': KNNImputer(add_indicator=True)}
@@ -59,6 +69,19 @@ class DataHandling:
             fill_in_order.append((self.__column_info[col]['missing'],col))
         fill_in_order.sort()
         print(fill_in_order)
+        train, validation, test = self.__bucket.get(['train', 'validation', 'test'])
+        for column in self.__column_info.keys():
+            if self.__column_info[column]['dtype'] == 'object':
+                le = LabelEncoder()
+                le.fit(train[column].fillna("UnknownValue"))
+                print(train[column].unique())
+                self.__label_encoder[column] = le
+                train[column] = self.__label_encode(train.pop(column).fillna("UnknownValue"), column_name=column)
+                if validation is not None:
+                    validation[column] = self.__label_encode(validation.pop(column).fillna("UnknownValue"), column_name=column)
+                if test is not None:
+                    test[column] = self.__label_encode(test.pop(column).fillna("UnknownValue"), column_name=column)
+                
         for _, colname in fill_in_order:
             selected_imputer = override.get(colname, 'KNN')
             imputer = imputerlist[selected_imputer]
