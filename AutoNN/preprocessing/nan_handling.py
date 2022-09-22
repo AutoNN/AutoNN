@@ -64,24 +64,11 @@ class DataHandling:
     
     def __allocate(self, override = {}):
         fill_in_order = list()
-        imputerlist = {'simple':SimpleImputer(strategy='median'), 'KNN': KNNImputer(add_indicator=True)}
+        imputerlist = {'simple':SimpleImputer, 'KNN': KNNImputer}
         for col in self.__unfilled:
             fill_in_order.append((self.__column_info[col]['missing'],col))
         fill_in_order.sort()
         print(fill_in_order)
-        train, validation, test = self.__bucket.get(['train', 'validation', 'test'])
-        for column in self.__column_info.keys():
-            if self.__column_info[column]['dtype'] == 'object':
-                le = LabelEncoder()
-                le.fit(train[column].fillna("UnknownValue"))
-                print(train[column].unique())
-                self.__label_encoder[column] = le
-                train[column] = self.__label_encode(train.pop(column).fillna("UnknownValue"), column_name=column)
-                if validation is not None:
-                    validation[column] = self.__label_encode(validation.pop(column).fillna("UnknownValue"), column_name=column)
-                if test is not None:
-                    test[column] = self.__label_encode(test.pop(column).fillna("UnknownValue"), column_name=column)
-                
         for _, colname in fill_in_order:
             selected_imputer = override.get(colname, 'KNN')
             imputer = imputerlist[selected_imputer]
@@ -99,6 +86,10 @@ class DataHandling:
                 train, validation, test = self.__bucket.get(['train', 'validation', 'test'])
                 columns = self.__full + [colname]
                 df_train = train[columns]
+                if self.__column_info[colname]['dtype'] == 'object':
+                    imputer = imputer(n_neighbors = 1, add_indicator = True)
+                else:
+                    imputer = imputer(n_neighbors = 5, add_indicator = True)
                 imputer.fit(df_train)
                 self.__bucket.set(dataset = self.__imputeKNN(train, colname, imputer), type='train')
                 if validation != None:
