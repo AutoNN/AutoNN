@@ -1,3 +1,4 @@
+from unicodedata import name
 from AutoNN.preprocessing.dataset_container import DatasetContainer as dc
 from dask_ml.impute import SimpleImputer
 from sklearn.impute import KNNImputer
@@ -45,23 +46,20 @@ class DataHandling:
     
     def __imputeKNN(self, dset, colname, imputer):
         columns = self.__full + [colname]
-        df_dset = dset[columns]
+        df_dset = dset[columns].copy()
         dset = dset.drop(columns, axis = 1)
         imputed_dset = pd.DataFrame(imputer.transform(df_dset), columns=columns+[colname+'_indicator'])
-        imputed_dset = dd.from_pandas(imputed_dset, npartitions=200)
-        imputed_dset = imputed_dset.repartition(npartitions=200)
+        imputed_dset = dd.from_pandas(imputed_dset, npartitions=1)
+        imputed_dset = imputed_dset.repartition(npartitions=1)
         imputed_dset = imputed_dset.reset_index(drop=True)
-        dset = dset.repartition(npartitions=200)
+        dset = dset.repartition(npartitions=1)
         dset = dset.reset_index(drop=True)
-        dset = dd.multi.concat([dset,imputed_dset], axis = 1, interleave_partitions=True, ignore_unknown_divisions=True)
+        # print(imputed_dset.compute().shape)
+        # print(dset.compute().shape)
+        dset = dd.multi.concat([dset,imputed_dset], axis = 1, interleave_partitions=True, ignore_unknown_divisions=True, ignore_order = True)
         return dset
     
-    def __label_encode(self, data, column_name):
-        return self.__label_encoder[column_name].transform(data)
 
-    def __inverse_label_encode(self, column_name):
-        pass
-    
     def __allocate(self, override = {}):
         fill_in_order = list()
         imputerlist = {'simple':SimpleImputer, 'KNN': KNNImputer}
@@ -85,20 +83,24 @@ class DataHandling:
             elif selected_imputer == 'KNN':
                 train, validation, test = self.__bucket.get(['train', 'validation', 'test'])
                 columns = self.__full + [colname]
-                df_train = train[columns]
+                df_train = train[columns].copy()
                 if self.__column_info[colname]['dtype'] == 'object':
-                    imputer = imputer(n_neighbors = 1, add_indicator = True)
+                    loaded_imputer = imputer(n_neighbors = 1, add_indicator = True)
                 else:
-                    imputer = imputer(n_neighbors = 5, add_indicator = True)
-                imputer.fit(df_train)
-                self.__bucket.set(dataset = self.__imputeKNN(train, colname, imputer), type='train')
+                    loaded_imputer = imputer(n_neighbors = 5, add_indicator = True)
+                # print(colname)
+                # print(columns)
+                # print(len(columns))
+                # print(df_train.compute().shape)
+                loaded_imputer.fit(df_train)
+                self.__bucket.set(dataset = self.__imputeKNN(train, colname, loaded_imputer), type='train')
                 if validation != None:
-                    self.__bucket.set(dataset = self.__imputeKNN(validation, colname, imputer), type='validation')
+                    self.__bucket.set(dataset = self.__imputeKNN(validation, colname, loaded_imputer), type='validation')
                 if test != None:
-                    self.__bucket.set(dataset = self.__imputeKNN(test, colname, imputer), type='test')
+                    self.__bucket.set(dataset = self.__imputeKNN(test, colname, loaded_imputer), type='test')
                 self.__imputer.update({colname:imputer})
-                self.__full.append(colname)
-                self.__unfilled.remove(colname)
+                # self.__full.append(colname)
+                # self.__unfilled.remove(colname)
 
     @property
     def dataset(self):
