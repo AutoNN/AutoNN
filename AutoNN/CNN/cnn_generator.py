@@ -8,6 +8,7 @@ from torchvision import transforms
 from pytorchsummary import summary as summ
 from torch.utils.data import DataLoader,random_split
 from tqdm import tqdm
+from .models.resnet import resnet
 
 def create_config(min,max)-> List[Tuple]:
     '''
@@ -129,9 +130,10 @@ class CreateCNN:
         self.configuration  = []
         for _ in range(self.size):
             try:
-                config_ = create_config(3,10)
+                config_ = create_config(2,10)
                 m1 = CNN(l,num_channels,config_)
                 params, _,_ = summ(input_size =input_shape,model=m1,_print=False)
+                print(params)
                 if 0.7< params/len_dataset<1.5 :
                     self.cnns.append(m1)
                     self.configuration.append(config_)
@@ -204,7 +206,7 @@ class CreateCNN:
 
         Example:
         >>> pop = CreateCNN(3,3,10) # first create an instance of the CreateCNN class 
-            best_acc,model,model_config,_ = pop.get_bestCNN('dataset',split_required=True)
+            model,model_config,_ = pop.get_bestCNN('dataset',split_required=True)
 
         '''
         print(f'Default computing platform: {self.device}')
@@ -241,18 +243,30 @@ class CreateCNN:
             testlen -= validlen  #the rest 50%
             trainSet,validSet,testSet= random_split(trainSet,[trainlen,validlen,testlen])
 
+        print(f'Training set size: {len(trainSet)} | Validation Set size: {len(validSet)} | Test Set size: {len(testSet)}')
         len_dataset = len(trainSet)
+            
+        # return len_dataset
         input_shape = tuple(trainSet[0][0].shape)
 # ______________________________________________________________
         # self.val2 = kwargs.get('val2',"default value")
         self.inChannels = kwargs.get('in_channels',input_shape[0])
         self.numClasses = kwargs.get('num_classes',len_classes)
-        self.__create_Cnns(len_dataset,input_shape,len_classes)
+        if 4000<len_dataset < 10000:
+            self.cnns.append(resnet(-1,in_channels=self.inChannels,num_residual_block=[0,1],num_class=self.numClasses))
+            self.configuration.append('num_residual_block=[0,1] | resnet')
+        elif len_dataset<=4000:
+            raise Exception('''
+            Your dataset size is too low!
+            Use Augment.augment() function from CNN.utils.image_augmentation
+            To augment your image dataset
+            ''')
+        else:
+            self.__create_Cnns(len_dataset,input_shape,len_classes)
         print("Architecture search Complete..!")
 
 # ______________________________________________________________
 
-        print(f'Training set size: {len(trainSet)} | Validation Set size: {len(validSet)} | Test Set size: {len(testSet)}')
 
         trainloader = DataLoader(trainSet,batch_size,shuffle=True)
         valloader = DataLoader(validSet,batch_size,shuffle=True)
