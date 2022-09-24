@@ -8,4 +8,4 @@ tensorflow
 keras
 sklearn
 pandas
-dusk
+dask
