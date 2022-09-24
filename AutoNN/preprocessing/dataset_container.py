@@ -18,7 +18,7 @@ class DatasetContainer:
                 self.__dataset.set(type, holder)
             except:
                 continue
-
+    
 
     def __is_override(self) -> bool:
         return self.__override

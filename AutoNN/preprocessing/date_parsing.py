@@ -22,7 +22,8 @@ class DateTime_Parsing:
 
     def transform(self, dataframe) -> dd:
         for col in self.__rows_to_parse.keys():
-            dataframe[self.__rows_to_parse[col]] = dd.to_datetime(dataframe.pop(col))
+            new_col = dd.to_datetime(dataframe.pop(col))
+            dataframe[self.__rows_to_parse[col]+'_timestamp'] = dd.to_numeric(new_col)//10**9
         return dataframe
 
     def parse_dates(self) -> None:

@@ -16,16 +16,17 @@ class Encoding:
         return self._key_dict_dec
 
 
-    def fit_column(self, column_name, column, unknown_data = np.nan):
+    def fit_column(self, column_name, column):
         no_keys = column.unique()
-        self._keyval(column_name, no_keys, unknown_data)
+        self._keyval(column_name, no_keys)
 
 
-    def _keyval(self, col_name, no_keys, unknown_data):
+    def _keyval(self, col_name, no_keys):
         no_keys = list(enumerate(no_keys, start=1))
         inverse_keyvalpairs = dict([(0,'UnknownData')]+no_keys)
-        keyvalpairs = list(map(lambda x: (x[1],x[0]), [(0,unknown_data)]+no_keys))
+        keyvalpairs = list(map(lambda x: (x[1],x[0]), no_keys))
         keyvalpairs = dict(keyvalpairs)
+        keyvalpairs[np.nan] = np.nan
         self._key_dict_enc.update({col_name:keyvalpairs})
         self._key_dict_dec.update({col_name:inverse_keyvalpairs})
 
