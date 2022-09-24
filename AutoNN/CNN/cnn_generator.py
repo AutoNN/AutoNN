@@ -133,8 +133,7 @@ class CreateCNN:
                 config_ = create_config(2,10)
                 m1 = CNN(l,num_channels,config_)
                 params, _,_ = summ(input_size =input_shape,model=m1,_print=False)
-                print(params)
-                if 0.7< params/len_dataset<1.5 :
+                if 0.1<= params/len_dataset<1.5 :
                     self.cnns.append(m1)
                     self.configuration.append(config_)
             except Exception as e:

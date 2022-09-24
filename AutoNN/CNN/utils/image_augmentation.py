@@ -5,6 +5,11 @@ from tqdm import  tqdm
 
 class Augment(object):
     def __init__(self,path) -> None:
+        '''
+        Args: 
+            path: provide the path to your image folder
+            which you want to augment
+        '''
         self.path = path
 
     def augment(self):
