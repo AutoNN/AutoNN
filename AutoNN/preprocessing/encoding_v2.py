@@ -1,11 +1,15 @@
 from dask import dataframe as dd
 import numpy as np
 from dask import array as da
+from dask_ml.preprocessing import DummyEncoder
+from dask_ml.preprocessing import Categorizer
+from sklearn.pipeline import make_pipeline
 
 class Encoding:
     def __init__(self):
         self._key_dict_enc = {}
         self._key_dict_dec = {}
+        self._one_hot_pipe = None
 
     @property
     def encode_keys(self):
@@ -30,8 +34,16 @@ class Encoding:
         self._key_dict_enc.update({col_name:keyvalpairs})
         self._key_dict_dec.update({col_name:inverse_keyvalpairs})
 
-    def onehot_enc():
-        pass
+    def onehot_fit(self, dataframe):
+        self._one_hot_pipe = make_pipeline(
+            Categorizer(),
+            DummyEncoder()
+        )
+        self._one_hot_pipe.fit(dataframe)
+    
+    def onehot_encode(self, dataframe):
+        onehot_dataframe = self._one_hot_pipe.transform(dataframe)
+        return onehot_dataframe
     
     def label_encode(self, dataframe):
         dataframe_encoded = dataframe.replace(self._key_dict_enc).copy()

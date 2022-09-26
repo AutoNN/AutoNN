@@ -27,9 +27,9 @@ class DataHandling:
     def __drop_unwanted(self):
         train, validation, test = self.__bucket.get(['train', 'validation', 'test'])
         self.__bucket.set(dataset=train.drop(self.__dropped, axis=1), type='train')
-        if validation != None:
+        if validation is not None:
             self.__bucket.set(dataset=validation.drop(self.__dropped, axis=1), type='validation')
-        if test != None:
+        if test is not None:
             self.__bucket.set(dataset=test.drop(self.__dropped, axis=1), type='test')
     
     def __determine_type(self):
@@ -94,9 +94,9 @@ class DataHandling:
                 # print(df_train.compute().shape)
                 loaded_imputer.fit(df_train)
                 self.__bucket.set(dataset = self.__imputeKNN(train, colname, loaded_imputer), type='train')
-                if validation != None:
+                if validation is not None:
                     self.__bucket.set(dataset = self.__imputeKNN(validation, colname, loaded_imputer), type='validation')
-                if test != None:
+                if test is not None:
                     self.__bucket.set(dataset = self.__imputeKNN(test, colname, loaded_imputer), type='test')
                 self.__imputer.update({colname:imputer})
                 # self.__full.append(colname)
