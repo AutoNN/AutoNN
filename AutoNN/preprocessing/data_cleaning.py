@@ -15,6 +15,7 @@ class DataCleaning:
         self.__dataset = dc.DatasetContainer(label, train_dataframe, validation_dataframe, test_dataframe, override)
         self.__pipeline = None
         self.__regression_threshold = threshold
+        self.__feature_eliminator = None
     
     def parse_dates(self):
         date_parse = dp.DateTime_Parsing(self.__dataset)
@@ -60,14 +61,15 @@ class DataCleaning:
         scaled_np_arr = scaler_x.transform(self.__dataset.get(types = [type])[0])
         # scaled np array
 
-    def feature_elimination(self, type = "train", method = "correlation", percentage_column_drop = None, override = False):
-        feature_elim = fe.FeatureElimination()
+    def feature_elimination_fit(self, type = "train", method = "correlation", percentage_column_drop = None, override = False):
+        self.__feature_eliminator = fe.FeatureElimination()
         if method == "recursive":
-            feature_elim.recursive_feature_elimination_fit(self.__dataset.get(types = [type])[0], self.__col_info, percentage_column_drop, override)
+            self.__feature_eliminator.recursive_feature_elimination_fit(self.__dataset.get(types = [type])[0], self.__col_info, percentage_column_drop, override)
         elif method == "correlation":
-            feature_elim.correlation_feature_elimination_fit(self.__dataset.get(types = [type])[0], self.__dataset.get_label()[0], threshold = 0.1)
+            self.__feature_eliminator.correlation_feature_elimination_fit(self.__dataset.get(types = [type])[0], self.__dataset.get_label()[0], threshold = 0.1)
 
-        eliminated_df = feature_elim.eliminate_features(self.__dataset.get(types = [type])[0], self.__dataset.get_label()[0])
+    def eliminate_features(self, type = "train"):
+        eliminated_df = self.__feature_eliminator.eliminate_features(self.__dataset.get(types = [type])[0], self.__dataset.get_label()[0])
         self.__dataset.set(eliminated_df, type = type)
         self.generate_column_info()
 
