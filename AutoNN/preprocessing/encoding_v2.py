@@ -42,8 +42,8 @@ class Encoding:
         self._one_hot_pipe.fit(dataframe)
     
     def onehot_encode(self, dataframe):
-        onehot_dataframe = self._one_hot_pipe.transform(dataframe)
-        return onehot_dataframe
+        dataframe_onehot = self._one_hot_pipe.transform(dataframe)
+        return dataframe_onehot
     
     def label_encode(self, dataframe):
         dataframe_encoded = dataframe.replace(self._key_dict_enc).copy()
