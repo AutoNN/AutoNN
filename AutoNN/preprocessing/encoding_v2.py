@@ -10,6 +10,7 @@ class Encoding:
         self._key_dict_enc = {}
         self._key_dict_dec = {}
         self._one_hot_pipe = None
+        self._cardinality_threshold = 4
 
     @property
     def encode_keys(self):
@@ -32,7 +33,8 @@ class Encoding:
         keyvalpairs = dict(keyvalpairs)
         keyvalpairs[np.nan] = np.nan
         self._key_dict_enc.update({col_name:keyvalpairs})
-        self._key_dict_dec.update({col_name:inverse_keyvalpairs})
+        if len(no_keys) > self._cardinality_threshold:
+            self._key_dict_dec.update({col_name:inverse_keyvalpairs})
 
     def onehot_fit(self, dataframe):
         self._one_hot_pipe = make_pipeline(
