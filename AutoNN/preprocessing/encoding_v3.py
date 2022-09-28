@@ -21,19 +21,19 @@ class Encoding:
         return self._key_dict_dec
 
 
-    def fit_column(self, column_name, column):
+    def fit_column(self, column_name, column, label_name):
         no_keys = column.unique()
-        self._keyval(column_name, no_keys)
+        self._keyval(column_name, no_keys, label_name)
 
 
-    def _keyval(self, col_name, no_keys):
+    def _keyval(self, col_name, no_keys, label_name):
         no_keys = list(enumerate(no_keys, start=1))
         inverse_keyvalpairs = dict([(0,'UnknownData')]+no_keys)
         keyvalpairs = list(map(lambda x: (x[1],x[0]), no_keys))
         keyvalpairs = dict(keyvalpairs)
         keyvalpairs[np.nan] = np.nan
         self._key_dict_enc.update({col_name:keyvalpairs})
-        if len(no_keys) <= self._cardinality_threshold:
+        if len(no_keys) <= self._cardinality_threshold and col_name is not label_name:
             self._key_dict_dec.update({col_name:inverse_keyvalpairs})
 
     def onehot_fit(self, dataframe):

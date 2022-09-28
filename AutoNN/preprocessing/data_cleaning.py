@@ -7,6 +7,7 @@ from AutoNN.preprocessing import nan_handling as nanhandle
 from AutoNN.preprocessing import feature_elimination as fe
 
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 class DataCleaning:
@@ -16,6 +17,7 @@ class DataCleaning:
         self.__pipeline = None
         self.__regression_threshold = threshold
         self.__feature_eliminator = None
+        self.__scaler = None
     
     def parse_dates(self):
         date_parse = dp.DateTime_Parsing(self.__dataset)
@@ -32,7 +34,7 @@ class DataCleaning:
         self.__dataset = self.__nan_handling.dataset
 
     def is_regression(self) -> bool:
-        cardinal = self.__col_info(self.__dataset.get_label())['cardinality']
+        cardinal = self.__col_info[self.__dataset.get_label()[0]]['cardinality']
         if cardinal > self.__regression_threshold:
             return [1, -1]
         else:
@@ -54,12 +56,18 @@ class DataCleaning:
         self.__dataset.set(enc_df, type = type)
         print(encoding.key_dict)
 
-    def scaling(self, type = "train"):
+    def scaling_fit(self, type = "train"):
         # min max scaling
-        scaler_x = MinMaxScaler()
-        scaler_x.fit(self.__dataset.get(types = [type])[0])
-        scaled_np_arr = scaler_x.transform(self.__dataset.get(types = [type])[0])
-        # scaled np array
+        self.__scaler = MinMaxScaler()
+        self.__scaler.fit(self.__dataset.get(types = [type])[0])
+        
+    def scaling_transform(self, type = "train"):
+        columns = list(self.__dataset.get(types = [type])[0].columns)
+        scaled_dset = pd.DataFrame(self.__scaler.transform(self.__dataset.get(types = [type])[0]), columns=columns)
+        scaled_dset = dd.from_pandas(scaled_dset, npartitions=1)
+        scaled_dset = scaled_dset.repartition(npartitions=1)
+        scaled_dset = scaled_dset.reset_index(drop=True)
+        self.__dataset.set(scaled_dset, type = type)
 
     def feature_elimination_fit(self, type = "train", method = "correlation", percentage_column_drop = None, override = False):
         self.__feature_eliminator = fe.FeatureElimination()

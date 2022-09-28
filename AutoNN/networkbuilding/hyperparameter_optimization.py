@@ -115,9 +115,10 @@ class Hyperparameter_Optimization:
         best_dropout_rate = None
         best_dropout_loss = None
         # activation_list = ["relu","tanh","selu"]
-        activation_list = ["relu","selu"]
+        activation_list = ["relu","selu","elu", "tanh"]
         # intializer_list = [["GlorotUniform","GlorotNormal"],["HeUniform","HeNormal"],["GlorotUniform","GlorotNormal"]]
-        intializer_list = [["GlorotUniform","GlorotNormal"],["LecunUniform","LecunNormal"]]
+        # intializer_list = [["GlorotUniform","GlorotNormal"],["LecunUniform","LecunNormal"]]
+        intializer_list = [["GlorotUniform, LecunUniform, HeUniform"]]
         i = 0
         if self._activation_opt == True:
             for activation in activation_list:
