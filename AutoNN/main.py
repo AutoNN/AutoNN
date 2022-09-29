@@ -19,6 +19,9 @@ class AutoNN:
         self._test_Y = None
         
         self._input_shape = None
+        
+        self._EDA_train = None
+        self._EDA_test = None
     
     def preprocessing(self):
         df = dd.read_csv(self._train_csv_path, assume_missing=True, sample_rows=2000)
@@ -50,8 +53,13 @@ class AutoNN:
             d_clean.eliminate_features(type = "validation")
         if test is not None:
             d_clean.eliminate_features(type = "test")
+            
 
         train, validation, test = d_clean.dataset.get(['train', 'validation', 'test'])
+#         EDA DATA
+        self._EDA_train = train
+        self._EDA_test = test
+        
         d_clean.dataset.set(encoder.inverse_label_encode(train), type = 'train')
         if validation is not None:
             d_clean.dataset.set(encoder.inverse_label_encode(validation), type = 'validation')
@@ -128,7 +136,7 @@ class AutoNN:
         
         self._input_shape = train_X.shape[-1]
         
-        return train, validation, test, train_Y, test_Y
+#         return train, validation, test, train_Y, test_Y
     def neuralnetworkgeneration(self):
         f = final.Final(self._train_X, self._train_Y, self._test_X, self._test_Y, self._loss, 75, 64, input_shape = self._input_shape, 
                                    max_no_layers = 3, model_per_batch = 10, 
