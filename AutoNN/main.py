@@ -76,51 +76,57 @@ class AutoNN:
             self._output_activation = "softmax"
             loss = "categorical_crossentropy"
             categorical_flag = True
-#             d_clean.dataset.set(train.categorize(self._label_name), type = 'train')
+            print("CATEGORICAL")
+#             d_clean.dataset.set(train.categorize(self._label_name), type = 'train')        
             
         if self._loss == None:
             self._loss = loss
             
         train, validation, test = d_clean.dataset.get(['train', 'validation', 'test'])
-        
+                    
         train_Y = train[self._label_name].to_frame()
         test_Y = test[self._label_name].to_frame()
         
-        train_X = train.drop(self._label_name, axis = 1)
-        test_X = test.drop(self._label_name, axis = 1)
+        train_X = train.drop(self._label_name, axis = 1).copy()
+        test_X = test.drop(self._label_name, axis = 1).copy()
         
         onehot_encoder_X = enc.Encoding()
         onehot_encoder_X.onehot_fit(train_X)
         
-        d_clean.dataset.set(onehot_encoder_X.onehot_encode(train_X), type = 'train')
+        train_X = onehot_encoder_X.onehot_encode(train_X)
         if validation is not None:
             d_clean.dataset.set(onehot_encoder_X.onehot_encode(validation), type = 'validation')
         if test is not None:
-            d_clean.dataset.set(onehot_encoder_X.onehot_encode(test_X), type = 'test')
-            
+            test_X = onehot_encoder_X.onehot_encode(test_X)
+        
         if categorical_flag:
+            train_Y = train_Y.categorize()
+            test_Y = test_Y.categorize()
+            pr
             onehot_encoder_Y = enc.Encoding()
             onehot_encoder_Y.onehot_fit(train_Y)
             train_Y = onehot_encoder_Y.onehot_encode(train_Y)
             if test is not None:
                 test_Y = onehot_encoder_Y.onehot_encode(test_Y)
-        
-        
-        d_clean.scaling_fit(type = "train")
-        d_clean.scaling_transform(type = "train")
-        if validation is not None:
-            d_clean.scaling_transform(type = 'validation')
+                        
+        d_clean.scaling_fit(train_X)
+        train_X = d_clean.scaling_transform(train_X)
         if test is not None:
-            d_clean.scaling_transform(type = 'test')
-            
-        train, validation, test = d_clean.dataset.get(['train', 'validation', 'test'])
+            test_X = d_clean.scaling_transform(test_X)
         
-        self._train_X = np.asarray(train)
+        if not categorical_flag:
+            d_clean.scaling_fit(train_Y)
+            train_Y = d_clean.scaling_transform(train_Y)
+            if test is not None:
+                test_Y = d_clean.scaling_transform(test_Y)
+        
+        self._train_X = np.asarray(train_X)
         self._train_Y = np.asarray(train_Y)
-        self._test_X = np.asarray(test)
+        self._test_X = np.asarray(test_X)
         self._test_Y = np.asarray(test_Y)
+        print(self._test_Y.shape)
         
-        self._input_shape = train.shape[-1]
+        self._input_shape = train_X.shape[-1]
         
         return train, validation, test, train_Y, test_Y
     def neuralnetworkgeneration(self):

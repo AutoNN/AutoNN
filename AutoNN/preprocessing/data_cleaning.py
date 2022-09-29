@@ -56,18 +56,18 @@ class DataCleaning:
         self.__dataset.set(enc_df, type = type)
         print(encoding.key_dict)
 
-    def scaling_fit(self, type = "train"):
+    def scaling_fit(self, dataframe):
         # min max scaling
         self.__scaler = MinMaxScaler()
-        self.__scaler.fit(self.__dataset.get(types = [type])[0])
+        self.__scaler.fit(dataframe)
         
-    def scaling_transform(self, type = "train"):
-        columns = list(self.__dataset.get(types = [type])[0].columns)
-        scaled_dset = pd.DataFrame(self.__scaler.transform(self.__dataset.get(types = [type])[0]), columns=columns)
+    def scaling_transform(self, dataframe):
+        columns = list(dataframe.columns)
+        scaled_dset = pd.DataFrame(self.__scaler.transform(dataframe), columns=columns)
         scaled_dset = dd.from_pandas(scaled_dset, npartitions=1)
         scaled_dset = scaled_dset.repartition(npartitions=1)
         scaled_dset = scaled_dset.reset_index(drop=True)
-        self.__dataset.set(scaled_dset, type = type)
+        return scaled_dset
 
     def feature_elimination_fit(self, type = "train", method = "correlation", percentage_column_drop = None, override = False):
         self.__feature_eliminator = fe.FeatureElimination()

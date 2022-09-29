@@ -33,14 +33,11 @@ class Encoding:
         keyvalpairs = dict(keyvalpairs)
         keyvalpairs[np.nan] = np.nan
         self._key_dict_enc.update({col_name:keyvalpairs})
-        # if len(no_keys) <= self._cardinality_threshold:
-        #     if col_name != label_name:
-        #         self._key_dict_dec.update({col_name:inverse_keyvalpairs})
-        #     elif col_name == label_name and len(no_keys) != 2:
-        #         self._key_dict_dec.update({col_name:inverse_keyvalpairs})
-        if len(no_keys) <= self._cardinality_threshold and col_name != label_name:
-            print(f"col_name = {col_name}, label_name = {label_name}")
-            self._key_dict_dec.update({col_name:inverse_keyvalpairs})
+        if len(no_keys) <= self._cardinality_threshold:
+            if col_name == label_name and len(no_keys) != 2:
+                self._key_dict_dec.update({col_name:inverse_keyvalpairs})
+            elif col_name != label_name:
+                self._key_dict_dec.update({col_name:inverse_keyvalpairs})
 
     def onehot_fit(self, dataframe):
         self._one_hot_pipe = make_pipeline(

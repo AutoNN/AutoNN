@@ -78,7 +78,7 @@ class Hyperparameter_Optimization:
     def _train_model(self, lr, batch_size):
         optimizer = Adam(lr = lr)
         self._model.compile(loss = self._loss_fn, optimizer = optimizer)
-        history = self._model.fit(self._train_X, self._train_Y, epochs = 50, batch_size = batch_size, verbose = 0)
+        history = self._model.fit(self._train_X, self._train_Y, epochs = 25, batch_size = batch_size, verbose = 0)
         score = self._model.evaluate(self._train_X, self._train_Y, verbose = 0)
         return score
 
@@ -115,10 +115,10 @@ class Hyperparameter_Optimization:
         best_dropout_rate = None
         best_dropout_loss = None
         # activation_list = ["relu","tanh","selu"]
-        activation_list = ["relu","selu","elu", "tanh"]
+        activation_list = ["relu","selu","tanh"]
         # intializer_list = [["GlorotUniform","GlorotNormal"],["HeUniform","HeNormal"],["GlorotUniform","GlorotNormal"]]
         # intializer_list = [["GlorotUniform","GlorotNormal"],["LecunUniform","LecunNormal"]]
-        intializer_list = [["GlorotUniform, LecunUniform, HeUniform"]]
+        intializer_list = [["GlorotUniform", "LecunUniform", "HeUniform"], ["GlorotUniform", "LecunUniform", "HeUniform"], ["GlorotUniform", "LecunUniform", "HeUniform"], ["GlorotUniform", "LecunUniform", "HeUniform"]]
         i = 0
         if self._activation_opt == True:
             for activation in activation_list:

@@ -21,12 +21,12 @@ class Encoding:
         return self._key_dict_dec
 
 
-    def fit_column(self, column_name, column):
+    def fit_column(self, column_name, column, label_name):
         no_keys = column.unique()
-        self._keyval(column_name, no_keys)
+        self._keyval(column_name, no_keys, label_name)
 
 
-    def _keyval(self, col_name, no_keys):
+    def _keyval(self, col_name, no_keys, label_name):
         no_keys = list(enumerate(no_keys, start=1))
         inverse_keyvalpairs = dict([(0,'<unknowndata>')]+no_keys)
         keyvalpairs = list(map(lambda x: (x[1],x[0]), no_keys))
@@ -34,7 +34,10 @@ class Encoding:
         keyvalpairs[np.nan] = np.nan
         self._key_dict_enc.update({col_name:keyvalpairs})
         if len(no_keys) <= self._cardinality_threshold:
-            self._key_dict_dec.update({col_name:inverse_keyvalpairs})
+            if col_name == label_name and len(no_keys) != 2:
+                self._key_dict_dec.update({col_name:inverse_keyvalpairs})
+            elif col_name != label_name:
+                self._key_dict_dec.update({col_name:inverse_keyvalpairs})
 
     def onehot_fit(self, dataframe):
         self._one_hot_pipe = make_pipeline(
@@ -51,8 +54,8 @@ class Encoding:
         columns = self.encode_keys.keys()
         for column in columns:
             uniq = dataframe[column].unique()
-            unknown = list(map(lambda val: val not in self.encode_keys[column], uniq))
-            self.encode_keys[column].update(dict((value, 0) for value in unknown))
+            unknown = list(filter(lambda val: val not in self.encode_keys[column], uniq))
+            self._key_dict_enc[column].update(dict([(value, 0) for value in unknown]))
         dataframe_encoded = dataframe.replace(self._key_dict_enc).copy()
         return dataframe_encoded
 
