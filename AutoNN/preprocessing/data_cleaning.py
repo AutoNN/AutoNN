@@ -7,6 +7,7 @@ from AutoNN.preprocessing import nan_handling as nanhandle
 from AutoNN.preprocessing import feature_elimination as fe
 
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 class DataCleaning:
@@ -15,7 +16,8 @@ class DataCleaning:
         self.__dataset = dc.DatasetContainer(label, train_dataframe, validation_dataframe, test_dataframe, override)
         self.__pipeline = None
         self.__regression_threshold = threshold
-        self.__column_sel_boolean = None
+        self.__feature_eliminator = None
+        self.__scaler = None
     
     def parse_dates(self):
         date_parse = dp.DateTime_Parsing(self.__dataset)
@@ -32,7 +34,7 @@ class DataCleaning:
         self.__dataset = self.__nan_handling.dataset
 
     def is_regression(self) -> bool:
-        cardinal = self.__col_info(self.__dataset.get_label())['cardinality']
+        cardinal = self.__col_info[self.__dataset.get_label()[0]]['cardinality']
         if cardinal > self.__regression_threshold:
             return [1, -1]
         else:
@@ -54,18 +56,30 @@ class DataCleaning:
         self.__dataset.set(enc_df, type = type)
         print(encoding.key_dict)
 
-    def scaling(self, type = "train"):
+    def scaling_fit(self, dataframe):
         # min max scaling
-        scaler_x = MinMaxScaler()
-        scaler_x.fit(self.__dataset.get(types = [type])[0])
-        scaled_np_arr = scaler_x.transform(self.__dataset.get(types = [type])[0])
-        # scaled np array
+        self.__scaler = MinMaxScaler()
+        self.__scaler.fit(dataframe)
+        
+    def scaling_transform(self, dataframe):
+        columns = list(dataframe.columns)
+        scaled_dset = pd.DataFrame(self.__scaler.transform(dataframe), columns=columns)
+        scaled_dset = dd.from_pandas(scaled_dset, npartitions=1)
+        scaled_dset = scaled_dset.repartition(npartitions=1)
+        scaled_dset = scaled_dset.reset_index(drop=True)
+        return scaled_dset
 
-    def feature_elimination(self, type = "train", percentage_column_drop = None, override = False):
-        feature_elim = fe.FeatureElimination(self.__dataset.get(types = [type])[0], self.__col_info, percentage_column_drop, override)
-        elim_df, self.__column_sel_boolean = feature_elim.recursive_feature_elimination()
-        self.__dataset.set(elim_df, type = type)
-        self.get_column_info()
+    def feature_elimination_fit(self, type = "train", method = "correlation", percentage_column_drop = None, override = False):
+        self.__feature_eliminator = fe.FeatureElimination()
+        if method == "recursive":
+            self.__feature_eliminator.recursive_feature_elimination_fit(self.__dataset.get(types = [type])[0], self.__col_info, percentage_column_drop, override)
+        elif method == "correlation":
+            self.__feature_eliminator.correlation_feature_elimination_fit(self.__dataset.get(types = [type])[0], self.__dataset.get_label()[0], threshold = 0.1)
+
+    def eliminate_features(self, type = "train"):
+        eliminated_df = self.__feature_eliminator.eliminate_features(self.__dataset.get(types = [type])[0], self.__dataset.get_label()[0])
+        self.__dataset.set(eliminated_df, type = type)
+        self.generate_column_info()
 
     @property
     def dataset(self):

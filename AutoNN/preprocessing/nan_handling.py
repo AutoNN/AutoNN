@@ -27,9 +27,9 @@ class DataHandling:
     def __drop_unwanted(self):
         train, validation, test = self.__bucket.get(['train', 'validation', 'test'])
         self.__bucket.set(dataset=train.drop(self.__dropped, axis=1), type='train')
-        if validation != None:
+        if validation is not None:
             self.__bucket.set(dataset=validation.drop(self.__dropped, axis=1), type='validation')
-        if test != None:
+        if test is not None:
             self.__bucket.set(dataset=test.drop(self.__dropped, axis=1), type='test')
     
     def __determine_type(self):
@@ -48,7 +48,15 @@ class DataHandling:
         columns = self.__full + [colname]
         df_dset = dset[columns].copy()
         dset = dset.drop(columns, axis = 1)
-        imputed_dset = pd.DataFrame(imputer.transform(df_dset), columns=columns+[colname+'_indicator'])
+        imputed_nparr = imputer.transform(df_dset)
+        # print(f"Imputed SHAPE: {imputed_nparr.shape}")
+        # print(f"DF DSET SHAPE: {df_dset.shape} \n")
+        if imputed_nparr.shape[-1] == df_dset.shape[-1]:
+            zero_arr = np.zeros([imputed_nparr.shape[0],1])
+            imputed_nparr = np.append(imputed_nparr, zero_arr, axis = 1)
+            # print(imputed_nparr)
+        imputed_dset = pd.DataFrame(imputed_nparr, columns=columns+[colname+'_indicator'])
+
         imputed_dset = dd.from_pandas(imputed_dset, npartitions=1)
         imputed_dset = imputed_dset.repartition(npartitions=1)
         imputed_dset = imputed_dset.reset_index(drop=True)
@@ -94,9 +102,9 @@ class DataHandling:
                 # print(df_train.compute().shape)
                 loaded_imputer.fit(df_train)
                 self.__bucket.set(dataset = self.__imputeKNN(train, colname, loaded_imputer), type='train')
-                if validation != None:
+                if validation is not None:
                     self.__bucket.set(dataset = self.__imputeKNN(validation, colname, loaded_imputer), type='validation')
-                if test != None:
+                if test is not None:
                     self.__bucket.set(dataset = self.__imputeKNN(test, colname, loaded_imputer), type='test')
                 self.__imputer.update({colname:imputer})
                 # self.__full.append(colname)

@@ -28,7 +28,7 @@ class Encoding:
 
     def _keyval(self, col_name, no_keys, label_name):
         no_keys = list(enumerate(no_keys, start=1))
-        inverse_keyvalpairs = dict([(0,'<unknowndata>')]+no_keys)
+        inverse_keyvalpairs = dict([(0,'UnknownData')]+no_keys)
         keyvalpairs = list(map(lambda x: (x[1],x[0]), no_keys))
         keyvalpairs = dict(keyvalpairs)
         keyvalpairs[np.nan] = np.nan
@@ -51,11 +51,6 @@ class Encoding:
         return dataframe_onehot
     
     def label_encode(self, dataframe):
-        columns = self.encode_keys.keys()
-        for column in columns:
-            uniq = dataframe[column].unique()
-            unknown = list(filter(lambda val: val not in self.encode_keys[column], uniq))
-            self._key_dict_enc[column].update(dict([(value, 0) for value in unknown]))
         dataframe_encoded = dataframe.replace(self._key_dict_enc).copy()
         return dataframe_encoded
 

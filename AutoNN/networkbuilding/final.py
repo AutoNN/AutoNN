@@ -25,7 +25,7 @@ class Final:
 
     def get_all_best_models(self):
         m = multiple.Multiple_Model_Gen_V3(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, self._epochs, self._batch_size, input_shape = self._input_shape, 
-                                   max_no_layers = self._max_no_layers, model_per_batch = self._model_per_batch, output_activation = self._output_activation,
+                                   max_no_layers = self._max_no_layers, model_per_batch = self._model_per_batch, output_shape = self._output_shape, output_activation = self._output_activation,
                                    save_dir = "/home/anish/AutoNN_test_weights/")
         m.get_best_models(save = False)
         opt = model_opt.Model_Optimization(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, 200, m.evaluate_dict_list, save_dir = "/home/anish/AutoNN_test_weights/candidate_models/")
