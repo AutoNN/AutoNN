@@ -9,26 +9,49 @@ class Augment(object):
         Args: 
             path: provide the path to your image folder
             which you want to augment
+
+            ../Folder/dataset/cats/x1.png
+            ../Folder/dataset/cats/x2.png
+            .
+            .
+            .
+            ../Folder/dataset/dogs/xx1.png
+            ../Folder/dataset/dogs/xx2.png
+            ../Folder/dataset/dogs/xx3.png
+            .
+            .
+            path = '../Folder/dataset/'
         '''
         self.path = path
+        self.dataset = dict()
+        for class_folder in os.listdir(path):
+            self.dataset[os.path.join(path,class_folder)]=len(os.listdir(os.path.join(path,class_folder)))
+        
+        idex = max(self.dataset.keys(),key = lambda k:self.dataset[k])
+        self.dset={k:[self.dataset[idex]-v,self.dataset[idex]/v] for k,v in self.dataset.items()}
+    def augment_(self,img_path,image,n):
+        a = [45,136,279,330,Image.FLIP_LEFT_RIGHT,Image.FLIP_TOP_BOTTOM]
+        for i in range(n):
+            try:
+                x =Image.open(os.path.join(img_path,image))
+                if i<4:
+                    x_ = x.rotate(a[i])
+                    x_.save(os.path.join(img_path,f'r{a[i]}{image}'))
+                else:
+                    x_=x_.transpose(a[i])
+                    x_.save(os.path.join(img_path,f'flip{i}{image}'))
+            except :
+                raise Exception("""Make sure you have only images inside 
+                your dataset folder the correct image format""")
+
+        
 
     def augment(self):
-        for folder in os.listdir(self.path):
-            print(f'Current folder: {folder}')
-            for image in tqdm(os.listdir(self.path+f'/{folder}')):
-                if image.lower().endswith(('.jpg','.png','.jpeg','.tif','.tiff')):
-                    x = Image.open(self.path+f'/{folder}/{image}')
-                    x45 = x.rotate(45)
-                    x136 = x.rotate(136)
-                    x279 = x.rotate(279)
-                    x330 = x.rotate(330)
-                    x45.save(f'{self.path}/{folder}/r45{image}')
-                    x136.save(f'{self.path}/{folder}/r136{image}')
-                    x279.save(f'{self.path}/{folder}/r279{image}')
-                    x330.save(f'{self.path}/{folder}/r330{image}')
-                    hflip = x.transpose(Image.FLIP_LEFT_RIGHT)
-                    vflip = x.transpose(Image.FLIP_TOP_BOTTOM)
-                    hflip.save(f'{self.path}/{folder}/h{image}')
-                    vflip.save(f'{self.path}/{folder}/v{image}')
-                else:
-                    raise("Make sure you have the correct image format")
+        for folder_path,n in self.dset.items():
+            print(f'Current folder: {os.path.split(folder_path)[-1]}')
+            if n[-1]>1.7:
+                for image in tqdm(os.listdir(folder_path)):
+                    self.augment_(folder_path,image,int(n[-1])-1)
+
+        print('Dataset augmentation Complete!!')
+
