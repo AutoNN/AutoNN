@@ -110,7 +110,6 @@ class AutoNN:
         if categorical_flag:
             train_Y = train_Y.categorize()
             test_Y = test_Y.categorize()
-            pr
             onehot_encoder_Y = enc.Encoding()
             onehot_encoder_Y.onehot_fit(train_Y)
             train_Y = onehot_encoder_Y.onehot_encode(train_Y)
