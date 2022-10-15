@@ -21,6 +21,12 @@ class AutoNN:
         self._input_shape = None
         
         self._EDA_data_container = None
+
+        self._history_list = []
+    
+    @property
+    def history_list(self):
+        return self._history_list
     
     def preprocessing(self):
         df = dd.read_csv(self._train_csv_path, assume_missing=True, sample_rows=2000)
@@ -57,7 +63,7 @@ class AutoNN:
             d_clean.eliminate_features(type = "test")
             
 
-#         train, validation, test = d_clean.dataset.get(['train', 'validation', 'test'])
+        train, validation, test = d_clean.dataset.get(['train', 'validation', 'test'])
 # #         EDA DATA
 #         self._EDA_train = train
 #         self._EDA_test = test
@@ -109,7 +115,7 @@ class AutoNN:
         if test is not None:
             test_X = onehot_encoder_X.onehot_encode(test_X)
         
-        if categorical_flag:
+        if categorical_flag == True:
             train_Y = train_Y.categorize(columns = [self._label_name])
             test_Y = test_Y.categorize(columns = [self._label_name])
             onehot_encoder_Y = enc.Encoding()
@@ -143,4 +149,4 @@ class AutoNN:
         f = final.Final(self._train_X, self._train_Y, self._test_X, self._test_Y, self._loss, 75, 64, input_shape = self._input_shape, 
                                    max_no_layers = 3, model_per_batch = 10, 
                         output_shape = self._output_shape, output_activation = self._output_activation)
-        f.get_all_best_models()
+        self._history_list = f.get_all_best_models()
