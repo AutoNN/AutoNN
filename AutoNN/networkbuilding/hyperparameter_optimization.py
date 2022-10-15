@@ -176,7 +176,8 @@ class Hyperparameter_Optimization:
             history = self._model.fit(self._train_X, self._train_Y, epochs = 50, batch_size = best_batch_size, verbose = 0)
             scores = self._model.evaluate(self._train_X, self._train_Y, verbose = 0)
             scores_test = self._model.evaluate(self._test_X, self._test_Y, verbose = 0)
-            dropout_loss_list.append(scores)
+            # dropout_loss_list.append(scores)
+            dropout_loss_list.append(scores_test-scores)
 
         best_dropout_rate = dropout_list[dropout_loss_list.index(min(dropout_loss_list))]
         best_dropout_loss = min(dropout_loss_list)

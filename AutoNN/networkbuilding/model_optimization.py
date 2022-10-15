@@ -55,12 +55,9 @@ class Model_Optimization:
     def best_hyp_permodel(self):
         return self._best_hyp_permodel
     
-    # def train_models_2(self):
-    #     for model_dict in self._model_dict_list:
-    #         model = load_model(model_dict["path_weights"])
-    #         optimizer = Adam(lr = 1e-3)
-    #         model.compile(loss = self._loss_fn, optimizer = optimizer)
-    #         history = model.fit(self._train_x, self._train_y, epochs = 200, batch_size = 64)
+    @property
+    def evaluate_dict_list(self):
+        return self._evaluate_dict_list
     
     def _candidate_model_generator(self):
         for model_dict in self._model_dict_list:
@@ -87,9 +84,9 @@ class Model_Optimization:
                 model.layers[-2].rate = best_dropout_rate
             self._best_hyp_permodel.append([best_lr, best_batch_size, best_activation, best_initializer, best_dropout_rate])
 
-            model, metrics_names, scores, scores_test = self.train_model(input_data = [self._train_x, self._train_y, self._test_x, self._test_y], Pmodel=model, n_model=1,
+            model, metrics_names, scores, scores_test, history = self.train_model(input_data = [self._train_x, self._train_y, self._test_x, self._test_y], Pmodel=model, n_model=1,
                                 epochs=100,lr=best_lr, batch_size=best_batch_size)
-            self._evaluate_save_model(Model = model, model_conf = model_conf, metrics_names=metrics_names, scores=scores_test)
+            self._evaluate_save_model(Model = model, model_conf = model_conf, metrics_names=metrics_names, scores=scores_test, model_history = history)
             # if save==True:
             #     self.save_weights(model)
         print(self._evaluate_dict_list)
@@ -120,11 +117,11 @@ class Model_Optimization:
         input_x, input_labels, input_test_x, input_test_labels = input_data
         optimizer = Adam(lr = lr)
         Pmodel.compile(loss = self._loss_fn, optimizer = optimizer)
-        history = Pmodel.fit(input_x, input_labels, epochs = epochs, batch_size = batch_size, verbose = 0)
+        history = Pmodel.fit(input_x, input_labels, validation_data = (input_test_x, input_test_labels), epochs = epochs, batch_size = batch_size, verbose = 0)
 
         metrics_names, scores, scores_test = self.print_scores(Pmodel, input_data)
         
-        return Pmodel, metrics_names, scores, scores_test
+        return Pmodel, metrics_names, scores, scores_test, history
 
     def print_scores(self, Pmodel, input_data):
         input_x, input_labels, input_test_x, input_test_labels = input_data
@@ -142,7 +139,7 @@ class Model_Optimization:
             print(name, " : ", score, ", TEST : ", score_test)
         return metrics_names, scores, scores_test
 
-    def _evaluate_save_model(self, Model, model_conf, metrics_names, scores):
+    def _evaluate_save_model(self, Model, model_conf, metrics_names, scores, model_history):
         # n : Number of models in the Model
         # List of dictionaries {"model_name":"densexyz", "score":0.000, "path_weights":"/home/something/dense"}
 
@@ -152,7 +149,8 @@ class Model_Optimization:
 
         model_name = Model.name
         model_name = model_name.removesuffix("_loss")
-        curr_model_dict = {"model_name":model_name, "score":model_score, "path_weights":self._save_dir + model_name, "model_conf":model_conf, "model":Model}
+        curr_model_dict = {"model_name":model_name, "score":model_score, "path_weights":self._save_dir + model_name, 
+                            "model_conf":model_conf, "model":Model, "model_history": model_history}
 
         if len(self._evaluate_dict_list) == 0:
             self._evaluate_dict_list.append(curr_model_dict)
