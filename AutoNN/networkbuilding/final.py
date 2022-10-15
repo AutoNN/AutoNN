@@ -33,6 +33,6 @@ class Final:
         model_history_list = []
         for model_dict in opt.evaluate_dict_list:
             model_history_list.append(model_dict["model_history"])
-        stacked_models = model_stacking.Model_Stacking(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, opt.saved_paths, opt.opt_model_confs, save_dir = "/home/anish/AutoNN_test_weights/stacked_models/")
-        stacked_models.optimize_stacked_models()
+        # stacked_models = model_stacking.Model_Stacking(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, opt.saved_paths, opt.opt_model_confs, save_dir = "/home/anish/AutoNN_test_weights/stacked_models/")
+        # stacked_models.optimize_stacked_models()
         return model_history_list
