@@ -9,6 +9,8 @@ from pytorchsummary import summary as summ
 from torch.utils.data import DataLoader,random_split
 from tqdm import tqdm
 from .models.resnet import resnet
+from datetime import datetime
+
 
 def create_config(min,max)-> List[Tuple]:
     '''
@@ -51,6 +53,8 @@ def create_config(min,max)-> List[Tuple]:
 class CNN(nn.Module):
     def __init__(self,in_channels,numClasses,config) -> None:
         super(CNN,self).__init__()
+        self.config=config
+
         layers=[]
         for i in range(len(config)):
             if config[i][0]=='conv' and i==0:
@@ -96,7 +100,14 @@ class CNN(nn.Module):
         
         '''
         print(summ(input_shape,self,border))
-
+    
+    def load(self,PATH):
+        self.load_state_dict(torch.load(PATH))
+        self.eval()
+        print('Loading the model complete!')
+    
+    def entire_model(self,path):
+        pass
 
 class CreateCNN:
     def __init__(self,_size:int=10) -> None:
@@ -137,7 +148,6 @@ class CreateCNN:
                     self.cnns.append(m1)
                     self.configuration.append(config_)
             except Exception as e:
-                # print(e)
                 pass
         if not self.cnns:
             self.__create_Cnns(len_dataset,input_shape,num_channels)
@@ -209,7 +219,7 @@ class CreateCNN:
 
         '''
         print(f'Default computing platform: {self.device}')
-
+        start = datetime.now()
 
         if lossFn == 'cross-entropy':
             criterion=nn.CrossEntropyLoss()
@@ -262,7 +272,7 @@ class CreateCNN:
             ''')
         else:
             self.__create_Cnns(len_dataset,input_shape,len_classes)
-        print("Architecture search Complete..!")
+        print("Architecture search Complete..!",'Time Taken: ',datetime.now()-start)
 
 # ______________________________________________________________
 
@@ -291,7 +301,6 @@ class CreateCNN:
                                         criterion,optims[i],epochs=EPOCHS)
                 history[f'cnn{i}']=train_performance
             except Exception as E:
-                # print(f'2nd try er exception: {E}')
                 pass
             
             print(f'Calculating test accuracy CNN model cnn{i}')
@@ -300,8 +309,6 @@ class CreateCNN:
       
                 test_ACChistory.append(test_performance[1])
             except Exception as E:
-            
-                # print(f'3rd try er exception: {E}')
                 pass
             print('_'*150)
         
@@ -309,7 +316,7 @@ class CreateCNN:
             self.__create_Cnns(len_dataset,input_shape,len_classes)
             
         index = argmax(array(test_ACChistory))
-        print('Best test accuracy achieved by model cnn{index}: ',max(test_ACChistory))
+        print(f'Best test accuracy achieved by model cnn{index}: ',max(test_ACChistory))
         return  self.cnns[index],self.configuration[index],history
 
     def __training(self,model,trainloader,validloader,device,LOSS,optimizer,epochs):
@@ -322,15 +329,10 @@ class CreateCNN:
             total=correct=0
             model= model.to(device)
             for x,y in tqdm(trainloader):
-                # print(x.dtype,y.dtype)
                 y = y.type(torch.LongTensor)   # casting to long
-
                 x,y = x.to(device).float(),y.to(device)
-                
                 optimizer.zero_grad()
-                yhat = model(x)
-                # print(y.shape,yhat.shape)
-                
+                yhat = model(x)                
                 loss = LOSS(yhat,y)
                 loss.backward()
                 optimizer.step()
@@ -343,7 +345,7 @@ class CreateCNN:
             performance['trainloss'].append(loss_per_epoch/len(trainloader))
             print(f'Training Accuracy: {performance["trainacc"][_]}\t Training Loss:{performance["trainloss"][_]}')
             
-            # for val        idaiton
+            # for validaiton
             model.eval()
             loss_=0
             total_=correct_=0
