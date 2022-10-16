@@ -29,7 +29,9 @@ class Augment(object):
         
         idex = max(self.dataset.keys(),key = lambda k:self.dataset[k])
         self.dset={k:[self.dataset[idex]-v,self.dataset[idex]/v] for k,v in self.dataset.items()}
-    def augment_(self,img_path,image,n):
+
+
+    def __augment(self,img_path,image,n):
         a = [45,136,279,330,Image.FLIP_LEFT_RIGHT,Image.FLIP_TOP_BOTTOM]
         for i in range(n):
             try:
@@ -43,7 +45,6 @@ class Augment(object):
             except :
                 raise Exception("""Make sure you have only images inside 
                 your dataset folder the correct image format""")
-
         
 
     def augment(self):
@@ -51,7 +52,7 @@ class Augment(object):
             print(f'Current folder: {os.path.split(folder_path)[-1]}')
             if n[-1]>1.7:
                 for image in tqdm(os.listdir(folder_path)):
-                    self.augment_(folder_path,image,int(n[-1])-1)
+                    self.__augment(folder_path,image,int(n[-1])-1)
 
         print('Dataset augmentation Complete!!')
 
