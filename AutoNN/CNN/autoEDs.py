@@ -2,7 +2,10 @@ from torch import nn
 import torch.optim as optim
 from tqdm import tqdm 
 import torch 
-
+from torchvision.datasets import ImageFolder
+from torchvision import transforms
+from torch.utils.data import DataLoader,random_split
+from matplotlib import pyplot as plt
 
 class Autoencoders(nn.Module):
     def __init__(self,num_classes,in_channels=3):
@@ -49,7 +52,20 @@ class Autoencoders(nn.Module):
 
 
 class TrainAutoens:
-    def __init__(self,num_classes,in_channels,lr1=0.001,lr=3e-4) -> None:
+    def __init__(self,num_classes,
+                in_channels,
+                trainset_path,
+                testset_path,
+                batch_size=4,
+                lr1=0.001,
+                lr=3e-4) -> None:
+
+        trainset = ImageFolder(trainset_path,transforms.Compose([transforms.ToTensor()]))
+        testset = ImageFolder(testset_path,transforms.Compose([transforms.ToTensor()]))
+        
+        self.trainloader = DataLoader(trainset,batch_size,shuffle=True)
+        self.testloader = DataLoader(testset,batch_size,shuffle=False)
+
         self.model = Autoencoders(num_classes,in_channels)
         self.reconstructionLoss = nn.MSELoss()
         self.criterion = nn.CrossEntropyLoss()
@@ -60,13 +76,13 @@ class TrainAutoens:
         self.adam2 =optim.Adam(self.model.classifier.parameters(),lr=lr)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    def train(self,trainloader,epoch):
+    def __train(self,epoch):
         self.model.train()
         total_loss = 0
         total_loss1 = 0
         print(f"Epoch {epoch+1}")
         
-        for images in tqdm(trainloader):
+        for images in tqdm(self.trainloader):
             self.adam1.zero_grad()
             self.adam2.zero_grad()
             
@@ -85,14 +101,15 @@ class TrainAutoens:
             total_loss1+=loss1
             self.adam1.step()
             self.adam2.step()
-            pass 
+        
+        return total_loss/len(self.trainloader),total_loss1/len(self.trainloader)
 
-    def test(self,testloader):
+    def test(self):
         self.model.eval()
         correct = 0
         total = 0
         with torch.no_grad():
-            for images,labels in tqdm(testloader):
+            for images,labels in tqdm(self.testloader):
                 images,labels = images.to(self.device), labels.to(self.device)
                 
                 yhat,_,_=self.model(images)
@@ -104,5 +121,18 @@ class TrainAutoens:
         
         print(f'Accuracy of the network on the {total} test images: {100 * correct / total} % {correct}/{total}')
 
-    def __dataloaders(self):
+    def fit(self,epochs=10):
+        preds=list()
+        for _ in range(epochs):
+            __,p=self.__train(_)
+            
+            preds.append(p)
+        
+        print('Training Complete!')
+
+        fig = plt.figure(figsize=(7,5))
+        plt.plot(range(epochs),preds,'g')
+        plt.xlabel('Epochs')
+        plt.ylabel('Prediction loss')
+        plt.show()
         pass 
