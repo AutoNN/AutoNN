@@ -1,4 +1,4 @@
-import random,torch,os
+import random,torch,os,json
 from torch import nn 
 from numpy import argmax,array
 from .cnnBlocks import SkipLayer,Pooling
@@ -10,6 +10,8 @@ from torch.utils.data import DataLoader,random_split
 from tqdm import tqdm
 from .models.resnet import resnet
 from datetime import datetime
+
+
 
 
 def create_config(min,max)-> List[Tuple]:
@@ -49,33 +51,40 @@ def create_config(min,max)-> List[Tuple]:
                 cfg.append(('pool',0,f2))
         L-=1
     return cfg
-            
+
+
+
 class CNN(nn.Module):
-    def __init__(self,in_channels,numClasses,config) -> None:
+    def __init__(self,in_channels,numClasses,config=None) -> None:
         super(CNN,self).__init__()
         self.config=config
+        self.inchannels = in_channels
+        self.numClasses = numClasses
+        self.__buildNetwork()
 
-        layers=[]
-        for i in range(len(config)):
-            if config[i][0]=='conv' and i==0:
-                layers.append( SkipLayer(in_channels,config[i][1],config[i][2]))
-            elif config[i][0]=='conv':
-                layers.append( SkipLayer(config[i-1][2],config[i][1],config[i][2]))
-            elif config[i][0]=='pool':
-                if config[i][1]==1:
-                    layers.append(Pooling('maxpool'))
-                else:
-                    layers.append(Pooling('avgpool'))
-        self.network  = nn.Sequential(*layers)
+    def __buildNetwork(self):
+        if self.config:
+            layers=[]
+            for i in range(len(self.config)):
+                if self.config[i][0]=='conv' and i==0:
+                    layers.append( SkipLayer(self.inchannels,self.config[i][1],self.config[i][2]))
+                elif self.config[i][0]=='conv':
+                    layers.append( SkipLayer(self.config[i-1][2],self.config[i][1],self.config[i][2]))
+                elif self.config[i][0]=='pool':
+                    if self.config[i][1]==1:
+                        layers.append(Pooling('maxpool'))
+                    else:
+                        layers.append(Pooling('avgpool'))
+            self.network  = nn.Sequential(*layers)
 
-        
-        self.avgpool = nn.AdaptiveAvgPool2d((1,1))
+            
+            self.avgpool = nn.AdaptiveAvgPool2d((1,1))
 
-        self.classifier = nn.Sequential(
-            nn.Linear(config[-1][2],32),
-            nn.ReLU(),
-            nn.Linear(32,numClasses)
-            )
+            self.classifier = nn.Sequential(
+                nn.Linear(self.config[-1][2],32),
+                nn.ReLU(),
+                nn.Linear(32,self.numClasses)
+                )
 
     def forward(self,x):
         x = self.network(x)
@@ -84,12 +93,22 @@ class CNN(nn.Module):
         x = self.classifier(x)
         return x
 
-    def save(self,path='./best_models/',filename='Model.pth'):
+    def save(self,path='./best_models/',filename='Model.pth',
+                config_file_path='./config_files/',config_filename='cfg1.json'):
+
+        '''
+        
+        
+        '''
         if not os.path.exists(path):
             os.makedirs(path)
         filename = os.path.join(path,filename)
         torch.save(self.state_dict(),filename)
         print(f'Model saved in directory: {path}{filename}')
+
+        with open(os.path.join(config_file_path,config_filename),'w') as f:
+            json.dump(self.config, f)
+
     
     def summary(self,input_shape:tuple,border:bool=True):
         '''
@@ -101,13 +120,37 @@ class CNN(nn.Module):
         '''
         print(summ(input_shape,self,border))
     
-    def load(self,PATH):
+    def __load(self,PATH):
         self.load_state_dict(torch.load(PATH))
         self.eval()
         print('Loading the model complete!')
     
-    def entire_model(self,path):
-        pass
+    def load(self,PATH='./best_models/',
+                config_path='./config_files/',
+                config_filename='cfg1.json',
+                printmodel=False,
+                loadmodel=True):
+        '''
+        Args:
+            PATH: path to the saved model.pth file
+            config_path: path to the configuration (.json) file
+            config_filename: configuration.json file name
+            printmodel: if TRUE the model architecture will be printed 
+            loadmodel: DEFAULT True | This will load the given trained model.pth
+                        and make the network ready for testing
+        
+        '''
+        
+        with open(os.path.join(config_path,config_filename),'r') as f:
+            self.config = json.load(f)
+        self.__buildNetwork()
+
+        print('Network Architecture loaded!')
+        if printmodel:
+            print(self)
+        if loadmodel:
+            self.__load(PATH)
+        
 
 class CreateCNN:
     def __init__(self,_size:int=10) -> None:
@@ -136,44 +179,53 @@ class CreateCNN:
             print(arch)
             print('_'*150)
 
-    def __create_Cnns(self,len_dataset,input_shape,num_channels):
-        l=len(input_shape)
+    def __create_Cnns(self,len_dataset,input_shape):
+        
         self.configuration  = []
         for _ in range(self.size):
             try:
-                config_ = create_config(2,10)
-                m1 = CNN(l,num_channels,config_)
-                params, _,_ = summ(input_size =input_shape,model=m1,_print=False)
-                if 0.1<= params/len_dataset<1.5 :
+                config_ = create_config(2,10) #this will generate ranodm cnn configuration 
+                # based on which CNN architecture will be defined
+                m1 = CNN(input_shape[0],self.numClasses,config_) #this will generate CNN models
+
+                params, _,_ = summ(input_size =input_shape,model=m1,_print=False) # this helper function
+                # from pytorchsummary package will provide us with the number of parameters 
+                # in an architecture
+                if 0.5<= params/len_dataset<1.5 : # condition to check is the number of 
+                    # parameters is too much or not
+                    # a rule of thumb is the number of datapoints should be 
+                    # roughly 10 times the number of parameters
                     self.cnns.append(m1)
                     self.configuration.append(config_)
             except Exception as e:
                 pass
         if not self.cnns:
-            self.__create_Cnns(len_dataset,input_shape,num_channels)
+            # checking if any valid cnn architecture has been created or not
+            self.__create_Cnns(len_dataset,input_shape)
         
+        print(f'Number of models generated: {len(self.cnns)}')
         
-    # def __meanNstd(self,path,loader=None):
-    #     '''
-    #     calculates the mean and std of an image dataset
-    #     image has to be RGB image
-    #     '''
-    #     channelSum,channel2sum,batch = 0,0,0
+    def __meanNstd(self,path,loader=None):
+        '''
+        calculates the mean and std of an image dataset
+        image has to be RGB image
+        '''
+        channelSum,channel2sum,batch = 0,0,0
 
-    #     for X, _ in loader:
+        for X, _ in loader:
         
-    #         channelSum += torch.mean(X,dim=[0,2,3])
-    #         channel2sum += torch.mean(X**2,dim=[0,2,3])
-    #         batch+=1
-    #     mean= channelSum/batch
-    #     std = (channel2sum/batch -mean**2)**0.5
+            channelSum += torch.mean(X,dim=[0,2,3])
+            channel2sum += torch.mean(X**2,dim=[0,2,3])
+            batch+=1
+        mean= channelSum/batch
+        std = (channel2sum/batch -mean**2)**0.5
         
-    #     return mean,std
+        return mean,std
 
 
     def get_bestCNN(self,
                     path_trainset:str,
-                    path_validationset:str=None,
+                    # path_validationset:str=None,
                     path_testset:str=None,
                     split_required:bool=False,
                     batch_size:int=16,
@@ -187,7 +239,6 @@ class CreateCNN:
         NOTE: make sure the path to your dataset is of 
             format 
         >>> "../dataset/train/"
-            "../dataset/validation/"
             "../dataset/test/"
 
             i.e name your training image dataset folder
@@ -229,26 +280,27 @@ class CreateCNN:
                 [transforms.ToTensor(),transforms.Resize(image_shape)]
             ))
             
-            validSet = ImageFolder(path_validationset,transforms.Compose(
-                [transforms.ToTensor(),transforms.Resize(image_shape)]
-            ))
+            len_classes = len(trainSet.classes)
+            print('Classes: ',trainSet.classes, '# Classes: ',len_classes)
+            validlen = int(len(trainSet)*0.2)
+            trainlen = len(trainSet)-validlen
+            trainSet,validSet= random_split(trainSet,[trainlen,validlen])
             
             testSet = ImageFolder(path_testset,transforms.Compose(
                 [transforms.ToTensor(),transforms.Resize(image_shape)]
             ))
-            len_classes = len(trainSet.classes)
-            print('Classes: ',trainSet.classes)
         else:
             
             trainSet = ImageFolder(path_trainset,transforms.Compose(
                 [transforms.ToTensor(),transforms.Resize(image_shape)]
             ))
+            len_classes = len(trainSet.classes)
+            print('Classes: ',trainSet.classes, '# Classes: ',len_classes)
+            
             trainlen = int(len(trainSet)*0.7)
             testlen = len(trainSet) - trainlen # rest 30%
             validlen = int(testlen*0.5) #this is 50% of remaining 30%
 
-            len_classes = len(trainSet.classes)
-            print('Classes: ',trainSet.classes, '# Classes: ',len_classes)
             testlen -= validlen  #the rest 50%
             trainSet,validSet,testSet= random_split(trainSet,[trainlen,validlen,testlen])
 
@@ -271,10 +323,10 @@ class CreateCNN:
             To augment your image dataset
             ''')
         else:
-            self.__create_Cnns(len_dataset,input_shape,len_classes)
+            self.__create_Cnns(len_dataset,input_shape)
         print("Architecture search Complete..!",'Time Taken: ',datetime.now()-start)
 
-# ______________________________________________________________
+# ___________________DATALOADERS___________________________________________
 
 
         trainloader = DataLoader(trainSet,batch_size,shuffle=True)
@@ -291,7 +343,6 @@ class CreateCNN:
 
         print('Searching for the best model. Please be patient. Thank you....')   
 
-        print(f'Number of models generated: {len(self.cnns)}')
 
         for i in range(len(self.cnns)):
             print(f'Training CNN model cnn{i}')
@@ -305,7 +356,7 @@ class CreateCNN:
             
             print(f'Calculating test accuracy CNN model cnn{i}')
             try:
-                test_performance = self.__test(self.cnns[i],testloader,self.device,criterion)
+                test_performance = self.test(self.cnns[i],testloader,self.device,criterion)
       
                 test_ACChistory.append(test_performance[1])
             except Exception as E:
@@ -372,7 +423,7 @@ class CreateCNN:
         return performance
 
 
-    def __test(self,model,loader,device,LOSS):
+    def test(self,model,loader,device,LOSS):
         model.eval()
         loss_=0
         total_=correct_=0

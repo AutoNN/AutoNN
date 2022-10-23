@@ -6,3 +6,4 @@ AutoNN/CNN/__pycache__/
 test.py 
 temp.pth
 *.pyc
+*.json
