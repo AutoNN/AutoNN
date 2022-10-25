@@ -4,6 +4,7 @@ AutoNN/preprocessing/__pycache__/
 AutoNN/CNN/__pycache__/
 *.ipynb
 test.py 
-temp.pth
+*.pth
 *.pyc
 *.json
+best_models/

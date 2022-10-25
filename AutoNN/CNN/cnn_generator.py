@@ -57,7 +57,11 @@ class CNN(nn.Module):
                 config_file_path='./config_files/',config_filename='cfg1.json'):
 
         '''
-        
+        Args:
+            path: path to the best models
+            filename: name of the .pth file (by default it will save the model as model.pth)
+            config_file_path: path to the configuration file, a .json file
+            config_filename: name of the configuration.json file
         
         '''
         if not os.path.exists(path):
@@ -66,6 +70,8 @@ class CNN(nn.Module):
         torch.save(self.state_dict(),filename)
         print(f'Model saved in directory: {path}{filename}')
 
+        if not os.path.exists(config_file_path):
+            os.makedirs(config_file_path)
         with open(os.path.join(config_file_path,config_filename),'w') as f:
             json.dump(self.config, f)
 
@@ -165,8 +171,17 @@ class CreateCNN:
             L-=1
         return cfg
 
+    @staticmethod    
+    def L2regularizer(model,lambda_=5):
+        l2rg = None
+        for params in model.parameters():
+            if l2rg is None:
+                l2rg = params.norm(2)
+            else:
+                l2rg+=params.norm(2)
         
-
+        return l2rg* lambda_
+        
 
     def print_all_cnn_configs(self): 
         for x,i in enumerate(self.configuration): 
@@ -390,7 +405,7 @@ class CreateCNN:
                 x,y = x.to(device).float(),y.to(device)
                 optimizer.zero_grad()
                 yhat = model(x)                
-                loss = LOSS(yhat,y)
+                loss = LOSS(yhat,y) + CreateCNN.L2regularizer(model)
                 loss.backward()
                 optimizer.step()
                 loss_per_epoch+=loss.item() 
