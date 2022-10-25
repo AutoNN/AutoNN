@@ -14,46 +14,6 @@ from datetime import datetime
 
 
 
-def create_config(min,max)-> List[Tuple]:
-    '''
-    Args:
-        min: minimum number of layers
-        max: maximum number of layers
-    Returns:
-        List of cnn configuration
-    example:
-
-    >>> print(create_config(3,10))
-    [('conv', 64, 64),
-    ('pool', 1, 64),
-    ('conv', 256, 512),
-    ('conv', 64, 128),
-    ('conv', 64, 64),
-    ('pool', 0, 64)]
-
-    '''
-    L = random.randint(min,max)
-    cfg = []
-
-    f1 = 2**random.randint(4,9)
-    f2 = 2**random.randint(4,9)
-    cfg.append(('conv',f1,f2))    
-
-    while (L-1):
-        if random.random()<0.5:
-            f1 = 2**random.randint(4,9)
-            f2 = 2**random.randint(4,9)
-            cfg.append(('conv',f1,f2))    
-        if random.random()<0.5:
-            if random.random() < 0.5:            
-                cfg.append(('pool',1,f2))
-            else:
-                cfg.append(('pool',0,f2))
-        L-=1
-    return cfg
-
-
-
 class CNN(nn.Module):
     def __init__(self,in_channels,numClasses,config=None) -> None:
         super(CNN,self).__init__()
@@ -152,6 +112,8 @@ class CNN(nn.Module):
             self.__load(PATH)
         
 
+
+
 class CreateCNN:
     def __init__(self,_size:int=10) -> None:
         '''
@@ -163,11 +125,55 @@ class CreateCNN:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.cnns=[]
 
+
+    @staticmethod
+    def create_config(min,max)-> List[Tuple]:
+        '''
+        Args:
+            min: minimum number of layers
+            max: maximum number of layers
+        Returns:
+            List of cnn configuration
+        example:
+
+        >>> print(create_config(3,10))
+        [('conv', 64, 64),
+        ('pool', 1, 64),
+        ('conv', 256, 512),
+        ('conv', 64, 128),
+        ('conv', 64, 64),
+        ('pool', 0, 64)]
+
+        '''
+        L = random.randint(min,max)
+        cfg = []
+
+        f1 = 2**random.randint(4,9)
+        f2 = 2**random.randint(4,9)
+        cfg.append(('conv',f1,f2))    
+
+        while (L-1):
+            if random.random()<0.5:
+                f1 = 2**random.randint(4,9)
+                f2 = 2**random.randint(4,9)
+                cfg.append(('conv',f1,f2))    
+            if random.random()<0.5:
+                if random.random() < 0.5:            
+                    cfg.append(('pool',1,f2))
+                else:
+                    cfg.append(('pool',0,f2))
+            L-=1
+        return cfg
+
+        
+
+
     def print_all_cnn_configs(self): 
         for x,i in enumerate(self.configuration): 
             print(f'cnn{x} configuration:')
             print(i)
             print('_'*100)
+
 
     def print_all_architecture(self):
         '''
@@ -184,7 +190,7 @@ class CreateCNN:
         self.configuration  = []
         for _ in range(self.size):
             try:
-                config_ = create_config(2,10) #this will generate ranodm cnn configuration 
+                config_ = CreateCNN.create_config(2,10) #this will generate ranodm cnn configuration 
                 # based on which CNN architecture will be defined
                 m1 = CNN(input_shape[0],self.numClasses,config_) #this will generate CNN models
 
