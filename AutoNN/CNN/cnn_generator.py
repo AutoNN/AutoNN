@@ -55,7 +55,6 @@ class CNN(nn.Module):
 
     def save(self,path='./best_models/',filename='Model.pth',
                 config_file_path='./config_files/',config_filename='cfg1.json'):
-
         '''
         Args:
             path: path to the best models
@@ -66,9 +65,9 @@ class CNN(nn.Module):
         '''
         if not os.path.exists(path):
             os.makedirs(path)
-        filename = os.path.join(path,filename)
-        torch.save(self.state_dict(),filename)
-        print(f'Model saved in directory: {path}{filename}')
+        path = os.path.join(path,filename)
+        torch.save(self.state_dict(),path)
+        print(f'Model saved in directory: {path}')
 
         if not os.path.exists(config_file_path):
             os.makedirs(config_file_path)
@@ -89,25 +88,23 @@ class CNN(nn.Module):
     def __load(self,PATH):
         self.load_state_dict(torch.load(PATH))
         self.eval()
-        print('Loading the model complete!')
+        print('Loading complete, your model is now ready for evaluation!')
     
     def load(self,PATH='./best_models/',
-                config_path='./config_files/',
-                config_filename='cfg1.json',
+                config_path='./config_files/cfg1.json',
                 printmodel=False,
                 loadmodel=True):
         '''
         Args:
             PATH: path to the saved model.pth file
             config_path: path to the configuration (.json) file
-            config_filename: configuration.json file name
             printmodel: if TRUE the model architecture will be printed 
             loadmodel: DEFAULT True | This will load the given trained model.pth
                         and make the network ready for testing
         
         '''
         
-        with open(os.path.join(config_path,config_filename),'r') as f:
+        with open(config_path,'r') as f:
             self.config = json.load(f)
         self.__buildNetwork()
 
@@ -328,7 +325,7 @@ class CreateCNN:
         print(f'Training set size: {len(trainSet)} | Validation Set size: {len(validSet)} | Test Set size: {len(testSet)}')
         len_dataset = len(trainSet)
             
-        # return len_dataset
+        
         input_shape = tuple(trainSet[0][0].shape)
 # ______________________________________________________________
         # self.val2 = kwargs.get('val2',"default value")
@@ -373,6 +370,7 @@ class CreateCNN:
                                         criterion,optims[i],epochs=EPOCHS)
                 history[f'cnn{i}']=train_performance
             except Exception as E:
+                # print(E)
                 pass
             
             print(f'Calculating test accuracy CNN model cnn{i}')
@@ -396,7 +394,7 @@ class CreateCNN:
                     'valloss':[],'valacc':[]}
         model.train()
         for _ in range(epochs):
-            print(f'Epoch: {_+1}')
+            print(f'Epoch: {_+1}/{epochs}')
             loss_per_epoch=0
             total=correct=0
             model= model.to(device)
@@ -405,7 +403,9 @@ class CreateCNN:
                 x,y = x.to(device).float(),y.to(device)
                 optimizer.zero_grad()
                 yhat = model(x)                
-                loss = LOSS(yhat,y) + CreateCNN.L2regularizer(model)
+                loss = LOSS(yhat,y) 
+                # loss+= sum(p.pow(2.0).sum() for p in model.parameters())
+                #  L2regularizer(model)
                 loss.backward()
                 optimizer.step()
                 loss_per_epoch+=loss.item() 
