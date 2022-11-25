@@ -1,7 +1,8 @@
 from tkinter import *
-from tkinter import ttk
+from tkinter import ttk,messagebox,filedialog
 import os
-from csv import DictReader
+import pandas as pd
+import numpy as np
 from ttkbootstrap import * 
 from PIL import ImageTk, Image
 
@@ -27,7 +28,7 @@ class window:
         menu = Menu(self.root)
         self.file = Menu(menu)
         self.file.add_command(label='New')
-        self.file.add_command(label='Open')
+        self.file.add_command(label='Open',command=self.File_open)
         self.file.add_command(label='Save',command=self.saveModel)
         self.file.add_separator()
         self.file.add_command(label='Exit', command=self.root.quit)
@@ -50,42 +51,78 @@ class window:
         TABS = ttk.Notebook(self.root)
         TABS.grid(rows=1,column=0,columnspan=10,rowspan=10)
         csv_frame = Frame(TABS,width=1000,height=300,bg='black')
-        image_frame = Frame(TABS,width=1000,height=300,bg='blue')
+        image_frame = Frame(TABS,width=1000,height=300,bg='black')
         TABS.add(csv_frame,text='Tabular Dataset')
         TABS.add(image_frame,text= ' Image Dataset')
 
-        F1 = Frame(csv_frame,width=1000,height=20)
+        F1 = Frame(csv_frame,width=1280,height=20)
         F1.pack()
-        F2 = Frame(csv_frame,width=1000,height=280)
+        F2 = Frame(csv_frame,width=1280,height=280)
         F2.pack()
 
         self.nam=StringVar()
-        ttk.Label(F1,text='Path to Dataset').pack(side=LEFT,pady=5,padx=5)
-        ttk.Entry(F1,width=40,textvariable=self.nam).pack(side=LEFT,pady=5,padx=5)
+        ttk.Label(F1,text='Path to Dataset').grid(row=0,column=0,pady=5,padx=5)
+        ttk.Entry(F1,width=40,textvariable=self.nam).grid(row=0,column=1,pady=5,padx=5)
 
-        self.nam=IntVar()
-        ttk.Label(F1,text='Epochs').pack(side=LEFT,pady=5,padx=5)
-        ttk.Entry(F1,width=5,textvariable=self.nam).pack(side=LEFT,pady=5,padx=5)
+        self.epochs=IntVar()
+        ttk.Label(F1,text='Epochs').grid(row=0,column=2,pady=5,padx=5)
+        ttk.Entry(F1,width=5,textvariable=self.epochs).grid(row=0,column=3,pady=5,padx=5)
 
         # BUTTONS
-        ttk.Button(F1,text = 'View Csv',width=20,
-        command=self.View_contents).pack(side=LEFT,pady=5,padx=5)
-        ttk.Button(F1,text = 'Start Training',width=20,
-        command=self.start_training_csv).pack(side=RIGHT,pady=5,padx=5)
+        ttk.Button(F1,text = 'Open File',width=20,style='info.TButton',
+        command=self.File_open).grid(row=0,column=4,pady=5,padx=5)
+        ttk.Button(F1,text = 'View Csv',width=20,style='info.TButton',
+        command=self.View_contents).grid(row=0,column=5,pady=5,padx=5)
+        ttk.Button(F1,text = 'Start Training',width=20,style='success.TButton',
+        command=self.start_training_csv).grid(row=0,column=6,pady=5,padx=5)
+        ttk.Button(F1,text = 'Save the Model',width=20,style='success.Outline.TButton',
+        command=self.SaveCsvModel).grid(row=0,column=7,pady=5,padx=5)
+
+        ttk.Label(F1,text='Progress').grid(row=1,column=0,pady=5,padx=5)
+        ttk.Progressbar(F1, value=0,length=750,
+         style='success.Horizontal.TProgressbar').grid(row=1,column=1,columnspan=5)
 
 
         # -----------Tree view-----
-        scrollbarx = Scrollbar(F2, orient=HORIZONTAL)
-        scrollbary = Scrollbar(F2, orient=VERTICAL)
-        self.tree = ttk.Treeview(F2,height=15,selectmode='extended',
-         yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
-        scrollbary.config(command=self.tree.yview)
+        self.tree = ttk.Treeview(F2,height=15,selectmode='extended',show='headings')
+        scrollbarx = Scrollbar(F2, orient='horizontal',command=self.tree.xview)
+        scrollbary = Scrollbar(F2, orient='vertical',command=self.tree.yview)
+        
+        
         scrollbary.pack(side=RIGHT, fill=Y)
-        scrollbarx.config(command=self.tree.xview)
         scrollbarx.pack(side=BOTTOM, fill=X)
         self.tree.pack(fill=BOTH, expand=1)
+        self.tree.config(xscrollcommand=scrollbarx.set)
+        self.tree.config(yscrollcommand=scrollbary.set)
 
-        
+        self.tree.column('#0',width=0,stretch=NO)
+        self.tree.heading('#0',text=None)
+
+        F2.pack_propagate(0)
+
+
+        # ---------------IMAGE FRAME----------------------------------
+
+
+        self.imgPath=StringVar()
+        ttk.Label(image_frame,text='Path to Dataset').grid(row=0,column=0,pady=5,padx=5)
+        ttk.Entry(image_frame,width=40,textvariable=self.imgPath).grid(row=0,column=1,pady=5,padx=5)
+
+        self.imgEpoch=IntVar()
+        ttk.Label(image_frame,text='Epochs').grid(row=0,column=2,pady=5,padx=5)
+        ttk.Entry(image_frame,width=5,textvariable=self.imgEpoch).grid(row=0,column=3,pady=5,padx=5)
+
+        # BUTTONS
+        ttk.Button(image_frame,text = 'View Image Batch',width=20,style='info.TButton',
+        command=self.View_contents).grid(row=0,column=4,pady=5,padx=5)
+        ttk.Button(image_frame,text = 'Start Training',width=20,style='success.TButton',
+        command=self.start_training_csv).grid(row=0,column=6,pady=5,padx=5)
+        ttk.Button(image_frame,text = 'Save the Model',width=20,
+        command=self.SaveCsvModel).grid(row=0,column=7,pady=5,padx=5)
+
+        ttk.Label(image_frame,text='Progress').grid(row=1,column=0,pady=5,padx=5)
+        ttk.Progressbar(image_frame, value=0,length=750,
+         style='success.Horizontal.TProgressbar').grid(row=1,column=1,columnspan=5)
 
         # ---TERMINAL-------------
 
@@ -94,20 +131,42 @@ class window:
     def start_training_csv(self,path):
         pass 
 
+    def SaveCsvModel(self):
+        pass
 
+    def View_contents(self):
+        # if not self.nam.get().endswith('.csv'):
+        #     messagebox.showerror('INVALID FILE','NOT a .csv file'
 
-    def View_contents(self,path):
-        '''
-        Args: 
-            path: path to csv file
-        '''
-        with open(path) as f:
-            reader = DictReader(f,delimiter=',')
-            for row in reader:
-                print(row)
+        pass 
+
+    def File_open(self):
+        file = filedialog.askopenfilename(title='Open CSV file',
+        filetypes=(('csv files','*.csv'),('xlsx files','*.xlxs'),
+        ('All files','*.*')))
+        df = None
+        try:
+            if file.endswith('.csv'):
+                df = pd.read_csv(file)
+            elif file.endswith('.xlxs'):
+                df = pd.read_excel(file)
+            else:
+                pass
+            
+        except Exception:   
+                messagebox.showerror('ERROR!','Invalid File! Unable to open file!') 
         
-
-
+        self.tree['column']=list(df.columns)
+        self.tree['show']='headings'
+        for column in self.tree['column']:
+        # for i,column in enumerate(df.columns):
+            self.tree.column(column,width=90,minwidth=100,stretch=False)
+            self.tree.heading(column,text=column)
+        self.tree.update()    
+        df_rows = df.to_numpy().tolist()
+        for row in df_rows:
+            self.tree.insert('','end',values=row)
+    
     def saveModel(self):
         pass 
 
