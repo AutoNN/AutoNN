@@ -4,8 +4,8 @@ import os
 import pandas as pd
 import numpy as np
 from ttkbootstrap import * 
-from PIL import ImageTk, Image
-
+# from PIL import ImageTk, Image
+from CNN.cnn_generator import CreateCNN
 
 class window:
     def __init__(self,root,title,resolution,size) -> None:
@@ -42,7 +42,7 @@ class window:
         self.men = Menu(self.root, tearoff=False)
         self.men.add_command(label='Clear Table',command=self.clcTable)
         self.men.add_separator()
-        self.men.add_command(label='Show All',command=self.showALL)
+        self.men.add_command(label='Show All Configurations',command=self.show_all_configurations)
         self.men.add_separator()
         self.men.add_command(label='Exit Database', command=self.root.quit)
         self.root.bind('<Button-3>', self.popup)
@@ -71,8 +71,8 @@ class window:
         # BUTTONS
         ttk.Button(F1,text = 'Open File',width=20,style='info.TButton',
         command=self.File_open).grid(row=0,column=4,pady=5,padx=5)
-        ttk.Button(F1,text = 'View Csv',width=20,style='info.TButton',
-        command=self.View_contents).grid(row=0,column=5,pady=5,padx=5)
+        # ttk.Button(F1,text = 'View Csv',width=20,style='info.TButton',
+        # command=self.View_contents).grid(row=0,column=5,pady=5,padx=5)
         ttk.Button(F1,text = 'Start Training',width=20,style='success.TButton',
         command=self.start_training_csv).grid(row=0,column=6,pady=5,padx=5)
         ttk.Button(F1,text = 'Save the Model',width=20,style='success.Outline.TButton',
@@ -81,6 +81,15 @@ class window:
         ttk.Label(F1,text='Progress').grid(row=1,column=0,pady=5,padx=5)
         ttk.Progressbar(F1, value=0,length=750,
          style='success.Horizontal.TProgressbar').grid(row=1,column=1,columnspan=5)
+
+        # RADIO BUTTON------------
+        self.split = BooleanVar()
+        ttk.Radiobutton(image_frame,text='Split required',variable=self.split,value=True,
+        style='danger.Outline.Toolbutton').grid(row=1,column=6)
+        ttk.Radiobutton(image_frame,text='Split NOT required',variable=self.split,value=False,
+        style='danger.Outline.Toolbutton').grid(row=1,column=7)
+
+
 
 
         # -----------Tree view-----
@@ -101,7 +110,7 @@ class window:
         F2.pack_propagate(0)
 
 
-        # ---------------IMAGE FRAME----------------------------------
+        # ---------------IMAGE FRAME----FOR IMAGE DATASET------------------------------
 
 
         self.imgPath=StringVar()
@@ -112,31 +121,84 @@ class window:
         ttk.Label(image_frame,text='Epochs').grid(row=0,column=2,pady=5,padx=5)
         ttk.Entry(image_frame,width=5,textvariable=self.imgEpoch).grid(row=0,column=3,pady=5,padx=5)
 
+        self.lr= DoubleVar()
+        ttk.Label(image_frame,text='Learning Rate').grid(row=1,column=3,pady=5,padx=5)
+        ttk.Entry(image_frame,width=20,textvariable=self.lr).grid(row=1,column=4,pady=5,padx=5)
+        self.lr.set(0.003)
         # BUTTONS
-        ttk.Button(image_frame,text = 'View Image Batch',width=20,style='info.TButton',
-        command=self.View_contents).grid(row=0,column=4,pady=5,padx=5)
+        ttk.Button(image_frame,text = 'Open folder',width=20,style='info.TButton',
+        command=self.get_img_dataset).grid(row=0,column=4,pady=5,padx=5)
         ttk.Button(image_frame,text = 'Start Training',width=20,style='success.TButton',
-        command=self.start_training_csv).grid(row=0,column=6,pady=5,padx=5)
-        ttk.Button(image_frame,text = 'Save the Model',width=20,
-        command=self.SaveCsvModel).grid(row=0,column=7,pady=5,padx=5)
+        command=self.Start_training).grid(row=0,column=5,pady=5,padx=5)
+        # ttk.Button(image_frame,text = 'Save the Model',width=20,
+        # command=self.).grid(row=0,column=6,pady=5,padx=5)
+        ttk.Button(image_frame,text = 'Show Configs',width=20,
+        command=self.show_all_configurations).grid(row=0,column=6,pady=5,padx=5)
 
         ttk.Label(image_frame,text='Progress').grid(row=1,column=0,pady=5,padx=5)
-        ttk.Progressbar(image_frame, value=0,length=750,
-         style='success.Horizontal.TProgressbar').grid(row=1,column=1,columnspan=5)
+        ttk.Progressbar(image_frame, value=0,length=350,mode='determinate',
+         style='success.Horizontal.TProgressbar').grid(row=1,column=1,columnspan=2)
+
+        self.disp = ttk.Label(image_frame)
+        self.disp.grid(row=3,column=0,columnspan=20)
+
+        # ----combobox------------
+        self.batch_sizes = ttk.Combobox(image_frame,values=[2**i for i in range(9)])
+        self.batch_sizes.grid(row=0,column=7)
+        self.batch_sizes.set('Select batch size')
+        self.batch_sizes['state']='readonly'
 
         # ---TERMINAL-------------
 
-        # ----------------
+    def get_img_dataset(self):
+        self.folder = filedialog.askdirectory(title='Open Folder')
+        self.gen_cnn_object = CreateCNN()
 
-    def start_training_csv(self,path):
+    def show_all_configurations(self):
+        try:
+            self.disp.config(text=f'Training Set Path: {self.folder}\nEpochs: {self.imgEpoch.get()}\nSplit Required: {self.split.get()}\nBatch Size: {self.batch_sizes.get()}')
+        except:
+            pass 
+
+
+    def Start_training(self):
+        self.cnn_model,self.cnn_bestconfig,self.cnn_history=self.gen_cnn_object.get_bestCNN(path_trainset=self.folder,
+        split_required=self.split.get(), 
+        batch_size=int(self.batch_sizes.get()), 
+        EPOCHS = self.imgEpoch.get(),
+        LR=self.lr.get(),
+        )
+    
+    def save_model(self):
+        def save(x):
+            self.cnn_model.save(filename=f'{x}.pth')
+            messagebox.showinfo('Model Saved',
+            f'Model saved at location "./best_models/{x}.pth"')
+            pass
+
+        
+        pop_model_save_window = Toplevel(self.root)
+        pop_model_save_window.geometry('300x100')
+        name = StringVar()
+        ttk.Label(pop_model_save_window, text = 'Save Model as').pack()
+        ttk.Entry(pop_model_save_window,textvariable=name).pack()
+        ttk.Button(pop_model_save_window,text="SAVE",width=18,
+        command = lambda :save(name.get())).pack()
+        
+
+
+    # -----------------methods to control csv datasets------------------
+
+
+    def start_training_csv(self):
+        print(self.split.get())
         pass 
 
     def SaveCsvModel(self):
         pass
 
     def View_contents(self):
-        # if not self.nam.get().endswith('.csv'):
-        #     messagebox.showerror('INVALID FILE','NOT a .csv file'
+       
 
         pass 
 
@@ -180,7 +242,6 @@ class window:
         self.men.tk_popup(e.x_root,e.y_root)
 
 
-if __name__ == '__main__':
-    win = Style(theme='darkly').master 
-    window(win,'AutoNN GUI','1280x720',40)
-    win.mainloop()
+win = Style(theme='darkly').master 
+window(win,'AutoNN GUI','1280x720',40)
+win.mainloop()
