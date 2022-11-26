@@ -1,13 +1,16 @@
 from tkinter import *
 from tkinter import ttk,messagebox,filedialog
-import os
+import subprocess as sub
 import pandas as pd
 import numpy as np
 from ttkbootstrap import * 
 # from PIL import ImageTk, Image
 from CNN.cnn_generator import CreateCNN
+# from multiprocessing import Process
+import threading
 
-class window:
+
+class App:
     def __init__(self,root,title,resolution,size) -> None:
         self.root = root
         self.root.title(title)
@@ -29,7 +32,6 @@ class window:
         self.file = Menu(menu)
         self.file.add_command(label='New')
         self.file.add_command(label='Open',command=self.File_open)
-        self.file.add_command(label='Save',command=self.saveModel)
         self.file.add_separator()
         self.file.add_command(label='Exit', command=self.root.quit)
         menu.add_cascade(label='File', menu=self.file)
@@ -44,7 +46,7 @@ class window:
         self.men.add_separator()
         self.men.add_command(label='Show All Configurations',command=self.show_all_configurations)
         self.men.add_separator()
-        self.men.add_command(label='Exit Database', command=self.root.quit)
+        self.men.add_command(label='Exit Program', command=self.root.quit)
         self.root.bind('<Button-3>', self.popup)
 
         # ---------------TABS-
@@ -79,8 +81,9 @@ class window:
         command=self.SaveCsvModel).grid(row=0,column=7,pady=5,padx=5)
 
         ttk.Label(F1,text='Progress').grid(row=1,column=0,pady=5,padx=5)
-        ttk.Progressbar(F1, value=0,length=750,
-         style='success.Horizontal.TProgressbar').grid(row=1,column=1,columnspan=5)
+        self.pb1 = ttk.Progressbar(F1, value=0,length=750,
+         style='success.Horizontal.TProgressbar')
+        self.pb1.grid(row=1,column=1,columnspan=5)
 
         # RADIO BUTTON------------
         self.split = BooleanVar()
@@ -130,14 +133,15 @@ class window:
         command=self.get_img_dataset).grid(row=0,column=4,pady=5,padx=5)
         ttk.Button(image_frame,text = 'Start Training',width=20,style='success.TButton',
         command=self.Start_training).grid(row=0,column=5,pady=5,padx=5)
-        # ttk.Button(image_frame,text = 'Save the Model',width=20,
-        # command=self.).grid(row=0,column=6,pady=5,padx=5)
         ttk.Button(image_frame,text = 'Show Configs',width=20,
         command=self.show_all_configurations).grid(row=0,column=6,pady=5,padx=5)
+        ttk.Button(image_frame,text = 'Save Trained Model',width=20,style='warning.Outline.TButton',
+        command=self.save_model).grid(row=1,column=5,pady=5,padx=5)
 
         ttk.Label(image_frame,text='Progress').grid(row=1,column=0,pady=5,padx=5)
-        ttk.Progressbar(image_frame, value=0,length=350,mode='determinate',
-         style='success.Horizontal.TProgressbar').grid(row=1,column=1,columnspan=2)
+        self.pb2 = ttk.Progressbar(image_frame, value=0,length=350,mode='determinate',
+         style='success.Horizontal.TProgressbar')
+        self.pb2.grid(row=1,column=1,columnspan=2)
 
         self.disp = ttk.Label(image_frame)
         self.disp.grid(row=3,column=0,columnspan=20)
@@ -147,8 +151,23 @@ class window:
         self.batch_sizes.grid(row=0,column=7)
         self.batch_sizes.set('Select batch size')
         self.batch_sizes['state']='readonly'
+    
+        self.textBox = Text(image_frame,height=15,width=180)
+        self.textBox.grid(row=4,column=0,columnspan=20)
+        self.textBox.config(state=DISABLED)
 
         # ---TERMINAL-------------
+
+    # -------Progress bar FOR IMAGE TRAINING________________
+    def progressBar2(self):
+        self.pb2.start()
+    
+    def monitorpbar2(self,_thread):
+        if _thread.is_alive():
+            self.after(100, lambda: self.monitorpbar2(_thread))
+        else:
+            self.pb2.stop()
+
 
     def get_img_dataset(self):
         self.folder = filedialog.askdirectory(title='Open Folder')
@@ -159,22 +178,41 @@ class window:
             self.disp.config(text=f'Training Set Path: {self.folder}\nEpochs: {self.imgEpoch.get()}\nSplit Required: {self.split.get()}\nBatch Size: {self.batch_sizes.get()}')
         except:
             pass 
-
-
-    def Start_training(self):
-        self.cnn_model,self.cnn_bestconfig,self.cnn_history=self.gen_cnn_object.get_bestCNN(path_trainset=self.folder,
+    
+    
+    def __decoratorFunc(self):
+        
+        self.cnn_model,bestconfig,history =self.gen_cnn_object.get_bestCNN(
+        path_trainset=self.folder,
         split_required=self.split.get(), 
         batch_size=int(self.batch_sizes.get()), 
-        EPOCHS = self.imgEpoch.get(),
-        LR=self.lr.get(),
+        EPOCHS= self.imgEpoch.get(),
+        LR=self.lr.get()
         )
+
+        self.textBox.insert(END,'training complete')
+        self.textBox.insert(END,str(self.cnn_model))
+        print(self.cnn_model)
+        # self.textBox.insert(END,bestconfig)
+        # self.textBox.insert(END,history)
     
+
+    def Start_training(self):
+
+        # process1 = Process(target=self.gen_cnn_object.get_bestCNN,
+        # kwargs=keyargs)
+
+
+        process1 = threading.Thread(target=self.__decoratorFunc)
+        process1.start()
+
+
     def save_model(self):
         def save(x):
             self.cnn_model.save(filename=f'{x}.pth')
             messagebox.showinfo('Model Saved',
             f'Model saved at location "./best_models/{x}.pth"')
-            pass
+            pop_model_save_window.destroy()
 
         
         pop_model_save_window = Toplevel(self.root)
@@ -185,7 +223,6 @@ class window:
         ttk.Button(pop_model_save_window,text="SAVE",width=18,
         command = lambda :save(name.get())).pack()
         
-
 
     # -----------------methods to control csv datasets------------------
 
@@ -229,8 +266,6 @@ class window:
         for row in df_rows:
             self.tree.insert('','end',values=row)
     
-    def saveModel(self):
-        pass 
 
     def clcTable(self):
         pass 
@@ -243,5 +278,5 @@ class window:
 
 
 win = Style(theme='darkly').master 
-window(win,'AutoNN GUI','1280x720',40)
+App(win,'AutoNN GUI','1280x720',40)
 win.mainloop()
