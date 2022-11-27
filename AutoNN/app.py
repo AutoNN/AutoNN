@@ -7,7 +7,20 @@ from ttkbootstrap import *
 # from PIL import ImageTk, Image
 from CNN.cnn_generator import CreateCNN
 # from multiprocessing import Process
-import threading
+import threading,sys
+
+class TextRedicretor(object):
+    def __init__(self,Widget,mode = 'stdout') -> None:
+        self.widget = Widget
+        self.mode = mode
+    
+    def write(self,s):
+        self.widget.configure(state="normal")
+        self.widget.insert("end", s)
+        self.widget.configure(state="disabled")
+    
+    def flush(self):
+        pass
 
 
 class App:
@@ -154,7 +167,8 @@ class App:
     
         self.textBox = Text(image_frame,height=15,width=180)
         self.textBox.grid(row=4,column=0,columnspan=20)
-        self.textBox.config(state=DISABLED)
+        
+        sys.stdout = TextRedicretor(self.textBox)
 
         # ---TERMINAL-------------
 
@@ -180,7 +194,7 @@ class App:
             pass 
     
     
-    def __decoratorFunc(self):
+    def decoratorFunc(self):
         
         self.cnn_model,bestconfig,history =self.gen_cnn_object.get_bestCNN(
         path_trainset=self.folder,
@@ -190,9 +204,10 @@ class App:
         LR=self.lr.get()
         )
 
-        self.textBox.insert(END,'training complete')
-        self.textBox.insert(END,str(self.cnn_model))
-        print(self.cnn_model)
+        self.textBox.insert('end','chompaaaaaa')
+        self.textBox.insert('end',self.cnn_model.__str__())
+        print('Trainig Completed!')
+        self.show_all_configurations()
         # self.textBox.insert(END,bestconfig)
         # self.textBox.insert(END,history)
     
@@ -203,7 +218,7 @@ class App:
         # kwargs=keyargs)
 
 
-        process1 = threading.Thread(target=self.__decoratorFunc)
+        process1 = threading.Thread(target=self.decoratorFunc)
         process1.start()
 
 
@@ -254,18 +269,18 @@ class App:
             
         except Exception:   
                 messagebox.showerror('ERROR!','Invalid File! Unable to open file!') 
+        if file:
+            self.tree['column']=list(df.columns)
+            self.tree['show']='headings'
+            for column in self.tree['column']:
+            # for i,column in enumerate(df.columns):
+                self.tree.column(column,width=90,minwidth=100,stretch=False)
+                self.tree.heading(column,text=column)
+            self.tree.update()    
+            df_rows = df.to_numpy().tolist()
+            for row in df_rows:
+                self.tree.insert('','end',values=row)
         
-        self.tree['column']=list(df.columns)
-        self.tree['show']='headings'
-        for column in self.tree['column']:
-        # for i,column in enumerate(df.columns):
-            self.tree.column(column,width=90,minwidth=100,stretch=False)
-            self.tree.heading(column,text=column)
-        self.tree.update()    
-        df_rows = df.to_numpy().tolist()
-        for row in df_rows:
-            self.tree.insert('','end',values=row)
-    
 
     def clcTable(self):
         pass 
