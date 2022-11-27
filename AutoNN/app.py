@@ -1,11 +1,9 @@
 from tkinter import *
 from tkinter import ttk,messagebox,filedialog
-import subprocess as sub
 import pandas as pd
-import numpy as np
 from ttkbootstrap import * 
 # from PIL import ImageTk, Image
-from CNN.cnn_generator import CreateCNN
+from CNN.cnn_generator import CreateCNN,CNN
 # from multiprocessing import Process
 import threading,sys,ctypes,time
 from CNN.utils.EDA import plot_graph
@@ -141,12 +139,12 @@ class App:
 
         self.lr= DoubleVar()
         ttk.Label(image_frame,text='Learning Rate').grid(row=0,column=0,pady=5,padx=5)
-        ttk.Entry(image_frame,width=20,textvariable=self.lr).grid(row=0,column=1,pady=5,padx=5)
+        ttk.Entry(image_frame,width=10,textvariable=self.lr).grid(row=0,column=1,pady=5,padx=5)
         self.lr.set(0.003)
         # BUTTONS
         ttk.Button(image_frame,text = 'Open folder',width=20,style='info.TButton',
         command=self.get_img_dataset).grid(row=0,column=4,pady=5,padx=5)
-        ttk.Button(image_frame,text = 'Start Training',width=20,style='success.TButton',
+        ttk.Button(image_frame,text = 'Start Training',width=20,style='success.Outline.TButton',
         command=self.Start_training).grid(row=0,column=5,pady=5,padx=5)
         ttk.Button(image_frame,text = 'Show Configs',width=20,
         command=self.show_all_configurations).grid(row=0,column=6,pady=5,padx=5)
@@ -159,11 +157,22 @@ class App:
         self.pb2 = ttk.Progressbar(image_frame, value=0,length=1280,mode='indeterminate',
          style='success.Horizontal.TProgressbar')
 
+        
+        self.channels = IntVar()
+        self.numclass = IntVar()
+        ttk.Entry(image_frame,width=10,textvariable=self.channels).grid(row=1,column=1)
+        ttk.Entry(image_frame,width=10,textvariable=self.numclass).grid(row=1,column=2)
+        self.channels.set('#channels')
+        self.numclass.set('#Classes')
+
         self.display_btn = ttk.Button(image_frame,text='Display Graphs',command=self.show_graphs)
         self.display_btn.grid(row=1,column=3)
         self.display_btn['state']='disabled'
+                # for loading any trained cnn model 
+        self.load_cnn = ttk.Button(image_frame,text='Load Model',command=self.load_cnn_model,width=20)
+        self.load_cnn.grid(row=1,column=4)
 
-        self.disp = Text(image_frame,height=10,width=180)
+        self.disp = Text(image_frame,height=10,width=180,background='black',foreground='lime')
         self.disp.grid(row=4,column=0,columnspan=20)
 
         # ----combobox------------
@@ -194,8 +203,22 @@ class App:
         if timeVar:
             widget.after(1000,lambda :App.Timer(widget,clock))
 
-
-
+    def load_cnn_model(self):
+        
+        path = filedialog.askopenfilename(initialdir='./best_models/',
+        title='Select Trained Model file',
+        filetypes=(('Model files','*.pth'),('model files','*.pt'),
+        ('All files','*.*'))
+        )
+        configfile = (path.split('/')[-1]).split('.')[0] + '.json'
+        try:
+            self.new_model = CNN(self.channels.get(),self.numclass.get())
+            self.new_model.load(PATH=path,
+            config_path=f'./config_files/{configfile}',
+            printmodel=True)
+            self.new_model.summary((3,32,32))
+        except:
+            messagebox.showerror('Invalid Input','Make sure #channels and #classes\n are INTEGER VALUES.')
     # -------Progress bar FOR IMAGE TRAINING________________
     def progressBar2(self):
         self.pb2.start()
@@ -216,11 +239,11 @@ class App:
             self.disp.configure(state="normal")
             self.disp.delete('1.0',END)
             self.disp.insert(END,f'''
-                Training Set Path: {self.folder}
-                Epochs: {self.imgEpoch.get()}
-                Split Required: {self.split.get()}
-                Batch Size: {self.batch_sizes.get()}
-                Learning Rate: {self.lr.get()}
+            Training Set Path:  {self.folder}
+            Epochs:             {self.imgEpoch.get()}
+            Split Required:     {self.split.get()}
+            Batch Size:         {self.batch_sizes.get()}
+            Learning Rate:      {self.lr.get()}
                 ''')
             self.disp.configure(state="disabled")
 
