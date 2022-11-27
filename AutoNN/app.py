@@ -76,8 +76,8 @@ class App:
         F2.pack()
 
         self.nam=StringVar()
-        ttk.Label(F1,text='Path to Dataset').grid(row=0,column=0,pady=5,padx=5)
-        ttk.Entry(F1,width=40,textvariable=self.nam).grid(row=0,column=1,pady=5,padx=5)
+        ttk.Label(F1,text='Label Name').grid(row=0,column=0,pady=5,padx=5)
+        ttk.Entry(F1,width=20,textvariable=self.nam).grid(row=0,column=1,pady=5,padx=5)
 
         self.epochs=IntVar()
         ttk.Label(F1,text='Epochs').grid(row=0,column=2,pady=5,padx=5)
