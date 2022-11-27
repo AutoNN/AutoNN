@@ -7,8 +7,11 @@ from ttkbootstrap import *
 # from PIL import ImageTk, Image
 from CNN.cnn_generator import CreateCNN
 # from multiprocessing import Process
-import threading,sys,ctypes
+import threading,sys,ctypes,time
 from CNN.utils.EDA import plot_graph
+
+
+timeVar = True
 
 class TextRedicretor(object):
     def __init__(self,Widget,mode = 'stdout') -> None:
@@ -68,8 +71,8 @@ class App:
         # ---------------TABS-
         TABS = ttk.Notebook(self.root)
         TABS.pack()
-        csv_frame = Frame(TABS,width=1000,height=300,bg='black')
-        image_frame = Frame(TABS,width=1000,height=300,bg='black')
+        csv_frame = Frame(TABS,width=1280,height=300,bg='black')
+        image_frame = Frame(TABS,width=1280,height=300,bg='black')
         TABS.add(csv_frame,text='Tabular Dataset')
         TABS.add(image_frame,text= ' Image Dataset')
 
@@ -103,9 +106,9 @@ class App:
 
         # RADIO BUTTON------------
         self.split = BooleanVar()
-        ttk.Radiobutton(image_frame,text='Split required',variable=self.split,value=True,
+        ttk.Radiobutton(image_frame,text='Split required',variable=self.split,value=True,width=20,
         style='danger.Outline.Toolbutton').grid(row=1,column=6)
-        ttk.Radiobutton(image_frame,text='Split NOT required',variable=self.split,value=False,
+        ttk.Radiobutton(image_frame,text='Split NOT required',variable=self.split,value=False,width=20,
         style='danger.Outline.Toolbutton').grid(row=1,column=7)
 
 
@@ -147,16 +150,21 @@ class App:
         command=self.Start_training).grid(row=0,column=5,pady=5,padx=5)
         ttk.Button(image_frame,text = 'Show Configs',width=20,
         command=self.show_all_configurations).grid(row=0,column=6,pady=5,padx=5)
-        ttk.Button(image_frame,text = 'Save Trained Model',width=20,style='warning.Outline.TButton',
-        command=self.save_model).grid(row=1,column=5,pady=5,padx=5)
+        self.savecnn_btn=ttk.Button(image_frame,text = 'Save Trained Model',width=20,style='warning.Outline.TButton',
+        command=self.save_model)
+        self.savecnn_btn.grid(row=1,column=5,pady=5,padx=5)
+        self.savecnn_btn['state']='disabled'
 
-        ttk.Label(image_frame,text='Progress').grid(row=1,column=0,pady=5,padx=5)
-        self.pb2 = ttk.Progressbar(image_frame, value=0,length=350,mode='determinate',
+        # ttk.Label(image_frame,text='Progress').grid(row=1,column=0,pady=5,padx=5)
+        self.pb2 = ttk.Progressbar(image_frame, value=0,length=1280,mode='indeterminate',
          style='success.Horizontal.TProgressbar')
-        self.pb2.grid(row=1,column=1,columnspan=2)
 
-        self.disp = ttk.Label(image_frame)
-        self.disp.grid(row=3,column=0,columnspan=20)
+        self.display_btn = ttk.Button(image_frame,text='Display Graphs',command=self.show_graphs)
+        self.display_btn.grid(row=1,column=3)
+        self.display_btn['state']='disabled'
+
+        self.disp = Text(image_frame,height=10,width=180)
+        self.disp.grid(row=4,column=0,columnspan=20)
 
         # ----combobox------------
         self.batch_sizes = ttk.Combobox(image_frame,values=[2**i for i in range(9)])
@@ -165,12 +173,28 @@ class App:
         self.batch_sizes['state']='readonly'
 
         ttk.Label(self.root,text='OUTPUT').pack()
-        self.textBox = Text(self.root,height=15,width=180)
+        self.textBox = Text(self.root,height=18,width=180)
         self.textBox.pack()
-        
+
+        self.clockwid = ttk.Label(image_frame)
+        self.clockwid.grid(row=1,column=0)
+
+        ttk.Label(self.root,text=u"  \u00A9" + "  AutoNN.Org", font=("Arial", 9)).pack(side=LEFT)
         sys.stdout = TextRedicretor(self.textBox)
 
-        # ---TERMINAL-------------
+       
+
+
+    @staticmethod
+    def Timer(widget,clock=0):
+        global timeVar
+
+        clock +=1
+        widget.config(text='{:.2f} mins'.format(clock/60))
+        if timeVar:
+            widget.after(1000,lambda :App.Timer(widget,clock))
+
+
 
     # -------Progress bar FOR IMAGE TRAINING________________
     def progressBar2(self):
@@ -189,15 +213,26 @@ class App:
 
     def show_all_configurations(self):
         try:
-            self.disp.config(text=f'''Training Set Path: {self.folder}\nEpochs: {self.imgEpoch.get()}
-            \nSplit Required: {self.split.get()}\nBatch Size: {self.batch_sizes.get()}
-            \nLearning Rate: {self.lr.get()}''')
-        except:
-            pass 
+            self.disp.configure(state="normal")
+            self.disp.delete('1.0',END)
+            self.disp.insert(END,f'''
+                Training Set Path: {self.folder}
+                Epochs: {self.imgEpoch.get()}
+                Split Required: {self.split.get()}
+                Batch Size: {self.batch_sizes.get()}
+                Learning Rate: {self.lr.get()}
+                ''')
+            self.disp.configure(state="disabled")
+
+        except Exception as e:
+            messagebox.showerror('Empty Path','Please provide the training folder path.\n click "Open Folder"')
     
     
     def __decoratorFunc(self):
-        
+        global timeVar
+
+        self.pb2.grid(row=3,column=0,columnspan=20)
+        self.pb2.start()
         self.cnn_model,bestconfig,self.history =self.gen_cnn_object.get_bestCNN(
         path_trainset=self.folder,
         split_required=self.split.get(), 
@@ -205,28 +240,30 @@ class App:
         EPOCHS= self.imgEpoch.get(),
         LR=self.lr.get()
         )
-
+        self.display_btn['state']='normal'
+        self.savecnn_btn['state']='normal'
         print('Trainig Completed!')
         self.textBox.insert('end',self.cnn_model.__str__())
-        print(self.history)
-        print(bestconfig)
-    
-
-    
+        print('History List: ',self.history)
+        print('Best Configuration architecture: ',bestconfig)
+        self.pb2.stop()
+        self.pb2.grid_remove()
+        timeVar = False
 
     def Start_training(self):
 
         # process1 = Process(target=self.gen_cnn_object.get_bestCNN,
         # kwargs=keyargs)
-
-
+        
+        clock_thread = threading.Thread(target=App.Timer,args=(self.clockwid))
         process1 = threading.Thread(target=self.__decoratorFunc)
         process1.start()
+        clock_thread.start()
 
 
     def save_model(self):
         def save(x):
-            self.cnn_model.save(filename=f'{x}.pth')
+            self.cnn_model.save(filename=f'{x}.pth',config_filename=f'{x}.json')
             messagebox.showinfo('Model Saved',
             f'Model saved at location "./best_models/{x}.pth"')
             pop_model_save_window.destroy()
@@ -285,7 +322,15 @@ class App:
         
 
     def clcTable(self):
-        pass 
+        '''
+        To Clear the OUTPUT display
+        '''
+        self.textBox.configure(state="normal")
+        self.textBox.delete('1.0',END)
+        self.textBox.configure(state="disabled")
+        
+    
+         
 
     def show_graphs(self):
         plot_graph(self.history)
