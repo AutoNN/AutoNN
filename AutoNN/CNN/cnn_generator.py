@@ -221,7 +221,6 @@ class CreateCNN:
             # checking if any valid cnn architecture has been created or not
             self.__create_Cnns(len_dataset,input_shape)
         
-        print(f'Number of models generated: {len(self.cnns)}')
         
     def __meanNstd(self,path,loader=None):
         '''
@@ -343,6 +342,7 @@ class CreateCNN:
         else:
             self.__create_Cnns(len_dataset,input_shape)
         print("Architecture search Complete..!",'Time Taken: ',datetime.now()-start)
+        print(f'Number of models generated: {len(self.cnns)}')
 
 # ___________________DATALOADERS___________________________________________
 

@@ -7,7 +7,8 @@ from ttkbootstrap import *
 # from PIL import ImageTk, Image
 from CNN.cnn_generator import CreateCNN
 # from multiprocessing import Process
-import threading,sys
+import threading,sys,ctypes
+from CNN.utils.EDA import plot_graph
 
 class TextRedicretor(object):
     def __init__(self,Widget,mode = 'stdout') -> None:
@@ -37,8 +38,8 @@ class App:
         # img = Label(self.root,image=render_image)
         # img.image =  render_image
         # img.grid(row=0,column=0,columnspan=15)
-        Label(self.root, text='AutoNN', font='Ariel ' + '50',bg="#000000",fg="#005A9C", bd=5,pady=5,padx=520
-              ).grid(row=0, column=1, columnspan=14, pady=0, padx=0)
+        # Label(self.root, text='AutoNN', font='Ariel ' + '50',bg="#000000",fg="#005A9C", bd=5,pady=5,padx=520
+        #       ).grid(row=0, column=1, columnspan=14, pady=0, padx=0)
 
         # ---------------- HEADER MENU BAR --------------------------------
         menu = Menu(self.root)
@@ -52,19 +53,21 @@ class App:
         self.edit.add_command(label='Undo')
         menu.add_cascade(label='Edit', menu=self.edit)
         self.root.config(menu=menu)
+
+
         # -----------RIGHT CLICK POP UP------------------------------------------------------
 
         self.men = Menu(self.root, tearoff=False)
         self.men.add_command(label='Clear Table',command=self.clcTable)
         self.men.add_separator()
-        self.men.add_command(label='Show All Configurations',command=self.show_all_configurations)
+        self.men.add_command(label='Show Graphs',command=self.show_graphs)
         self.men.add_separator()
         self.men.add_command(label='Exit Program', command=self.root.quit)
         self.root.bind('<Button-3>', self.popup)
 
         # ---------------TABS-
         TABS = ttk.Notebook(self.root)
-        TABS.grid(rows=1,column=0,columnspan=10,rowspan=10)
+        TABS.pack()
         csv_frame = Frame(TABS,width=1000,height=300,bg='black')
         image_frame = Frame(TABS,width=1000,height=300,bg='black')
         TABS.add(csv_frame,text='Tabular Dataset')
@@ -129,17 +132,13 @@ class App:
         # ---------------IMAGE FRAME----FOR IMAGE DATASET------------------------------
 
 
-        self.imgPath=StringVar()
-        ttk.Label(image_frame,text='Path to Dataset').grid(row=0,column=0,pady=5,padx=5)
-        ttk.Entry(image_frame,width=40,textvariable=self.imgPath).grid(row=0,column=1,pady=5,padx=5)
-
         self.imgEpoch=IntVar()
         ttk.Label(image_frame,text='Epochs').grid(row=0,column=2,pady=5,padx=5)
-        ttk.Entry(image_frame,width=5,textvariable=self.imgEpoch).grid(row=0,column=3,pady=5,padx=5)
+        ttk.Entry(image_frame,width=10,textvariable=self.imgEpoch).grid(row=0,column=3,pady=5,padx=5)
 
         self.lr= DoubleVar()
-        ttk.Label(image_frame,text='Learning Rate').grid(row=1,column=3,pady=5,padx=5)
-        ttk.Entry(image_frame,width=20,textvariable=self.lr).grid(row=1,column=4,pady=5,padx=5)
+        ttk.Label(image_frame,text='Learning Rate').grid(row=0,column=0,pady=5,padx=5)
+        ttk.Entry(image_frame,width=20,textvariable=self.lr).grid(row=0,column=1,pady=5,padx=5)
         self.lr.set(0.003)
         # BUTTONS
         ttk.Button(image_frame,text = 'Open folder',width=20,style='info.TButton',
@@ -164,9 +163,10 @@ class App:
         self.batch_sizes.grid(row=0,column=7)
         self.batch_sizes.set('Select batch size')
         self.batch_sizes['state']='readonly'
-    
-        self.textBox = Text(image_frame,height=15,width=180)
-        self.textBox.grid(row=4,column=0,columnspan=20)
+
+        ttk.Label(self.root,text='OUTPUT').pack()
+        self.textBox = Text(self.root,height=15,width=180)
+        self.textBox.pack()
         
         sys.stdout = TextRedicretor(self.textBox)
 
@@ -189,14 +189,16 @@ class App:
 
     def show_all_configurations(self):
         try:
-            self.disp.config(text=f'Training Set Path: {self.folder}\nEpochs: {self.imgEpoch.get()}\nSplit Required: {self.split.get()}\nBatch Size: {self.batch_sizes.get()}')
+            self.disp.config(text=f'''Training Set Path: {self.folder}\nEpochs: {self.imgEpoch.get()}
+            \nSplit Required: {self.split.get()}\nBatch Size: {self.batch_sizes.get()}
+            \nLearning Rate: {self.lr.get()}''')
         except:
             pass 
     
     
-    def decoratorFunc(self):
+    def __decoratorFunc(self):
         
-        self.cnn_model,bestconfig,history =self.gen_cnn_object.get_bestCNN(
+        self.cnn_model,bestconfig,self.history =self.gen_cnn_object.get_bestCNN(
         path_trainset=self.folder,
         split_required=self.split.get(), 
         batch_size=int(self.batch_sizes.get()), 
@@ -204,12 +206,12 @@ class App:
         LR=self.lr.get()
         )
 
-        self.textBox.insert('end','chompaaaaaa')
-        self.textBox.insert('end',self.cnn_model.__str__())
         print('Trainig Completed!')
-        self.show_all_configurations()
-        # self.textBox.insert(END,bestconfig)
-        # self.textBox.insert(END,history)
+        self.textBox.insert('end',self.cnn_model.__str__())
+        print(self.history)
+        print(bestconfig)
+    
+
     
 
     def Start_training(self):
@@ -218,7 +220,7 @@ class App:
         # kwargs=keyargs)
 
 
-        process1 = threading.Thread(target=self.decoratorFunc)
+        process1 = threading.Thread(target=self.__decoratorFunc)
         process1.start()
 
 
@@ -285,13 +287,16 @@ class App:
     def clcTable(self):
         pass 
 
-    def showALL(self):
-        pass 
+    def show_graphs(self):
+        plot_graph(self.history)
+        
 
     def popup(self,e):
         self.men.tk_popup(e.x_root,e.y_root)
 
 
-win = Style(theme='darkly').master 
-App(win,'AutoNN GUI','1280x720',40)
-win.mainloop()
+if __name__=='__main__':
+    ctypes.windll.shcore.SetProcessDpiAwareness(0)
+    win = Style(theme='darkly').master 
+    App(win,'AutoNN GUI','1280x720',40)
+    win.mainloop()
