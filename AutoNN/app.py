@@ -186,7 +186,7 @@ class App:
 
 
     @staticmethod
-    def Timer(widget,clock=0):
+    def Timer(widget,clock):
         global timeVar
 
         clock +=1
@@ -270,7 +270,7 @@ class App:
         # process1 = Process(target=self.gen_cnn_object.get_bestCNN,
         # kwargs=keyargs)
         
-        clock_thread = threading.Thread(target=App.Timer,args=(self.clockwid))
+        clock_thread = threading.Thread(target=App.Timer,args=(self.clockwid,0))
         process1 = threading.Thread(target=self.__decoratorFunc)
         process1.start()
         clock_thread.start()
@@ -295,11 +295,15 @@ class App:
 
     # -----------------methods to control csv datasets------------------
 
-    def start_training_csv(self):
-        atonn = Autonn(train_csv_path=self.csv_file,label_name=self.nam.get())
+    def __start_training_csv(self,a,b):
+        atonn = Autonn(a,b)
         atonn.preprocessing()
-        # atonn.neuralnetworkgeneration()
-        
+        atonn.neuralnetworkgeneration()
+        pass
+
+    def start_training_csv(self):
+        p1 = threading.Thread(target=self.__start_training_csv,args=(self.csv_file,self.nam.get()))
+        p1.start()
 
     def SaveCsvModel(self):
         pass
