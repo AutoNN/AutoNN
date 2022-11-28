@@ -8,4 +8,5 @@ test.py
 *.pyc
 *.json
 best_models/
+config_files/
 *.csv
