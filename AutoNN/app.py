@@ -2,16 +2,14 @@ from tkinter import *
 from tkinter import ttk,messagebox,filedialog
 import pandas as pd
 from ttkbootstrap import * 
-# from PIL import ImageTk, Image
 from CNN.cnn_generator import CreateCNN,CNN
-# from multiprocessing import Process
-import threading,sys,ctypes,time
+import threading,sys,ctypes
 from CNN.utils.EDA import plot_graph
 
 
 timeVar = True
 
-class TextRedicretor(object):
+class TerminalOutput(object):
     def __init__(self,Widget,mode = 'stdout') -> None:
         self.widget = Widget
         self.mode = mode
@@ -32,16 +30,6 @@ class App:
         self.root.geometry(resolution)
         self.root.resizable(0,0)
 
-        # load_logo = Image.open(os.path.join(os.getcwd(),'AutoNN','assets','1logo.png'))
-        # load_logo = load_logo.resize((1280, 150), Image.ANTIALIAS)
-
-        # render_image = ImageTk.PhotoImage(load_logo)
-        # img = Label(self.root,image=render_image)
-        # img.image =  render_image
-        # img.grid(row=0,column=0,columnspan=15)
-        # Label(self.root, text='AutoNN', font='Ariel ' + '50',bg="#000000",fg="#005A9C", bd=5,pady=5,padx=520
-        #       ).grid(row=0, column=1, columnspan=14, pady=0, padx=0)
-
         # ---------------- HEADER MENU BAR --------------------------------
         menu = Menu(self.root)
         self.file = Menu(menu)
@@ -59,7 +47,9 @@ class App:
         # -----------RIGHT CLICK POP UP------------------------------------------------------
 
         self.men = Menu(self.root, tearoff=False)
+        self.men.add_command(label='Clear OUTPUT',command=self.clcOutput)
         self.men.add_command(label='Clear Table',command=self.clcTable)
+
         self.men.add_separator()
         self.men.add_command(label='Show Graphs',command=self.show_graphs)
         self.men.add_separator()
@@ -97,10 +87,10 @@ class App:
         ttk.Button(F1,text = 'Save the Model',width=20,style='success.Outline.TButton',
         command=self.SaveCsvModel).grid(row=0,column=7,pady=5,padx=5)
 
-        ttk.Label(F1,text='Progress').grid(row=1,column=0,pady=5,padx=5)
-        self.pb1 = ttk.Progressbar(F1, value=0,length=750,
-         style='success.Horizontal.TProgressbar')
-        self.pb1.grid(row=1,column=1,columnspan=5)
+        # ttk.Label(F1,text='Progress').grid(row=1,column=0,pady=5,padx=5)
+        # self.pb1 = ttk.Progressbar(F1, value=0,length=750,
+        #  style='success.Horizontal.TProgressbar')
+        # self.pb1.grid(row=1,column=1,columnspan=5)
 
         # RADIO BUTTON------------
         self.split = BooleanVar()
@@ -189,7 +179,7 @@ class App:
         self.clockwid.grid(row=1,column=0)
 
         ttk.Label(self.root,text=u"  \u00A9" + "  AutoNN.Org", font=("Arial", 9)).pack(side=LEFT)
-        sys.stdout = TextRedicretor(self.textBox)
+        sys.stdout = TerminalOutput(self.textBox)
 
        
 
@@ -202,6 +192,7 @@ class App:
         widget.config(text='{:.2f} mins'.format(clock/60))
         if timeVar:
             widget.after(1000,lambda :App.Timer(widget,clock))
+
 
     def load_cnn_model(self):
         
@@ -303,18 +294,11 @@ class App:
 
     # -----------------methods to control csv datasets------------------
 
-
     def start_training_csv(self):
-        print(self.split.get())
         pass 
 
     def SaveCsvModel(self):
         pass
-
-    def View_contents(self):
-       
-
-        pass 
 
     def File_open(self):
         file = filedialog.askopenfilename(title='Open CSV file',
@@ -342,9 +326,10 @@ class App:
             df_rows = df.to_numpy().tolist()
             for row in df_rows:
                 self.tree.insert('','end',values=row)
-        
 
-    def clcTable(self):
+            # -------OTHER FUNCTIONALITIES--------       
+
+    def clcOutput(self):
         '''
         To Clear the OUTPUT display
         '''
@@ -352,7 +337,9 @@ class App:
         self.textBox.delete('1.0',END)
         self.textBox.configure(state="disabled")
         
-    
+    def clcTable(self):
+        for child in self.tree.get_children():
+            self.tree.delete(child)
          
 
     def show_graphs(self):
