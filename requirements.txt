@@ -8,3 +8,4 @@ tensorflow
 sklearn
 pandas
 dask
+tqdm
