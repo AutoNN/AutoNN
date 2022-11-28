@@ -2,7 +2,7 @@
 torch
 torchvision
 torchaudio
-
+ttkbootstrap==0.5.1
 pytorchsummary
 tensorflow
 sklearn

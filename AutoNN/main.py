@@ -1,9 +1,8 @@
 import numpy as np
 import dask.dataframe as dd
-
-from AutoNN.preprocessing import data_cleaning
-from AutoNN.preprocessing import encoding_v3 as enc
-from AutoNN.networkbuilding import final
+from preprocessing import data_cleaning
+from preprocessing import encoding_v3 as enc
+from networkbuilding import final
 
 class Autonn:
     def __init__(self, train_csv_path, label_name, loss = None):

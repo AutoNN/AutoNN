@@ -5,9 +5,10 @@ from ttkbootstrap import *
 from CNN.cnn_generator import CreateCNN,CNN
 import threading,sys,ctypes
 from CNN.utils.EDA import plot_graph
-
+from main import Autonn
 
 timeVar = True
+
 
 class TerminalOutput(object):
     def __init__(self,Widget,mode = 'stdout') -> None:
@@ -68,7 +69,7 @@ class App:
         F1.pack()
         F2 = Frame(csv_frame,width=1280,height=280)
         F2.pack()
-
+        # ------------------tabs end-----------------------
         self.nam=StringVar()
         ttk.Label(F1,text='Label Name').grid(row=0,column=0,pady=5,padx=5)
         ttk.Entry(F1,width=20,textvariable=self.nam).grid(row=0,column=1,pady=5,padx=5)
@@ -295,27 +296,30 @@ class App:
     # -----------------methods to control csv datasets------------------
 
     def start_training_csv(self):
-        pass 
+        atonn = Autonn(train_csv_path=self.csv_file,label_name=self.nam.get())
+        atonn.preprocessing()
+        # atonn.neuralnetworkgeneration()
+        
 
     def SaveCsvModel(self):
         pass
 
     def File_open(self):
-        file = filedialog.askopenfilename(title='Open CSV file',
+        self.csv_file = filedialog.askopenfilename(title='Open CSV file',
         filetypes=(('csv files','*.csv'),('xlsx files','*.xlxs'),
         ('All files','*.*')))
         df = None
         try:
-            if file.endswith('.csv'):
-                df = pd.read_csv(file)
-            elif file.endswith('.xlxs'):
-                df = pd.read_excel(file)
+            if self.csv_file.endswith('.csv'):
+                df = pd.read_csv(self.csv_file)
+            elif self.csv_file.endswith('.xlxs'):
+                df = pd.read_excel(self.csv_file)
             else:
                 pass
             
         except Exception:   
                 messagebox.showerror('ERROR!','Invalid File! Unable to open file!') 
-        if file:
+        if self.csv_file:
             self.tree['column']=list(df.columns)
             self.tree['show']='headings'
             for column in self.tree['column']:
