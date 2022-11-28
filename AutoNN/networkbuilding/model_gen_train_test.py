@@ -1,4 +1,4 @@
-from AutoNN.networkbuilding import model_generation as model_gen
+from networkbuilding import model_generation as model_gen
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 import tensorflow as tf

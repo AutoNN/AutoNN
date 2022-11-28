@@ -4,10 +4,10 @@ from tensorflow.keras.layers import Dense, Input, Dropout
 from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal, LecunNormal, LecunUniform
 from tensorflow.keras.optimizers import Adam
 
-from AutoNN.networkbuilding import model_generation as model_gen
-from AutoNN.networkbuilding import hyperparameter_optimization as hyp_opt
-from AutoNN.networkbuilding.dropout_optimization import Dropout_Optimization
-from AutoNN.networkbuilding.utilities import get_loss_function
+from networkbuilding import model_generation as model_gen
+from networkbuilding import hyperparameter_optimization as hyp_opt
+from networkbuilding.dropout_optimization import Dropout_Optimization
+from networkbuilding.utilities import get_loss_function
 
 class Model_Stacking:
     def __init__(self, train_x, train_y, test_x, test_y, loss_fn, model_path_list, model_conf_list, save_dir = ""):
