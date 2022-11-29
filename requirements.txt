@@ -9,3 +9,4 @@ sklearn
 pandas
 dask
 tqdm
+psutil

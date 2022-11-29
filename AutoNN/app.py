@@ -5,10 +5,11 @@ from ttkbootstrap import *
 from CNN.cnn_generator import CreateCNN,CNN
 import threading,sys,ctypes
 from CNN.utils.EDA import plot_graph
-from main import Autonn
+from CNN.utils.Device import DeviceInfo
+# from main import Autonn
 
-timeVar = True
-
+timeVar = False
+run = True
 
 class TerminalOutput(object):
     def __init__(self,Widget,mode = 'stdout') -> None:
@@ -81,8 +82,7 @@ class App:
         # BUTTONS
         ttk.Button(F1,text = 'Open File',width=20,style='info.TButton',
         command=self.File_open).grid(row=0,column=4,pady=5,padx=5)
-        # ttk.Button(F1,text = 'View Csv',width=20,style='info.TButton',
-        # command=self.View_contents).grid(row=0,column=5,pady=5,padx=5)
+
         ttk.Button(F1,text = 'Start Training',width=20,style='success.TButton',
         command=self.start_training_csv).grid(row=0,column=6,pady=5,padx=5)
         ttk.Button(F1,text = 'Save the Model',width=20,style='success.Outline.TButton',
@@ -163,8 +163,12 @@ class App:
         self.load_cnn = ttk.Button(image_frame,text='Load Model',command=self.load_cnn_model,width=20)
         self.load_cnn.grid(row=1,column=4)
 
-        self.disp = Text(image_frame,height=10,width=180,background='black',foreground='lime')
-        self.disp.grid(row=4,column=0,columnspan=20)
+        self.disp = Text(image_frame,height=10,width=130,background='black',foreground='lime')
+        self.disp.grid(row=4,column=0,columnspan=7)
+
+        self.disp1 = Text(image_frame,height=10,width=40,background='black',foreground='yellow')
+        self.disp1.grid(row=4,column=7,columnspan=4)
+
 
         # ----combobox------------
         self.batch_sizes = ttk.Combobox(image_frame,values=[2**i for i in range(9)])
@@ -178,20 +182,36 @@ class App:
 
         self.clockwid = ttk.Label(image_frame)
         self.clockwid.grid(row=1,column=0)
-
-        ttk.Label(self.root,text=u"  \u00A9" + "  AutoNN.Org", font=("Arial", 9)).pack(side=LEFT)
+        info = DeviceInfo()
+        x_ =ttk.Label(self.root,text='', font=("Arial", 9),foreground='yellow')
+        x_.pack(side='right')
+        ttk.Label(self.root,text= u"  \u00A9"+ 'AutoNN.Org', font=("Arial", 9)).pack(side='left')
         sys.stdout = TerminalOutput(self.textBox)
+        usage = threading.Thread(target=App._usages,args=(info,self.disp1,x_))
+        usage.start()
 
-       
+    
+
+    @staticmethod
+    def _usages(obj,widget,w2):
+        global run 
+        w2.config(text=obj.getusage)
+        widget.configure(state='normal')
+        widget.delete('1.0',END)
+        widget.insert('end',obj.getDeviceInfo)
+        widget.configure(state='disabled')
+        if run:
+            widget.after(1000,lambda :App._usages(obj,widget,w2))
+
 
 
     @staticmethod
     def Timer(widget,clock):
         global timeVar
 
-        clock +=1
-        widget.config(text='{:.2f} mins'.format(clock/60))
         if timeVar:
+            clock +=1
+            widget.config(text='{:.2f} mins'.format(clock/60))
             widget.after(1000,lambda :App.Timer(widget,clock))
 
 
@@ -243,9 +263,9 @@ class App:
             messagebox.showerror('Empty Path','Please provide the training folder path.\n click "Open Folder"')
     
     
-    def __decoratorFunc(self):
+    def __Func(self):
         global timeVar
-
+        timeVar=True
         self.pb2.grid(row=3,column=0,columnspan=20)
         self.pb2.start()
         self.cnn_model,bestconfig,self.history =self.gen_cnn_object.get_bestCNN(
@@ -266,12 +286,9 @@ class App:
         timeVar = False
 
     def Start_training(self):
-
-        # process1 = Process(target=self.gen_cnn_object.get_bestCNN,
-        # kwargs=keyargs)
         
         clock_thread = threading.Thread(target=App.Timer,args=(self.clockwid,0))
-        process1 = threading.Thread(target=self.__decoratorFunc)
+        process1 = threading.Thread(target=self.__Func)
         process1.start()
         clock_thread.start()
 
@@ -296,9 +313,9 @@ class App:
     # -----------------methods to control csv datasets------------------
 
     def __start_training_csv(self,a,b):
-        atonn = Autonn(a,b)
-        atonn.preprocessing()
-        atonn.neuralnetworkgeneration()
+        # atonn = Autonn(a,b)
+        # atonn.preprocessing()
+        # atonn.neuralnetworkgeneration()
         pass
 
     def start_training_csv(self):
