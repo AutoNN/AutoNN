@@ -6,9 +6,6 @@ from setuptools import find_packages
 currect_file = Path(__file__).resolve()
 readme = currect_file.parent/"README.md"
 
-with open('requirements.txt') as f:
-    reqs = f.read().splitlines()
-
 
 setup(
     name = "autonn",
@@ -18,7 +15,20 @@ setup(
     long_description_content_type = "text/markdown",
     url= "https://github.com/AutoNN/AutoNN",
     keywords=['AutoNN','autonn','AutoML','Deep Learning','CNN'],
-    install_requires=reqs,
+    install_requires=[
+        'torch',
+        'torchvision',
+        'torchaudio',
+        'ttkbootstrap==0.5.1',
+        'pytorchsummary',
+        'tensorflow==2.8.0',
+        'sklearn',
+        'pandas',
+        'dask',
+        'dask-ml',
+        'tqdm',
+        'psutil',
+    ],
     entry_points={
         'gui_scripts': [
             'autonn = AutoNN.__main__:main',
