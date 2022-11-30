@@ -19,6 +19,11 @@ setup(
     url= "https://github.com/AutoNN/AutoNN",
     keywords=['AutoNN','autonn','AutoML','Deep Learning','CNN'],
     install_requires=reqs,
+    entry_points={
+        'gui_scripts': [
+            'autonn = AutoNN.__main__:main',
+        ]
+    },
     authors = "Anish Konar, Arjun Ghosh, Rajarshi Banerjee, Sagnik Nayak.",
     classifiers=[
         "Intended Audience :: Developers",

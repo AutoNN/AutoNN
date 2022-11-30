@@ -3,10 +3,11 @@ from tkinter import ttk,messagebox,filedialog
 import pandas as pd
 from ttkbootstrap import * 
 from CNN.cnn_generator import CreateCNN,CNN
-import threading,sys,ctypes
+import threading,sys,ctypes,os
 from CNN.utils.EDA import plot_graph
 from CNN.utils.Device import DeviceInfo
 from main import Autonn
+
 
 timeVar = False
 run = True
@@ -378,8 +379,12 @@ class App:
         self.men.tk_popup(e.x_root,e.y_root)
 
 
-if __name__=='__main__':
-    ctypes.windll.shcore.SetProcessDpiAwareness(0)
+def main():
+    if os.name =='nt':
+        ctypes.windll.shcore.SetProcessDpiAwareness(0)
     win = Style(theme='darkly').master 
     App(win,'AutoNN GUI','1280x720',40)
     win.mainloop()
+
+if __name__=='__main__':
+    main()
