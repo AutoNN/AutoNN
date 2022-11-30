@@ -4,9 +4,10 @@ torchvision
 torchaudio
 ttkbootstrap==0.5.1
 pytorchsummary
-tensorflow
+tensorflow==2.4.1
 sklearn
 pandas
 dask
+dask-ml
 tqdm
 psutil
