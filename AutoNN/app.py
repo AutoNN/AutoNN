@@ -180,7 +180,7 @@ class App:
         self.batch_sizes['state']='readonly'
 
         ttk.Label(self.root,text='OUTPUT').pack()
-        self.textBox = Text(self.root,height=18,width=180)
+        self.textBox = Text(self.root,height=17,width=180)
         self.textBox.pack()
 
         self.clockwid = ttk.Label(image_frame)
@@ -188,7 +188,7 @@ class App:
         info = DeviceInfo()
         x_ =ttk.Label(self.root,text='', font=("Arial", 9),foreground='yellow')
         x_.pack(side='right')
-        ttk.Label(self.root,text= u"  \u00A9"+ 'AutoNN.Org', font=("Arial", 9)).pack(side='left')
+        ttk.Label(self.root,text= u"  \u00A9"+ 'AutoNN', font=("Arial", 9)).pack(side='left')
         sys.stdout = TerminalOutput(self.textBox)
         usage = threading.Thread(target=App._usages,args=(info,self.disp1,x_))
         usage.start()
@@ -307,8 +307,6 @@ class App:
     # -----------------methods to control csv datasets------------------
 
     def __start_training_csv(self,a,b):
-        self.pb1.start()
-        self.pb1.grid(row=3,column=0,columnspan=20)
         atonn = Autonn(a,b)
         atonn.preprocessing()
         atonn.neuralnetworkgeneration()
@@ -316,6 +314,8 @@ class App:
         pass
 
     def start_training_csv(self):
+        self.pb1.start()
+        self.pb1.grid(row=3,column=0,columnspan=20)
         p1 = threading.Thread(target=self.__start_training_csv,args=(self.csv_file,self.nam.get()))
         p1.start()
 
