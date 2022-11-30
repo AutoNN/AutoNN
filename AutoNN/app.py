@@ -6,7 +6,7 @@ from CNN.cnn_generator import CreateCNN,CNN
 import threading,sys,ctypes
 from CNN.utils.EDA import plot_graph
 from CNN.utils.Device import DeviceInfo
-# from main import Autonn
+from main import Autonn
 
 timeVar = False
 run = True
@@ -147,6 +147,9 @@ class App:
         # ttk.Label(image_frame,text='Progress').grid(row=1,column=0,pady=5,padx=5)
         self.pb2 = ttk.Progressbar(image_frame, value=0,length=1280,mode='indeterminate',
          style='success.Horizontal.TProgressbar')
+        
+        self.pb1 = ttk.Progressbar(F1, value=0,length=1280,mode='indeterminate',
+         style='success.Horizontal.TProgressbar')
 
         
         self.channels = IntVar()
@@ -232,15 +235,6 @@ class App:
         except:
             messagebox.showerror('Invalid Input','Make sure #channels and #classes\n are INTEGER VALUES.')
     # -------Progress bar FOR IMAGE TRAINING________________
-    def progressBar2(self):
-        self.pb2.start()
-    
-    def monitorpbar2(self,_thread):
-        if _thread.is_alive():
-            self.after(100, lambda: self.monitorpbar2(_thread))
-        else:
-            self.pb2.stop()
-
 
     def get_img_dataset(self):
         self.folder = filedialog.askdirectory(title='Open Folder')
@@ -313,9 +307,12 @@ class App:
     # -----------------methods to control csv datasets------------------
 
     def __start_training_csv(self,a,b):
-        # atonn = Autonn(a,b)
-        # atonn.preprocessing()
-        # atonn.neuralnetworkgeneration()
+        self.pb1.start()
+        self.pb1.grid(row=3,column=0,columnspan=20)
+        atonn = Autonn(a,b)
+        atonn.preprocessing()
+        atonn.neuralnetworkgeneration()
+        self.pb1.stop()
         pass
 
     def start_training_csv(self):
