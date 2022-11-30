@@ -27,7 +27,7 @@ class Dropout_Optimization():
 
                 self._reinitialize_model(self._model, initializer)
                 self._set_activation(self._model, activation)
-                optimizer = Adam(lr = lr)
+                optimizer = Adam(learning_rate = lr)
                 self._model.compile(loss = self._loss_fn, optimizer = optimizer)
                 history = self._model.fit(self._train_x, self._train_y, epochs = epoch, batch_size = batch_size, verbose = 0)
 

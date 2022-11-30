@@ -62,7 +62,7 @@ class Hyperparameter_Optimization:
         # Get Range of Learning Rate vs loss funtion
         # self._reinitialize_model()
         epoch = 50
-        optimizer = Adam(lr = 1e-3)
+        optimizer = Adam(learning_rate = 1e-3)
         self._model.compile(loss = self._loss_fn, optimizer = optimizer)
         lr_schedule = LearningRateScheduler(lambda epoch : 1e-5 * 10**(epoch/10))
         history = self._model.fit(self._train_X, self._train_Y, epochs = epoch, batch_size = batch_size, callbacks = [lr_schedule], verbose = 0)
@@ -76,7 +76,7 @@ class Hyperparameter_Optimization:
         return best_lr, min_loss
     
     def _train_model(self, lr, batch_size):
-        optimizer = Adam(lr = lr)
+        optimizer = Adam(learning_rate = lr)
         self._model.compile(loss = self._loss_fn, optimizer = optimizer)
         history = self._model.fit(self._train_X, self._train_Y, epochs = 25, batch_size = batch_size, verbose = 0)
         score = self._model.evaluate(self._train_X, self._train_Y, verbose = 0)
@@ -171,7 +171,7 @@ class Hyperparameter_Optimization:
             if best_activation != None:
                 self._set_activation(best_activation)
 
-            optimizer = Adam(lr = best_lr)
+            optimizer = Adam(learning_rate = best_lr)
             self._model.compile(loss = self._loss_fn, optimizer = optimizer)
             history = self._model.fit(self._train_X, self._train_Y, epochs = 50, batch_size = best_batch_size, verbose = 0)
             scores = self._model.evaluate(self._train_X, self._train_Y, verbose = 0)

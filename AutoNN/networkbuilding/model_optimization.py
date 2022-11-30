@@ -3,8 +3,8 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model
 from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal, LecunUniform, LecunNormal
 from tensorflow.keras.activations import tanh, relu, selu
-from AutoNN.networkbuilding import hyperparameter_optimization as hyp_opt
-from AutoNN.networkbuilding import model_generation as model_gen
+from networkbuilding import hyperparameter_optimization as hyp_opt
+from networkbuilding import model_generation as model_gen
 
 import os
 
@@ -115,7 +115,7 @@ class Model_Optimization:
         #     Pmodel = self._reinitialize_model(Pmodel, initializer)
 
         input_x, input_labels, input_test_x, input_test_labels = input_data
-        optimizer = Adam(lr = lr)
+        optimizer = Adam(learning_rate = lr)
         Pmodel.compile(loss = self._loss_fn, optimizer = optimizer)
         history = Pmodel.fit(input_x, input_labels, validation_data = (input_test_x, input_test_labels), epochs = epochs, batch_size = batch_size, verbose = 0)
 

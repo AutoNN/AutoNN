@@ -1,11 +1,10 @@
 import numpy as np
 import dask.dataframe as dd
+from preprocessing import data_cleaning
+from preprocessing import encoding_v3 as enc
+from networkbuilding import final
 
-from AutoNN.preprocessing import data_cleaning
-from AutoNN.preprocessing import encoding_v3 as enc
-from AutoNN.networkbuilding import final
-
-class AutoNN:
+class Autonn:
     def __init__(self, train_csv_path, label_name, loss = None):
         self._train_csv_path = train_csv_path
         self._label_name = label_name
@@ -146,7 +145,31 @@ class AutoNN:
 #         return train, validation, test, train_Y, test_Y
 
     def neuralnetworkgeneration(self):
-        f = final.Final(self._train_X, self._train_Y, self._test_X, self._test_Y, self._loss, 75, 64, input_shape = self._input_shape, 
-                                   max_no_layers = 3, model_per_batch = 10, 
-                        output_shape = self._output_shape, output_activation = self._output_activation)
+        '''
+        train_x: Any,
+        train_y: Any,
+        test_x: Any,
+        test_y: Any,
+        loss_fn: Any,
+        epochs: Any,
+        batch_size: Any, 
+        input_shape: Any,
+        output_shape: int = 1,
+        output_activation: Any | None = None,
+        max_no_layers: int = 3,
+        model_per_batch: int = 10,
+        save_dir: str = ""
+
+        '''
+        f = final.Final(self._train_X,
+         self._train_Y,
+          self._test_X,
+           self._test_Y,
+            self._loss,
+             75,
+              64,
+               input_shape = self._input_shape, 
+                max_no_layers = 3, 
+                model_per_batch = 10, 
+                output_shape = self._output_shape, output_activation = self._output_activation)
         self._history_list = f.get_all_best_models()

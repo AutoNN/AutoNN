@@ -1,4 +1,4 @@
-import random,torch,os
+import random,torch,os,json
 from torch import nn 
 from numpy import argmax,array
 from .cnnBlocks import SkipLayer,Pooling
@@ -9,69 +9,42 @@ from pytorchsummary import summary as summ
 from torch.utils.data import DataLoader,random_split
 from tqdm import tqdm
 from .models.resnet import resnet
+from datetime import datetime
 
-def create_config(min,max)-> List[Tuple]:
-    '''
-    Args:
-        min: minimum number of layers
-        max: maximum number of layers
-    Returns:
-        List of cnn configuration
-    example:
 
-    >>> print(create_config(3,10))
-    [('conv', 64, 64),
-    ('pool', 1, 64),
-    ('conv', 256, 512),
-    ('conv', 64, 128),
-    ('conv', 64, 64),
-    ('pool', 0, 64)]
 
-    '''
-    L = random.randint(min,max)
-    cfg = []
 
-    f1 = 2**random.randint(4,9)
-    f2 = 2**random.randint(4,9)
-    cfg.append(('conv',f1,f2))    
-
-    while (L-1):
-        if random.random()<0.5:
-            f1 = 2**random.randint(4,9)
-            f2 = 2**random.randint(4,9)
-            cfg.append(('conv',f1,f2))    
-        if random.random()<0.5:
-            if random.random() < 0.5:            
-                cfg.append(('pool',1,f2))
-            else:
-                cfg.append(('pool',0,f2))
-        L-=1
-    return cfg
-            
 class CNN(nn.Module):
-    def __init__(self,in_channels,numClasses,config) -> None:
+    def __init__(self,in_channels,numClasses,config=None) -> None:
         super(CNN,self).__init__()
-        layers=[]
-        for i in range(len(config)):
-            if config[i][0]=='conv' and i==0:
-                layers.append( SkipLayer(in_channels,config[i][1],config[i][2]))
-            elif config[i][0]=='conv':
-                layers.append( SkipLayer(config[i-1][2],config[i][1],config[i][2]))
-            elif config[i][0]=='pool':
-                if config[i][1]==1:
-                    layers.append(Pooling('maxpool'))
-                else:
-                    layers.append(Pooling('avgpool'))
-        self.network  = nn.Sequential(*layers)
+        self.config=config
+        self.inchannels = in_channels
+        self.numClasses = numClasses
+        self.__buildNetwork()
 
-        
-        self.avgpool = nn.AdaptiveAvgPool2d((1,1))
+    def __buildNetwork(self):
+        if self.config:
+            layers=[]
+            for i in range(len(self.config)):
+                if self.config[i][0]=='conv' and i==0:
+                    layers.append( SkipLayer(self.inchannels,self.config[i][1],self.config[i][2]))
+                elif self.config[i][0]=='conv':
+                    layers.append( SkipLayer(self.config[i-1][2],self.config[i][1],self.config[i][2]))
+                elif self.config[i][0]=='pool':
+                    if self.config[i][1]==1:
+                        layers.append(Pooling('maxpool'))
+                    else:
+                        layers.append(Pooling('avgpool'))
+            self.network  = nn.Sequential(*layers)
 
-        self.classifier = nn.Sequential(
-            nn.Linear(config[-1][2],32),
-            nn.ReLU(),
-            nn.Linear(32,numClasses)
-            )
+            
+            self.avgpool = nn.AdaptiveAvgPool2d((1,1))
+
+            self.classifier = nn.Sequential(
+                nn.Linear(self.config[-1][2],32),
+                nn.ReLU(),
+                nn.Linear(32,self.numClasses)
+                )
 
     def forward(self,x):
         x = self.network(x)
@@ -80,12 +53,27 @@ class CNN(nn.Module):
         x = self.classifier(x)
         return x
 
-    def save(self,path='./best_models/',filename='Model.pth'):
+    def save(self,path='./best_models/',filename='Model.pth',
+                config_file_path='./config_files/',config_filename='cfg1.json'):
+        '''
+        Args:
+            path: path to the best models
+            filename: name of the .pth file (by default it will save the model as model.pth)
+            config_file_path: path to the configuration file, a .json file
+            config_filename: name of the configuration.json file
+        
+        '''
         if not os.path.exists(path):
             os.makedirs(path)
-        filename = os.path.join(path,filename)
-        torch.save(self.state_dict(),filename)
-        print(f'Model saved in directory: {path}{filename}')
+        path = os.path.join(path,filename)
+        torch.save(self.state_dict(),path)
+        print(f'Model saved in directory: {path}')
+
+        if not os.path.exists(config_file_path):
+            os.makedirs(config_file_path)
+        with open(os.path.join(config_file_path,config_filename),'w') as f:
+            json.dump(self.config, f)
+
     
     def summary(self,input_shape:tuple,border:bool=True):
         '''
@@ -96,6 +84,37 @@ class CNN(nn.Module):
         
         '''
         print(summ(input_shape,self,border))
+    
+    def __load(self,PATH):
+        self.load_state_dict(torch.load(PATH))
+        self.eval()
+        print('Loading complete, your model is now ready for evaluation!')
+    
+    def load(self,PATH='./best_models/',
+                config_path='./config_files/cfg1.json',
+                printmodel=False,
+                loadmodel=True):
+        '''
+        Args:
+            PATH: path to the saved model.pth file
+            config_path: path to the configuration (.json) file
+            printmodel: if TRUE the model architecture will be printed 
+            loadmodel: DEFAULT True | This will load the given trained model.pth
+                        and make the network ready for testing
+        
+        '''
+        
+        with open(config_path,'r') as f:
+            self.config = json.load(f)
+        self.__buildNetwork()
+
+        print('Network Architecture loaded!')
+        if printmodel:
+            print(self)
+        if loadmodel:
+            self.__load(PATH)
+        
+
 
 
 class CreateCNN:
@@ -109,11 +128,64 @@ class CreateCNN:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.cnns=[]
 
+
+    @staticmethod
+    def create_config(min,max)-> List[Tuple]:
+        '''
+        Args:
+            min: minimum number of layers
+            max: maximum number of layers
+        Returns:
+            List of cnn configuration
+        example:
+
+        >>> print(create_config(3,10))
+        [('conv', 64, 64),
+        ('pool', 1, 64),
+        ('conv', 256, 512),
+        ('conv', 64, 128),
+        ('conv', 64, 64),
+        ('pool', 0, 64)]
+
+        '''
+        L = random.randint(min,max)
+        cfg = []
+
+        f1 = 2**random.randint(4,9)
+        f2 = 2**random.randint(4,9)
+        cfg.append(('conv',f1,f2))    
+
+        while (L-1):
+            if random.random()<0.5:
+                f1 = 2**random.randint(4,9)
+                f2 = 2**random.randint(4,9)
+                cfg.append(('conv',f1,f2))    
+            if random.random()<0.5:
+                if random.random() < 0.5:            
+                    cfg.append(('pool',1,f2))
+                else:
+                    cfg.append(('pool',0,f2))
+            L-=1
+        return cfg
+
+    @staticmethod    
+    def L2regularizer(model,lambda_=5):
+        l2rg = None
+        for params in model.parameters():
+            if l2rg is None:
+                l2rg = params.norm(2)
+            else:
+                l2rg+=params.norm(2)
+        
+        return l2rg* lambda_
+        
+
     def print_all_cnn_configs(self): 
         for x,i in enumerate(self.configuration): 
             print(f'cnn{x} configuration:')
             print(i)
             print('_'*100)
+
 
     def print_all_architecture(self):
         '''
@@ -125,45 +197,52 @@ class CreateCNN:
             print(arch)
             print('_'*150)
 
-    def __create_Cnns(self,len_dataset,input_shape,num_channels):
-        l=len(input_shape)
+    def __create_Cnns(self,len_dataset,input_shape):
+        
         self.configuration  = []
         for _ in range(self.size):
             try:
-                config_ = create_config(2,10)
-                m1 = CNN(l,num_channels,config_)
-                params, _,_ = summ(input_size =input_shape,model=m1,_print=False)
-                if 0.1<= params/len_dataset<1.5 :
+                config_ = CreateCNN.create_config(2,10) #this will generate ranodm cnn configuration 
+                # based on which CNN architecture will be defined
+                m1 = CNN(input_shape[0],self.numClasses,config_) #this will generate CNN models
+
+                params, _,_ = summ(input_size =input_shape,model=m1,_print=False) # this helper function
+                # from pytorchsummary package will provide us with the number of parameters 
+                # in an architecture
+                if 0.5<= params/len_dataset<1.5 : # condition to check is the number of 
+                    # parameters is too much or not
+                    # a rule of thumb is the number of datapoints should be 
+                    # roughly 10 times the number of parameters
                     self.cnns.append(m1)
                     self.configuration.append(config_)
             except Exception as e:
-                # print(e)
                 pass
         if not self.cnns:
-            self.__create_Cnns(len_dataset,input_shape,num_channels)
+            # checking if any valid cnn architecture has been created or not
+            self.__create_Cnns(len_dataset,input_shape)
         
         
-    # def __meanNstd(self,path,loader=None):
-    #     '''
-    #     calculates the mean and std of an image dataset
-    #     image has to be RGB image
-    #     '''
-    #     channelSum,channel2sum,batch = 0,0,0
+    def __meanNstd(self,path,loader=None):
+        '''
+        calculates the mean and std of an image dataset
+        image has to be RGB image
+        '''
+        channelSum,channel2sum,batch = 0,0,0
 
-    #     for X, _ in loader:
+        for X, _ in loader:
         
-    #         channelSum += torch.mean(X,dim=[0,2,3])
-    #         channel2sum += torch.mean(X**2,dim=[0,2,3])
-    #         batch+=1
-    #     mean= channelSum/batch
-    #     std = (channel2sum/batch -mean**2)**0.5
+            channelSum += torch.mean(X,dim=[0,2,3])
+            channel2sum += torch.mean(X**2,dim=[0,2,3])
+            batch+=1
+        mean= channelSum/batch
+        std = (channel2sum/batch -mean**2)**0.5
         
-    #     return mean,std
+        return mean,std
 
 
     def get_bestCNN(self,
                     path_trainset:str,
-                    path_validationset:str=None,
+                    # path_validationset:str=None,
                     path_testset:str=None,
                     split_required:bool=False,
                     batch_size:int=16,
@@ -177,7 +256,6 @@ class CreateCNN:
         NOTE: make sure the path to your dataset is of 
             format 
         >>> "../dataset/train/"
-            "../dataset/validation/"
             "../dataset/test/"
 
             i.e name your training image dataset folder
@@ -209,7 +287,7 @@ class CreateCNN:
 
         '''
         print(f'Default computing platform: {self.device}')
-
+        start = datetime.now()
 
         if lossFn == 'cross-entropy':
             criterion=nn.CrossEntropyLoss()
@@ -219,33 +297,34 @@ class CreateCNN:
                 [transforms.ToTensor(),transforms.Resize(image_shape)]
             ))
             
-            validSet = ImageFolder(path_validationset,transforms.Compose(
-                [transforms.ToTensor(),transforms.Resize(image_shape)]
-            ))
+            len_classes = len(trainSet.classes)
+            print('Classes: ',trainSet.classes, '# Classes: ',len_classes)
+            validlen = int(len(trainSet)*0.2)
+            trainlen = len(trainSet)-validlen
+            trainSet,validSet= random_split(trainSet,[trainlen,validlen])
             
             testSet = ImageFolder(path_testset,transforms.Compose(
                 [transforms.ToTensor(),transforms.Resize(image_shape)]
             ))
-            len_classes = len(trainSet.classes)
-            print('Classes: ',trainSet.classes)
         else:
             
             trainSet = ImageFolder(path_trainset,transforms.Compose(
                 [transforms.ToTensor(),transforms.Resize(image_shape)]
             ))
+            len_classes = len(trainSet.classes)
+            print('Classes: ',trainSet.classes, '# Classes: ',len_classes)
+            
             trainlen = int(len(trainSet)*0.7)
             testlen = len(trainSet) - trainlen # rest 30%
             validlen = int(testlen*0.5) #this is 50% of remaining 30%
 
-            len_classes = len(trainSet.classes)
-            print('Classes: ',trainSet.classes, '# Classes: ',len_classes)
             testlen -= validlen  #the rest 50%
             trainSet,validSet,testSet= random_split(trainSet,[trainlen,validlen,testlen])
 
         print(f'Training set size: {len(trainSet)} | Validation Set size: {len(validSet)} | Test Set size: {len(testSet)}')
         len_dataset = len(trainSet)
             
-        # return len_dataset
+        
         input_shape = tuple(trainSet[0][0].shape)
 # ______________________________________________________________
         # self.val2 = kwargs.get('val2',"default value")
@@ -261,10 +340,11 @@ class CreateCNN:
             To augment your image dataset
             ''')
         else:
-            self.__create_Cnns(len_dataset,input_shape,len_classes)
-        print("Architecture search Complete..!")
+            self.__create_Cnns(len_dataset,input_shape)
+        print("Architecture search Complete..!",'Time Taken: ',datetime.now()-start)
+        print(f'Number of models generated: {len(self.cnns)}')
 
-# ______________________________________________________________
+# ___________________DATALOADERS___________________________________________
 
 
         trainloader = DataLoader(trainSet,batch_size,shuffle=True)
@@ -281,7 +361,6 @@ class CreateCNN:
 
         print('Searching for the best model. Please be patient. Thank you....')   
 
-        print(f'Number of models generated: {len(self.cnns)}')
 
         for i in range(len(self.cnns)):
             print(f'Training CNN model cnn{i}')
@@ -291,17 +370,15 @@ class CreateCNN:
                                         criterion,optims[i],epochs=EPOCHS)
                 history[f'cnn{i}']=train_performance
             except Exception as E:
-                # print(f'2nd try er exception: {E}')
+                # print(E)
                 pass
             
             print(f'Calculating test accuracy CNN model cnn{i}')
             try:
-                test_performance = self.__test(self.cnns[i],testloader,self.device,criterion)
+                test_performance = self.test(self.cnns[i],testloader,self.device,criterion)
       
                 test_ACChistory.append(test_performance[1])
             except Exception as E:
-            
-                # print(f'3rd try er exception: {E}')
                 pass
             print('_'*150)
         
@@ -309,7 +386,7 @@ class CreateCNN:
             self.__create_Cnns(len_dataset,input_shape,len_classes)
             
         index = argmax(array(test_ACChistory))
-        print('Best test accuracy achieved by model cnn{index}: ',max(test_ACChistory))
+        print(f'Best test accuracy achieved by model cnn{index}: ',max(test_ACChistory))
         return  self.cnns[index],self.configuration[index],history
 
     def __training(self,model,trainloader,validloader,device,LOSS,optimizer,epochs):
@@ -317,21 +394,18 @@ class CreateCNN:
                     'valloss':[],'valacc':[]}
         model.train()
         for _ in range(epochs):
-            print(f'Epoch: {_+1}')
+            print(f'Epoch: {_+1}/{epochs}')
             loss_per_epoch=0
             total=correct=0
             model= model.to(device)
             for x,y in tqdm(trainloader):
-                # print(x.dtype,y.dtype)
                 y = y.type(torch.LongTensor)   # casting to long
-
                 x,y = x.to(device).float(),y.to(device)
-                
                 optimizer.zero_grad()
-                yhat = model(x)
-                # print(y.shape,yhat.shape)
-                
-                loss = LOSS(yhat,y)
+                yhat = model(x)                
+                loss = LOSS(yhat,y) 
+                # loss+= sum(p.pow(2.0).sum() for p in model.parameters())
+                #  L2regularizer(model)
                 loss.backward()
                 optimizer.step()
                 loss_per_epoch+=loss.item() 
@@ -343,7 +417,7 @@ class CreateCNN:
             performance['trainloss'].append(loss_per_epoch/len(trainloader))
             print(f'Training Accuracy: {performance["trainacc"][_]}\t Training Loss:{performance["trainloss"][_]}')
             
-            # for val        idaiton
+            # for validaiton
             model.eval()
             loss_=0
             total_=correct_=0
@@ -370,7 +444,7 @@ class CreateCNN:
         return performance
 
 
-    def __test(self,model,loader,device,LOSS):
+    def test(self,model,loader,device,LOSS):
         model.eval()
         loss_=0
         total_=correct_=0

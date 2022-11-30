@@ -1,4 +1,4 @@
-from AutoNN.networkbuilding import model_generation as model_gen
+from networkbuilding import model_generation as model_gen
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 import tensorflow as tf
@@ -43,7 +43,7 @@ class Model_Parallel_Train_Test:
     def train_models(self):
         parallelModel, nn_model_list = self.get_models()
 
-        adam_optimizer = Adam(lr = 1e-3)
+        adam_optimizer = Adam(learning_rate = 1e-3)
 
         parallelModel.compile(loss = "mean_squared_error",
              optimizer = adam_optimizer,

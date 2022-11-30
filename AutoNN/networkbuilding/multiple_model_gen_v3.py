@@ -1,6 +1,6 @@
-from AutoNN.networkbuilding import model_generation as model_gen
-from AutoNN.networkbuilding import search_space_gen_v1 as search
-from AutoNN.networkbuilding import hyperparameter_optimization as hyp_opt
+from networkbuilding import model_generation as model_gen
+from networkbuilding import search_space_gen_v1 as search
+from networkbuilding import hyperparameter_optimization as hyp_opt
 
 from tensorflow.keras.activations import tanh, relu, selu
 from tensorflow.keras.initializers import RandomUniform, GlorotUniform, GlorotNormal, HeUniform, HeNormal
@@ -79,7 +79,7 @@ class Multiple_Model_Gen_V3:
 
     def train_model(self, input_data, Pmodel, n_model, epochs, loss_fn, lr = 1e-3, batch_size = 64, activation = None, initializer = None):
         input_x, input_labels, input_test_x, input_test_labels = input_data
-        optimizer = Adam(lr = lr)
+        optimizer = Adam(learning_rate = lr)
         Pmodel.compile(loss = loss_fn, optimizer = optimizer)
         history = Pmodel.fit(input_x, input_labels, epochs = epochs, batch_size = batch_size, verbose = 0)
 
