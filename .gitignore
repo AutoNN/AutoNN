@@ -10,3 +10,6 @@ test.py
 best_models/
 config_files/
 *.csv
+build/
+dist/
+nocode_autonn.egg-info/

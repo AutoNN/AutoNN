@@ -8,8 +8,8 @@ readme = currect_file.parent/"README.md"
 
 
 setup(
-    name = "auto-nn",
-    version = "1.0.0",
+    name = "nocode-autonn",
+    version = "1.1.0",
     author_email="raju.banerjee.720@gmail.com",
     description="An AutoML framework for deep learning",
     long_description=readme.read_text(),
@@ -35,14 +35,12 @@ setup(
             'autonn = AutoNN.__main__:main',
         ]
     },
-    authors = "Rajarshi Banerjee, Anish Konar, Arjun Ghosh, Sagnik Nayak.",
+    authors = "Anish Konar, Arjun Ghosh, Rajarshi Banerjee, Sagnik Nayak.",
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: Apache Software License",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Topic :: Scientific/Engineering :: Mathematics",
