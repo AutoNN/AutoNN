@@ -3,5 +3,12 @@
 </p>
 
 ***
-# AutoNN : An AutoML framework to make your life easier.
+# AutoNN : An AutoML/ No Code ML Framework For Deep Learning enthusiast.
+
+## How to run the file:
+
+In terminal write the following command
+```
+autonn
+```
 
