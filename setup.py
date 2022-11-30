@@ -14,7 +14,7 @@ setup(
     name = "autonn",
     version = "1.0.0",
     description="An AutoML framework for deep learning",
-    long_description=readme.read_text(encoding='uft-8'),
+    long_description=readme.read_text(),
     long_description_content_type = "text/markdown",
     url= "https://github.com/AutoNN/AutoNN",
     keywords=['AutoNN','autonn','AutoML','Deep Learning','CNN'],
