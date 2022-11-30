@@ -4,7 +4,7 @@ torchvision
 torchaudio
 ttkbootstrap==0.5.1
 pytorchsummary
-tensorflow==2.4.1
+tensorflow==2.8.0
 sklearn
 pandas
 dask
