@@ -192,6 +192,8 @@ class App:
         sys.stdout = TerminalOutput(self.textBox)
         usage = threading.Thread(target=App._usages,args=(info,self.disp1,x_))
         usage.start()
+        root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
 
     
 
@@ -286,6 +288,10 @@ class App:
         process1.start()
         clock_thread.start()
 
+    def on_closing(self):
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.root.destroy()
+            sys.exit()
 
     def save_model(self):
         def save(x):
