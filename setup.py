@@ -9,7 +9,7 @@ readme = currect_file.parent/"README.md"
 
 setup(
     name = "nocode-autonn",
-    version = "1.1.3",
+    version = "1.1.4",
     author_email="raju.banerjee.720@gmail.com",
     description="An AutoML framework for deep learning",
     long_description=readme.read_text(),
@@ -31,7 +31,7 @@ setup(
         'psutil',
     ],
     entry_points={
-        'gui_scripts': [
+        'console_scripts': [
             'autonn = AutoNN.__main__:main',
         ]
     },

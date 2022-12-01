@@ -15,7 +15,7 @@ class DeviceInfo:
         return str
 
     @property
-    def getusage(self,bars=15):
+    def getusage(self,bars=50):
         str=''
         x,y = psutil.cpu_percent(),psutil.virtual_memory().percent
         CPU = (x/100.0)

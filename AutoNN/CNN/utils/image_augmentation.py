@@ -1,7 +1,7 @@
 from PIL import  Image
 import os
 from tqdm import  tqdm
-
+from AutoNN.exceptions import InvalidImageFileError
 
 class Augment(object):
     def __init__(self,path) -> None:
@@ -43,8 +43,7 @@ class Augment(object):
                     x_=x_.transpose(a[i])
                     x_.save(os.path.join(img_path,f'flip{i}{image}'))
             except :
-                raise Exception("""Make sure you have only images inside 
-                your dataset folder the correct image format""")
+                raise InvalidImageFileError
         
 
     def augment(self):

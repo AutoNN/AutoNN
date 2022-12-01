@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader,random_split
 from tqdm import tqdm
 from .models.resnet import resnet
 from datetime import datetime
-
+from AutoNN.exceptions import *
 
 
 
@@ -222,7 +222,7 @@ class CreateCNN:
             self.__create_Cnns(len_dataset,input_shape)
         
         
-    def __meanNstd(self,path,loader=None):
+    def __meanNstd(self,loader=None):
         '''
         calculates the mean and std of an image dataset
         image has to be RGB image
@@ -333,12 +333,8 @@ class CreateCNN:
         if 4000<len_dataset < 10000:
             self.cnns.append(resnet(-1,in_channels=self.inChannels,num_residual_block=[0,1],num_class=self.numClasses))
             self.configuration.append('num_residual_block=[0,1] | resnet')
-        elif len_dataset<=4000:
-            raise Exception('''
-            Your dataset size is too low!
-            Use Augment.augment() function from CNN.utils.image_augmentation
-            To augment your image dataset
-            ''')
+        elif len_dataset<=5000:
+            raise TooLowDatasetWarning
         else:
             self.__create_Cnns(len_dataset,input_shape)
         print("Architecture search Complete..!",'Time Taken: ',datetime.now()-start)
@@ -370,7 +366,6 @@ class CreateCNN:
                                         criterion,optims[i],epochs=EPOCHS)
                 history[f'cnn{i}']=train_performance
             except Exception as E:
-                # print(E)
                 pass
             
             print(f'Calculating test accuracy CNN model cnn{i}')

@@ -2,11 +2,11 @@ from tkinter import *
 from tkinter import ttk,messagebox,filedialog
 import pandas as pd
 from ttkbootstrap import * 
-from .CNN.cnn_generator import CreateCNN,CNN
-import threading,sys,ctypes,os
-from .CNN.utils.EDA import plot_graph
-from .CNN.utils.Device import DeviceInfo
-from .main import Autonn
+import threading,sys,ctypes,os,json
+from AutoNN.CNN.cnn_generator import CreateCNN,CNN
+from AutoNN.CNN.utils.EDA import plot_graph
+from AutoNN.CNN.utils.Device import DeviceInfo
+from AutoNN.main import Autonn
 
 
 timeVar = False
@@ -76,9 +76,9 @@ class App:
         ttk.Label(F1,text='Label Name').grid(row=0,column=0,pady=5,padx=5)
         ttk.Entry(F1,width=20,textvariable=self.nam).grid(row=0,column=1,pady=5,padx=5)
 
-        self.epochs=IntVar()
-        ttk.Label(F1,text='Epochs').grid(row=0,column=2,pady=5,padx=5)
-        ttk.Entry(F1,width=5,textvariable=self.epochs).grid(row=0,column=3,pady=5,padx=5)
+        # self.epochs=IntVar()
+        # ttk.Label(F1,text='Epochs').grid(row=0,column=2,pady=5,padx=5)
+        # ttk.Entry(F1,width=5,textvariable=self.epochs).grid(row=0,column=3,pady=5,padx=5)
 
         # BUTTONS
         ttk.Button(F1,text = 'Open File',width=20,style='info.TButton',
@@ -89,20 +89,12 @@ class App:
         ttk.Button(F1,text = 'Save the Model',width=20,style='success.Outline.TButton',
         command=self.SaveCsvModel).grid(row=0,column=7,pady=5,padx=5)
 
-        # ttk.Label(F1,text='Progress').grid(row=1,column=0,pady=5,padx=5)
-        # self.pb1 = ttk.Progressbar(F1, value=0,length=750,
-        #  style='success.Horizontal.TProgressbar')
-        # self.pb1.grid(row=1,column=1,columnspan=5)
-
         # RADIO BUTTON------------
         self.split = BooleanVar()
         ttk.Radiobutton(image_frame,text='Split required',variable=self.split,value=True,width=20,
         style='danger.Outline.Toolbutton').grid(row=1,column=6)
         ttk.Radiobutton(image_frame,text='Split NOT required',variable=self.split,value=False,width=20,
         style='danger.Outline.Toolbutton').grid(row=1,column=7)
-
-
-
 
         # -----------Tree view-----
         self.tree = ttk.Treeview(F2,height=15,selectmode='extended',show='headings')
@@ -145,13 +137,15 @@ class App:
         self.savecnn_btn.grid(row=1,column=5,pady=5,padx=5)
         self.savecnn_btn['state']='disabled'
 
-        # ttk.Label(image_frame,text='Progress').grid(row=1,column=0,pady=5,padx=5)
         self.pb2 = ttk.Progressbar(image_frame, value=0,length=1280,mode='indeterminate',
          style='success.Horizontal.TProgressbar')
         
         self.pb1 = ttk.Progressbar(F1, value=0,length=1280,mode='indeterminate',
          style='success.Horizontal.TProgressbar')
 
+        self.input_shape = StringVar()
+        ttk.Entry(image_frame,width=20,textvariable=self.input_shape).grid(row=0,column=8,padx=5,pady=5)
+        self.input_shape.set('Enter image shape')
         
         self.channels = IntVar()
         self.numclass = IntVar()
@@ -173,7 +167,9 @@ class App:
         self.disp1 = Text(image_frame,height=10,width=40,background='black',foreground='yellow')
         self.disp1.grid(row=4,column=7,columnspan=4)
 
-
+        self.aug_btn = ttk.Button(image_frame,text='Augment Dataset',command=self.__augment,width=20)
+        self.aug_btn.grid(row=1,column=8,pady=5,padx=5)
+        self.aug_btn['state']='disabled'
         # ----combobox------------
         self.batch_sizes = ttk.Combobox(image_frame,values=[2**i for i in range(9)])
         self.batch_sizes.grid(row=0,column=7)
@@ -201,7 +197,9 @@ class App:
     @staticmethod
     def _usages(obj,widget,w2):
         global run 
+        # w2 will display the CPU and MEM usage
         w2.config(text=obj.getusage)
+        # widget will be used for GPU usage
         widget.configure(state='normal')
         widget.delete('1.0',END)
         widget.insert('end',obj.getDeviceInfo)
@@ -220,6 +218,9 @@ class App:
             widget.config(text='{:.2f} mins'.format(clock/60))
             widget.after(1000,lambda :App.Timer(widget,clock))
 
+    def __augment(self):
+        
+        pass
 
     def load_cnn_model(self):
         
@@ -265,21 +266,29 @@ class App:
         timeVar=True
         self.pb2.grid(row=3,column=0,columnspan=20)
         self.pb2.start()
-        self.cnn_model,bestconfig,self.history =self.gen_cnn_object.get_bestCNN(
-        path_trainset=self.folder,
-        split_required=self.split.get(), 
-        batch_size=int(self.batch_sizes.get()), 
-        EPOCHS= self.imgEpoch.get(),
-        LR=self.lr.get()
-        )
-        self.display_btn['state']='normal'
-        self.savecnn_btn['state']='normal'
-        print('Trainig Completed!')
-        self.textBox.insert('end',self.cnn_model.__str__())
-        print('History List: ',self.history)
-        print('Best Configuration architecture: ',bestconfig)
-        self.pb2.stop()
-        self.pb2.grid_remove()
+        try:
+            t=(28,28)
+            if not self.input_shape.get() == 'Enter image shape':
+                t=tuple(map(int,(self.input_shape.get()).split('x')))
+
+            self.cnn_model,bestconfig,self.history =self.gen_cnn_object.get_bestCNN(
+            path_trainset=self.folder,
+            split_required=self.split.get(), 
+            batch_size=int(self.batch_sizes.get()), 
+            EPOCHS= self.imgEpoch.get(),
+            LR=self.lr.get(),
+            image_shape=t
+            )
+            self.display_btn['state']='normal'
+            self.savecnn_btn['state']='normal'
+            print('Trainig Completed!')
+            self.textBox.insert('end',self.cnn_model.__str__())
+            print('History List: ',self.history)
+            print('Best Configuration architecture: ',bestconfig)
+            self.pb2.stop()
+            self.pb2.grid_remove()
+        except Exception as e:
+            messagebox.showerror('Error encountered',e)
         timeVar = False
 
     def Start_training(self):
@@ -295,20 +304,27 @@ class App:
             sys.exit()
 
     def save_model(self):
-        def save(x):
-            self.cnn_model.save(filename=f'{x}.pth',config_filename=f'{x}.json')
+        def save(x,path):
+            
+            self.cnn_model.save(path=path,config_file_path=path,filename=f'{x}.pth',config_filename=f'{x}.json')
             messagebox.showinfo('Model Saved',
             f'Model saved at location "./best_models/{x}.pth"')
             pop_model_save_window.destroy()
 
-        
+        path = None
+        with open('default_config.json') as f:
+            data = json.load(f)
+            if data['path_cnn_models'] == '':
+                data['path_cnn_models'] =filedialog.askdirectory(title='Select Path')
+                path = data['path_cnn_models']
+
         pop_model_save_window = Toplevel(self.root)
         pop_model_save_window.geometry('300x100')
         name = StringVar()
         ttk.Label(pop_model_save_window, text = 'Save Model as').pack()
         ttk.Entry(pop_model_save_window,textvariable=name).pack()
         ttk.Button(pop_model_save_window,text="SAVE",width=18,
-        command = lambda :save(name.get())).pack()
+        command = lambda :save(name.get(),path)).pack()
         
 
     # -----------------methods to control csv datasets------------------
@@ -339,11 +355,10 @@ class App:
                 df = pd.read_csv(self.csv_file)
             elif self.csv_file.endswith('.xlxs'):
                 df = pd.read_excel(self.csv_file)
-            else:
-                pass
             
         except Exception:   
                 messagebox.showerror('ERROR!','Invalid File! Unable to open file!') 
+
         if self.csv_file:
             self.tree['column']=list(df.columns)
             self.tree['show']='headings'
