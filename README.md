@@ -6,13 +6,19 @@
 # AutoNN : An AutoML/ No Code ML Framework For Deep Learning enthusiast.
 
 ## Installation
+
+Install it using pip package manager:
 ```python
-pip install nocode-autonn==1.0.0
+pip install nocode-autonn
 ```
 
+Upgrade the package using the following command:
+```python
+pip install --upgrade nocode-autonn
+```
 ## How to run the file:
 
-In terminal write the following command
+Open terminal and write the following command:
 ```
 autonn
 ```

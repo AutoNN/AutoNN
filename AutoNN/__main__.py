@@ -2,11 +2,11 @@ from tkinter import *
 from tkinter import ttk,messagebox,filedialog
 import pandas as pd
 from ttkbootstrap import * 
-from CNN.cnn_generator import CreateCNN,CNN
+from .CNN.cnn_generator import CreateCNN,CNN
 import threading,sys,ctypes,os
-from CNN.utils.EDA import plot_graph
-from CNN.utils.Device import DeviceInfo
-from main import Autonn
+from .CNN.utils.EDA import plot_graph
+from .CNN.utils.Device import DeviceInfo
+from .main import Autonn
 
 
 timeVar = False
