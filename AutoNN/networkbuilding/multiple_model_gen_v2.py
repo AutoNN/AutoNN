@@ -1,5 +1,5 @@
-from networkbuilding import model_generation as model_gen
-from networkbuilding import search_space_gen_v1 as search
+from AutoNN.networkbuilding import model_generation as model_gen
+from AutoNN.networkbuilding import search_space_gen_v1 as search
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 import tensorflow as tf

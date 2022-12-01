@@ -1,10 +1,10 @@
 from dask import dataframe as dd
-from preprocessing import dataset_container as dc
-from preprocessing import date_parsing as dp
-from preprocessing import column_info as ci
-from preprocessing import encoding as enc
-from preprocessing import nan_handling as nanhandle
-from preprocessing import feature_elimination as fe
+from AutoNN.preprocessing import dataset_container as dc
+from AutoNN.preprocessing import date_parsing as dp
+from AutoNN.preprocessing import column_info as ci
+from AutoNN.preprocessing import encoding as enc
+from AutoNN.preprocessing import nan_handling as nanhandle
+from AutoNN.preprocessing import feature_elimination as fe
 
 import numpy as np
 import pandas as pd

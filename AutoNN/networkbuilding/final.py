@@ -1,8 +1,8 @@
-from networkbuilding import multiple_model_gen_v3 as multiple
-from networkbuilding import dataframe_extractor as de
-from networkbuilding import model_generation as model_gen
-from networkbuilding import model_optimization as model_opt
-from networkbuilding import model_stacking
+from AutoNN.networkbuilding import multiple_model_gen_v3 as multiple
+from AutoNN.networkbuilding import dataframe_extractor as de
+from AutoNN.networkbuilding import model_generation as model_gen
+from AutoNN.networkbuilding import model_optimization as model_opt
+from AutoNN.networkbuilding import model_stacking
 
 class Final:
     def __init__(self, train_x, train_y, test_x, test_y, loss_fn, epochs, batch_size, input_shape, output_shape = 1, output_activation = None, max_no_layers = 3, model_per_batch = 10, save_dir = ""):

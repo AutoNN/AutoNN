@@ -9,7 +9,7 @@ readme = currect_file.parent/"README.md"
 
 setup(
     name = "nocode-autonn",
-    version = "1.1.2",
+    version = "1.1.3",
     author_email="raju.banerjee.720@gmail.com",
     description="An AutoML framework for deep learning",
     long_description=readme.read_text(),

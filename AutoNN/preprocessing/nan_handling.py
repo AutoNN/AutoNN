@@ -1,5 +1,5 @@
 from unicodedata import name
-from preprocessing.dataset_container import DatasetContainer as dc
+from AutoNN.preprocessing.dataset_container import DatasetContainer as dc
 from dask_ml.impute import SimpleImputer
 from sklearn.impute import KNNImputer
 from dask_ml.preprocessing import LabelEncoder
