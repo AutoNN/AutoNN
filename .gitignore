@@ -6,7 +6,7 @@ AutoNN/CNN/__pycache__/
 test.py 
 *.pth
 *.pyc
-# .json
+*.json
 best_models/
 config_files/
 *.csv

@@ -1,0 +1,20 @@
+site_name: AutoNN
+
+theme:
+  logo : img/ico.png  
+  favicon : img/icon.png  
+  name: material
+
+repo_url: https://github.com/AutoNN/AutoNN
+site_url: ""
+
+site_description: 'Documentation for AutoNN'
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+
+nav:
+  - Installation: "index.md"
+  - Tutorial: "tut.md"
+  - About: "about.md"
