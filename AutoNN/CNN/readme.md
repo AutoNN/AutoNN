@@ -163,20 +163,4 @@ Total parameters 11,588
 Total Non-Trainable parameters 0
 Total Trainable parameters 11,588
 (11588, 11588, 0)
-```
 
-## 4. How to get the trained model.
-```python
-from ASC_ML.CNN.cnn_generator import CNN
-
-bestconfig = [
-            ('conv', 32, 32),
-            ('pool', 1, 32),
-            ('pool', 0, 32)
-            ]
-PATH='./best_models/model.pth' # path to your saved model
-model = CNN(in_channels=3,numClasses=10,config = bestconfig)
-model.load(PATH)
-# now model is ready for prediction task
-
-```
