@@ -316,7 +316,7 @@ class App:
             data = json.load(f)
             if data['path_cnn_models'] == '':
                 data['path_cnn_models'] =filedialog.askdirectory(title='Select Path')
-                path = data['path_cnn_models']
+            path = data['path_cnn_models']
 
         pop_model_save_window = Toplevel(self.root)
         pop_model_save_window.geometry('300x100')

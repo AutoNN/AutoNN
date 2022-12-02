@@ -114,7 +114,19 @@ class CNN(nn.Module):
         if loadmodel:
             self.__load(PATH)
         
+    def predict(self,imgs,classes:list,image_shape:tuple):
+        """
+        This will predict the class of an unknown image
+        """
+        transform = transforms.Compose([transforms.ToTensor(),
+                transforms.Resize(image_shape)])
+        x = transform(imgs)
+        x = x.unsqueeze(0)
+        output = self.forward(x)
+        pred = torch.argmax(output,1) # pred index
+        return classes[pred]
 
+        pass
 
 
 class CreateCNN:
@@ -140,12 +152,12 @@ class CreateCNN:
         example:
 
         >>> print(create_config(3,10))
-        [('conv', 64, 64),
-        ('pool', 1, 64),
-        ('conv', 256, 512),
-        ('conv', 64, 128),
-        ('conv', 64, 64),
-        ('pool', 0, 64)]
+            [('conv', 64, 64),
+            ('pool', 1, 64),
+            ('conv', 256, 512),
+            ('conv', 64, 128),
+            ('conv', 64, 64),
+            ('pool', 0, 64)]
 
         '''
         L = random.randint(min,max)
@@ -242,7 +254,6 @@ class CreateCNN:
 
     def get_bestCNN(self,
                     path_trainset:str,
-                    # path_validationset:str=None,
                     path_testset:str=None,
                     split_required:bool=False,
                     batch_size:int=16,
@@ -264,7 +275,6 @@ class CreateCNN:
 
         Args:
             path_trainset: path to the training set
-            path_validationset: path to the validation set
             path_testset: path to the test set
             split_required: default set to False 
                 IF YOU ONLY HAVE TEH TRAINING DATA
@@ -370,7 +380,7 @@ class CreateCNN:
             
             print(f'Calculating test accuracy CNN model cnn{i}')
             try:
-                test_performance = self.test(self.cnns[i],testloader,self.device,criterion)
+                test_performance = CreateCNN.test(self.cnns[i],testloader,self.device,criterion)
       
                 test_ACChistory.append(test_performance[1])
             except Exception as E:
@@ -438,8 +448,8 @@ class CreateCNN:
         model.load_state_dict(torch.load('temp.pth'))    
         return performance
 
-
-    def test(self,model,loader,device,LOSS):
+    @staticmethod
+    def test(model,loader,device,LOSS):
         model.eval()
         loss_=0
         total_=correct_=0
