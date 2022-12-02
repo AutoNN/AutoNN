@@ -1,6 +1,9 @@
 # Welcome to AutoNN
 
-A `Machine Learning` Framework for beginners.
+![AutoNN logo](https://github.com/AutoNN/AutoNN/blob/main/docs/docs/img/logowhite.png)
+
+
+An AutoML (Automated machine learning) / No-Code ML Framework for beginners.
 
 ## Installation
 
@@ -17,7 +20,7 @@ pip install --upgrade nocodenn-autonn
 ## How to use? 
 
 - Open Terminal after installing the package
-- Use the following command to run the GUI
+- Use the following command to launch the GUI
 ```python 
 autonn
 ```
