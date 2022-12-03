@@ -39,7 +39,9 @@ markdown_extensions:
 nav:
   - Installation & Intro: "index.md"
   - Documentation:
-    - class CNN() : "documentation/cnn1.md"
+    - class CNN : "documentation/cnn1.md"
+    - class CreateCNN : "documentation/cnn2.md"
+    - class Augment : "documentation/utils1.md"
   - Tutorial: 
     - Image Classification: "tutorial/tut.md"
     - Handle Tabular Dataset: "tutorial/tut1.md"
