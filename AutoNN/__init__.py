@@ -9,7 +9,7 @@ from .networkbuilding.final import *
 
 
 __version__ = pk.get_distribution("nocode-autonn").version 
-__authors__ ='Anish Konar, Arjun Ghosh, Rajarshi Banerjee, Sagnik Nayak.' 
+__authors__ ='Anish Konar, Rajarshi Banerjee, Sagnik Nayak.' 
 
 print(f'''
 
@@ -19,5 +19,5 @@ print(f'''
 
 Version: {__version__}
 An AutoML framework by
-Anish Konar, Arjun Ghosh, Rajarshi Banerjee, Sagnik Nayak.
+Anish Konar, Rajarshi Banerjee, Sagnik Nayak.
 ''')

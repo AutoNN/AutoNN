@@ -55,7 +55,7 @@ class CNN(nn.Module):
         return x
 
     def save(self,classes:List[Union[int,str]],
-                image_shape,
+                image_shape:Tuple[int,int],
                 path:Optional[str]=None,
                 filename:str='Model')->None:
         '''
@@ -104,21 +104,19 @@ class CNN(nn.Module):
         self.eval()
         print('Loading complete, your model is now ready for evaluation!')
     
-    def load(self,PATH:str='./best_models/',
-                config_path:str='./config_files/cfg1.json',
+    def load(self,PATH:str,
                 printmodel:bool=False,
                 loadmodel:bool=True)->None:
         '''
         Args:
             PATH: path to the saved model.pth file
-            config_path: path to the configuration (.json) file
             printmodel: if TRUE the model architecture will be printed 
             loadmodel: DEFAULT True | This will load the given trained model.pth
                         and make the network ready for testing
         
         '''
-        
-        with open(config_path,'r') as f:
+        configfile = os.path.split(PATH)[-1].replace('.pth','.json')
+        with open(os.path.join(os.path.split(PATH)[0],configfile),'r') as f:
             data = json.load(f)
             self.config = data['config'] 
             self.__classes = data['classes']

@@ -232,16 +232,14 @@ class App:
 
     def load_cnn_model(self):
         
-        path = filedialog.askopenfilename(initialdir='./best_models/',
-        title='Select Trained Model file',
+        path = filedialog.askopenfilename(title='Select Trained Model file',
         filetypes=(('Model files','*.pth'),('model files','*.pt'),
         ('All files','*.*'))
         )
-        configfile = (path.split('/')[-1]).split('.')[0] + '.json'
+        
         try:
             self.new_model = CNN(self.channels.get(),self.numclass.get())
             self.new_model.load(PATH=path,
-            config_path=f'./config_files/{configfile}',
             printmodel=True)
             self.new_model.summary((3,32,32))
         except:
@@ -312,16 +310,15 @@ class App:
             sys.exit()
 
     def save_model(self):
-        def save(x,path):
+        def save(x,path,shape):
             
-            self.cnn_model.save(self.gen_cnn_object.get_classes,
-                        path=path,config_file_path=path,
-                        filename=f'{x}.pth',config_filename=f'{x}.json')
+            self.cnn_model.save(self.gen_cnn_object.get_classes,shape,
+                        path=path,filename=x)
             messagebox.showinfo('Model Saved',
             f'Model saved at location "{path}/{x}.pth"')
             pop_model_save_window.destroy()
         
-
+        shape = tuple(map(int,(self.input_shape.get()).split('x')))
         with open('AutoNN/default_config.json') as f:
             data = json.load(f)
             if data['path_cnn_models'] == '':
@@ -334,7 +331,7 @@ class App:
         ttk.Label(pop_model_save_window, text = 'Save Model as').pack()
         ttk.Entry(pop_model_save_window,textvariable=name).pack()
         ttk.Button(pop_model_save_window,text="SAVE",width=18,
-        command = lambda :save(name.get(),path)).pack()
+        command = lambda :save(name.get(),path,shape)).pack()
         
 
     # -----------------methods to control csv datasets------------------
