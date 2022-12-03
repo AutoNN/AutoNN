@@ -37,7 +37,8 @@ class App:
         menu = Menu(self.root)
         self.file = Menu(menu)
         self.file.add_command(label='New')
-        self.file.add_command(label='Open',command=self.File_open)
+        self.file.add_command(label='Open CSV File',command=self.File_open)
+        self.file.add_command(label='Open Image File',command=self.img_file_testing)
         self.file.add_separator()
         self.file.add_command(label='Exit', command=self.root.quit)
         menu.add_cascade(label='File', menu=self.file)
@@ -222,6 +223,13 @@ class App:
         
         pass
 
+    def img_file_testing(self):
+        filenames = filedialog.askopenfilenames()
+        print('Image Files selected are:\n',filenames)
+
+        self.new_model.predict(paths=filenames)
+        
+
     def load_cnn_model(self):
         
         path = filedialog.askopenfilename(initialdir='./best_models/',
@@ -306,13 +314,15 @@ class App:
     def save_model(self):
         def save(x,path):
             
-            self.cnn_model.save(path=path,config_file_path=path,filename=f'{x}.pth',config_filename=f'{x}.json')
+            self.cnn_model.save(self.gen_cnn_object.get_classes,
+                        path=path,config_file_path=path,
+                        filename=f'{x}.pth',config_filename=f'{x}.json')
             messagebox.showinfo('Model Saved',
-            f'Model saved at location "./best_models/{x}.pth"')
+            f'Model saved at location "{path}/{x}.pth"')
             pop_model_save_window.destroy()
+        
 
-        path = None
-        with open('default_config.json') as f:
+        with open('AutoNN/default_config.json') as f:
             data = json.load(f)
             if data['path_cnn_models'] == '':
                 data['path_cnn_models'] =filedialog.askdirectory(title='Select Path')

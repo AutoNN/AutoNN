@@ -29,12 +29,20 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
-
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
 nav:
   - Installation & Intro: "index.md"
+  - Documentation:
+    - class CNN() : "documentation/cnn1.md"
   - Tutorial: 
-    - CNN Models: "tutorial/tut.md"
-    - ANN Models: "tutorial/tut1.md"
+    - Image Classification: "tutorial/tut.md"
+    - Handle Tabular Dataset: "tutorial/tut1.md"
   - GUI:
     - For Tabular Dataset: "gui/lesson1.md"
     - For Image Dataset: "gui/lesson2.md"

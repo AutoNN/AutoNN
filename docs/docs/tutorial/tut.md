@@ -1,193 +1,327 @@
-# CNN Models
+# Image Classification Using AutoNN
 
 
 AutoNN's CNN (Convolutional Neural Network) Models are built on PyTorch.
 
 
-## 1. How to use
+
+
+## 1. How to train a CNN model for image classification:
 
 Import `CreateCNN` from CNN's `cnn_generator` module
 
-
+Example
 ```python
-from AutoNN.CNN.cnn_generator import CreateCNN
+from AutoNN.CNN.cnn_generator import CreateCNN, CNN 
 
-obj = CreateCNN() # create a CreateCNN object
+inst = CreateCNN()
 
-model,bestconfig,history =\
-     obj.get_bestCNN('D:/kaggle/APPLE_DISEASE_DATASET',
-     split_required=True,batch_size=4,EPOCHS=5,image_shape=(300,300))
-# call the object's get_bestCNN() function
+model,model_config,history=inst.get_bestCNN(path_trainset="E:/output/cifar10/cifar10/train",
+path_testset="E:/output/cifar10/cifar10/test",
+split_required=False,EPOCHS=10,image_shape=(32,32))
 ```
 
+??? OUTPUT
 
- Output:
+    ```
+      ░█▀▀█ █░░█ ▀▀█▀▀ █▀▀█ ▒█▄░▒█ ▒█▄░▒█ 
+      ▒█▄▄█ █░░█ ░░█░░ █░░█ ▒█▒█▒█ ▒█▒█▒█ 
+      ▒█░▒█ ░▀▀▀ ░░▀░░ ▀▀▀▀ ▒█░░▀█ ▒█░░▀█
+
+      Version: 2.0.0
+      An AutoML framework by
+      Anish Konar, Arjun Ghosh, Rajarshi Banerjee, Sagnik Nayak.
+
+      Default computing platform: cuda
+      Classes:  ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'] # Classes:  10
+      Training set size: 40000 | Validation Set size: 10000 | Test Set size: 10000
+      Architecture search Complete..! Time Taken:  0:00:01.688582
+      Number of models generated: 2
+      Searching for the best model. Please be patient. Thank you....
+      Training CNN model cnn0
+      Epoch: 1/10
+      100%|██████████| 2500/2500 [01:08<00:00, 36.24it/s]
+      Training Accuracy: 35.1775	 Training Loss:1.7207594780921935
+      100%|██████████| 625/625 [00:09<00:00, 65.11it/s]
+      Validation Accuracy: 43.38	 Validation Loss:1.5083902006149292
+      Epoch: 2/10
+      100%|██████████| 2500/2500 [01:03<00:00, 39.34it/s]
+      Training Accuracy: 44.7975	 Training Loss:1.483097927236557
+      100%|██████████| 625/625 [00:08<00:00, 70.63it/s]
+      Validation Accuracy: 47.59	 Validation Loss:1.4107291974067688
+      Epoch: 3/10
+      100%|██████████| 2500/2500 [01:03<00:00, 39.67it/s]
+      Training Accuracy: 49.26	 Training Loss:1.3825817276716232
+      100%|██████████| 625/625 [00:08<00:00, 70.44it/s]
+      Validation Accuracy: 49.26	 Validation Loss:1.3538662633895875
+      Epoch: 4/10
+      100%|██████████| 2500/2500 [01:02<00:00, 39.78it/s]
+      Training Accuracy: 51.4975	 Training Loss:1.3264493201732634
+      100%|██████████| 625/625 [00:08<00:00, 70.79it/s]
+      Validation Accuracy: 54.59	 Validation Loss:1.263453982925415
+      Epoch: 5/10
+      100%|██████████| 2500/2500 [01:03<00:00, 39.61it/s]
+      Training Accuracy: 53.3775	 Training Loss:1.2788944167137146
+      100%|██████████| 625/625 [00:08<00:00, 70.93it/s]
+      Validation Accuracy: 53.4	 Validation Loss:1.2734063954353332
+      Epoch: 6/10
+      100%|██████████| 2500/2500 [01:03<00:00, 39.67it/s]
+      Training Accuracy: 54.59	 Training Loss:1.2445036834478378
+      100%|██████████| 625/625 [00:08<00:00, 70.81it/s]
+      Validation Accuracy: 54.01	 Validation Loss:1.2412574873924256
+      Epoch: 7/10
+      100%|██████████| 2500/2500 [01:03<00:00, 39.66it/s]
+      Training Accuracy: 56.045	 Training Loss:1.2121670446991921
+      100%|██████████| 625/625 [00:08<00:00, 70.66it/s]
+      Validation Accuracy: 57.49	 Validation Loss:1.1828145512580872
+      Epoch: 8/10
+      100%|██████████| 2500/2500 [01:02<00:00, 39.71it/s]
+      Training Accuracy: 56.75	 Training Loss:1.1846893740534783
+      100%|██████████| 625/625 [00:08<00:00, 70.39it/s]
+      Validation Accuracy: 58.49	 Validation Loss:1.1632665138721465
+      Epoch: 9/10
+      100%|██████████| 2500/2500 [01:02<00:00, 39.73it/s]
+      Training Accuracy: 58.13	 Training Loss:1.153260654783249
+      100%|██████████| 625/625 [00:08<00:00, 70.20it/s]
+      Validation Accuracy: 60.65	 Validation Loss:1.1054361756324769
+      Epoch: 10/10
+      100%|██████████| 2500/2500 [01:02<00:00, 40.28it/s]
+      Training Accuracy: 58.895	 Training Loss:1.1318354423761368
+      100%|██████████| 625/625 [00:08<00:00, 73.48it/s]
+      Validation Accuracy: 59.0	 Validation Loss:1.1538037222385407
+      Calculating test accuracy CNN model cnn0
+      Test ACCuracy: 59.84	 Test Loss: 1.13254158577919
+      ------------------------------------------------------------------------------------------------------------------------------------------------------
+      ______________________________________________________________________________________________________________________________________________________
+      Training CNN model cnn1
+      Epoch: 1/10
+      100%|██████████| 2500/2500 [00:41<00:00, 59.80it/s]
+      Training Accuracy: 30.5625	 Training Loss:1.8546679210186006
+      100%|██████████| 625/625 [00:08<00:00, 76.54it/s]
+      Validation Accuracy: 33.79	 Validation Loss:1.7818523860931397
+      Epoch: 2/10
+      100%|██████████| 2500/2500 [00:41<00:00, 60.42it/s]
+      Training Accuracy: 39.33	 Training Loss:1.6098018644332885
+      100%|██████████| 625/625 [00:08<00:00, 76.10it/s]
+      Validation Accuracy: 43.24	 Validation Loss:1.520786734867096
+      Epoch: 3/10
+      100%|██████████| 2500/2500 [00:41<00:00, 60.35it/s]
+      Training Accuracy: 44.2325	 Training Loss:1.5038440037250518
+      100%|██████████| 625/625 [00:08<00:00, 76.69it/s]
+      Validation Accuracy: 45.07	 Validation Loss:1.4924028639793396
+      Epoch: 4/10
+      100%|██████████| 2500/2500 [00:41<00:00, 60.33it/s]
+      Training Accuracy: 47.06	 Training Loss:1.438860204720497
+      100%|██████████| 625/625 [00:08<00:00, 76.10it/s]
+      Validation Accuracy: 47.9	 Validation Loss:1.4355408569335937
+      Epoch: 5/10
+      100%|██████████| 2500/2500 [00:41<00:00, 60.41it/s]
+      Training Accuracy: 49.3625	 Training Loss:1.3855291500329971
+      100%|██████████| 625/625 [00:08<00:00, 76.00it/s]
+      Validation Accuracy: 51.42	 Validation Loss:1.328598715877533
+      Epoch: 6/10
+      100%|██████████| 2500/2500 [00:41<00:00, 59.96it/s]
+      Training Accuracy: 51.2	 Training Loss:1.3459105017662047
+      100%|██████████| 625/625 [00:09<00:00, 66.04it/s]
+      Validation Accuracy: 53.64	 Validation Loss:1.2791677060127258
+      Epoch: 7/10
+      100%|██████████| 2500/2500 [00:44<00:00, 56.65it/s]
+      Training Accuracy: 52.4025	 Training Loss:1.3105635814905168
+      100%|██████████| 625/625 [00:08<00:00, 69.72it/s]
+      Validation Accuracy: 52.93	 Validation Loss:1.2803085575103759
+      Epoch: 8/10
+      100%|██████████| 2500/2500 [00:44<00:00, 56.75it/s]
+      Training Accuracy: 53.41	 Training Loss:1.2841510282278061
+      100%|██████████| 625/625 [00:09<00:00, 69.40it/s]
+      Validation Accuracy: 55.3	 Validation Loss:1.2356650713443755
+      Epoch: 9/10
+      100%|██████████| 2500/2500 [00:43<00:00, 57.20it/s]
+      Training Accuracy: 54.435	 Training Loss:1.2552653106451035
+      100%|██████████| 625/625 [00:09<00:00, 67.85it/s]
+      Validation Accuracy: 57.19	 Validation Loss:1.1992870372772217
+      Epoch: 10/10
+      100%|██████████| 2500/2500 [00:43<00:00, 57.08it/s]
+      Training Accuracy: 55.0625	 Training Loss:1.2330288346767426
+      100%|██████████| 625/625 [00:09<00:00, 67.08it/s]
+      Validation Accuracy: 56.51	 Validation Loss:1.2072079391002655
+      Calculating test accuracy CNN model cnn1
+      Test ACCuracy: 55.25	 Test Loss: 1.2267251291751862
+      ------------------------------------------------------------------------------------------------------------------------------------------------------
+      ______________________________________________________________________________________________________________________________________________________
+      Best test accuracy achieved by model cnn0:  59.84
+
+    ```
+
+### Print the model:
 ```python
-# print the values to see the results
 print(model)
-print(f'best config {bestconfig}')
-print(f'history {history}')
-```
-And here we go:
 ```
 
-
-░█▀▀█ █░░█ ▀▀█▀▀ █▀▀█ ▒█▄░▒█ ▒█▄░▒█
-▒█▄▄█ █░░█ ░░█░░ █░░█ ▒█▒█▒█ ▒█▒█▒█
-▒█░▒█ ░▀▀▀ ░░▀░░ ▀▀▀▀ ▒█░░▀█ ▒█░░▀█
-
-An AutoML framework by
-Anish Konar, Arjun Ghosh, Rajarshi Banerjee, Sagnik Nayak.
-
-Training set size: 18685 | Validation Set size: 4004 | Test Set size: 4004
-Architecture search Complete..! Time Taken:  0:01:17.244049
-Searching for the best model. Please be patient. Thank you....
-Number of models generated: 2
-Training CNN model cnn0
-Epoch: 1
-100%|█████████████████| 4672/4672 [17:36<00:00,  4.42it/s]
-Training Accuracy: 52.49130318437249     Training Loss:1.0508242789209399                                                                            
-100%|█████████████████| 1001/1001 [03:07<00:00 35it/]                                                                                                               
-Validation Accuracy: 56.64335664335665   Validation Loss:0.9246639279457001
-Epoch: 2
-100%|█████████████████| 4672/4672 [08:55<00:00,  8.72it/s]         
-Training Accuracy: 60.28900187316029     Training Loss:0.8835673358543354
-100%|█████████████████| 1001/1001 [01:14<00:00, 13.50it/s]
-Validation Accuracy: 59.96503496503497   Validation Loss:0.8518805852630636
-Epoch: 3
-100%|███████████████████| 4672/4672 [08:34<00:00,  9.08it/s] 
-Training Accuracy: 63.60717152796361     Training Loss:0.809855165998595
-100%|███████████████████| 1001/1001 [01:08<00:00, 14.54it/s] 
-Validation Accuracy: 63.51148851148851   Validation Loss:0.7923010227444408
-Epoch: 4
-100%|███████████████████| 4672/4672 [08:44<00:00,  8.91it/s] 
-Training Accuracy: 65.99411292480599     Training Loss:0.7608422355639448
-100%|███████████████████| 1001/1001 [01:12<00:00, 13.72it/s] 
-Validation Accuracy: 64.83516483516483   Validation Loss:0.7738665017810139
-Epoch: 5
-100%|███████████████████| 4672/4672 [09:14<00:00,  8.42it/s] 
-Training Accuracy: 68.32218356970833     Training Loss:0.7230342619339553
-100%|███████████████████| 1001/1001 [01:10<00:00, 14.14it/s]
-Validation Accuracy: 62.06293706293706   Validation Loss:0.8454483170899656
-Calculating test accuracy CNN model cnn0
-Test ACCuracy: 65.23476523476523         Test Loss: 0.7666534855143055
-------------------------------------------------------------------------------------------------------------------------------------------------------
-______________________________________________________________________________________________________________________________________________________
-Training CNN model cnn1
-Epoch: 1
-100%|███████████████████| 4672/4672 [08:36<00:00,  9.04it/s]
-Training Accuracy: 52.66256355365266     Training Loss:1.0577738225932092
-100%|███████████████████| 1001/1001 [00:56<00:00, 17.59it/s]
-Validation Accuracy: 58.56643356643357   Validation Loss:0.9101097066919287
-Epoch: 2
-100%|███████████████████| 4672/4672 [07:32<00:00, 10.31it/s]
-Training Accuracy: 60.81883864062082     Training Loss:0.8753257903688243
-100%|███████████████████| 1001/1001 [01:24<00:00, 11.91it/s]
-Validation Accuracy: 62.837162837162836  Validation Loss:0.8394484582629713
-Epoch: 3
-100%|███████████████████| 4672/4672 [07:08<00:00, 10.90it/s]
-Training Accuracy: 64.23334225314423     Training Loss:0.8081053741330485
-100%|███████████████████| 1001/1001 [00:54<00:00, 18.22it/s]
-Validation Accuracy: 66.4085914085914    Validation Loss:0.7697237971295546
-Epoch: 4
-100%|███████████████████| 4672/4672 [06:43<00:00, 11.57it/s]
-Training Accuracy: 67.08054589242708     Training Loss:0.7555616008650435
-100%|███████████████████| 1001/1001 [00:53<00:00, 18.61it/s]
-Validation Accuracy: 66.43356643356644   Validation Loss:0.7459081425652518
-Epoch: 5
-100%|███████████████████| 4672/4672 [06:47<00:00, 11.47it/s]
-Training Accuracy: 69.03398447952904     Training Loss:0.7155961329109444
-100%|███████████████████| 1001/1001 [00:54<00:00, 18.44it/s] 
-Validation Accuracy: 70.8041958041958    Validation Loss:0.6976943148949465
-Calculating test accuracy CNN model cnn1
-Test ACCuracy: 71.2037962037962  Test Loss: 0.6891875450613794
-------------------------------------------------------------------------------------------------------------------------------------------------------
-______________________________________________________________________________________________________________________________________________________
-Best test accuracy achieved by model cnn{index}:  71.2037962037962
-CNN(
-  (network): Sequential(
-    (0): SkipLayer(
-      (skiplayers): Sequential(
-        (0): Conv2d(3, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-        (1): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (2): ReLU()
-        (3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-        (4): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+??? OUTPUT
+    ```
+    CNN(
+      (network): Sequential(
+        (0): SkipLayer(
+          (skiplayers): Sequential(
+            (0): Conv2d(3, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+            (1): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (2): ReLU()
+            (3): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+            (4): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          )
+          (skip_connection): Conv2d(3, 16, kernel_size=(1, 1), stride=(1, 1))
+          (relu): ReLU()
+        )
+        (1): SkipLayer(
+          (skiplayers): Sequential(
+            (0): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+            (1): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (2): ReLU()
+            (3): Conv2d(16, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+            (4): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          )
+          (skip_connection): Conv2d(16, 128, kernel_size=(1, 1), stride=(1, 1))
+          (relu): ReLU()
+        )
       )
-      (skip_connection): Conv2d(3, 32, kernel_size=(1, 1), stride=(1, 1))
-      (relu): ReLU()
+      (avgpool): AdaptiveAvgPool2d(output_size=(1, 1))
+      (classifier): Sequential(
+        (0): Linear(in_features=128, out_features=32, bias=True)
+        (1): ReLU()
+        (2): Linear(in_features=32, out_features=10, bias=True)
+      )
     )
-    (1): Pooling(
-      (pool): MaxPool2d(kernel_size=(2, 2), stride=(2, 2), padding=0, dilation=1, ceil_mode=False)
-    )
-    (2): Pooling(
-      (pool): AvgPool2d(kernel_size=(2, 2), stride=(2, 2), padding=0)
-    )
-  )
-  (avgpool): AdaptiveAvgPool2d(output_size=(1, 1))
-  (classifier): Sequential(
-    (0): Linear(in_features=32, out_features=32, bias=True)
-    (1): ReLU()
-    (2): Linear(in_features=32, out_features=4, bias=True)
-  )
-)
-best config [('conv', 32, 32), ('pool', 1, 32), ('pool', 0, 32)]
-history {
-    'cnn0': {
-        'trainloss':
-         [1.0508242789209399, 0.8835673358543354, 0.809855165998595, 0.7608422355639448, 0.7230342619339553],
-          'trainacc':
-           [52.49130318437249, 60.28900187316029, 63.60717152796361, 65.99411292480599, 68.32218356970833],
-            'valloss':
-             [0.9246639279457001, 0.8518805852630636, 0.7923010227444408, 0.7738665017810139, 0.8454483170899656],
-              'valacc':
-               [56.64335664335665, 59.96503496503497, 63.51148851148851, 64.83516483516483, 62.06293706293706]},
-    'cnn1': {
-        'trainloss':
-         [1.0577738225932092, 0.8753257903688243, 0.8081053741330485, 0.7555616008650435, 0.7155961329109444],
-          'trainacc':
-           [52.66256355365266, 60.81883864062082, 64.23334225314423, 67.08054589242708, 69.03398447952904],
-            'valloss':
-             [0.9101097066919287, 0.8394484582629713, 0.7697237971295546, 0.7459081425652518, 0.6976943148949465], 
-             'valacc':
-              [58.56643356643357, 62.837162837162836, 66.4085914085914, 66.43356643356644, 70.8041958041958]
-              }
-              }
-```
-## 2. How to save the model
+    ```
+
+
+### Get list of all classes. Example:
 ```python
-model.save(path='./best_models/',filename='Model.pth') # these are the DEFAULT path and model name
-# you may change the path or the model name according to your need
+print(inst.get_classes)
 ```
-## 3. To check the summary of the model
+
+??? OUTPUT
+    ```
+    ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+    ```
+
+    
+
+
+
+### Print Model configuration:
+
+```python
+print(model_config)
+```
+??? OUTPUT
+    ```
+    [('conv', 16, 16), ('conv', 16, 128)]
+    ```
+### Print history of all training data:
+
+
+```python
+print(history)
+```
+??? Output
+    ```{r}
+    {
+      'cnn0': {
+        'trainloss': [1.7207594780921935,   1.483097927236557,   1.3825817276716232,   1.3264493201732634,   1.2788944167137146,   1.2445036834478378,   1.2121670446991921,   1.1846893740534783,   1.153260654783249,
+      1.1318354423761368],
+      'trainacc': [35.1775,   44.7975,   49.26,   51.4975,   53.3775,   54.59,   56.045,   56.75,   58.13,   58.895],
+      'valloss': [1.5083902006149292,   1.4107291974067688,   1.3538662633895875,   1.263453982925415,   1.2734063954353332,   1.2412574873924256,   1.1828145512580872,   1.1632665138721465,   1.1054361756324769,   1.1538037222385407],
+      'valacc': [43.38,   47.59,   49.26,   54.59,   53.4,   54.01,   57.49,   58.49,   60.65,   59.0]},
+    
+    'cnn1': {
+      'trainloss': [1.8546679210186006,   1.6098018644332885,   1.5038440037250518,   1.438860204720497,   1.3855291500329971,   1.3459105017662047,   1.3105635814905168,   1.2841510282278061,   1.2552653106451035,   1.2330288346767426],
+      'trainacc': [30.5625,   39.33,   44.2325,   47.06,   49.3625,   51.2,   52.4025,   53.41,   54.435,   55.0625],
+      'valloss': [1.7818523860931397,   1.520786734867096,   1.4924028639793396,   1.4355408569335937,   1.328598715877533,   1.2791677060127258,   1.2803085575103759,   1.2356650713443755,   1.1992870372772217,   1.2072079391002655],
+      'valacc': [33.79,   43.24,   45.07,   47.9,   51.42,   53.64,   52.93,   55.3,   57.19,   56.51]
+      }
+    }
+    ```
+
+
+
+
+## 2. Plot the Training loss vs Validation loss:
+
+```python
+from AutoNN.CNN.utils.EDA import plot_graph
+
+plot_graph(history)
+```
+
+
+## 3. How to save the model:
+```python
+model.save(inst.get_classes,inst.get_imageshape,path='./best models/',filename='mnistmodel.pth',
+    config_file_path='./best models/',config_filename = 'mnistcfg.json')
+```
+
+## 4. To check the summary of the model:
 ```python
 model.summary(input_shape=(3,32,32))
 # this method will print the keras like summary of the model
 ```
 
 
-Output Example:
-```
-               Layer    Output Shape                Kernal Shape        #params                 #(weights + bias)       requires_grad
-------------------------------------------------------------------------------------------------------------------------------------------------------
-            Conv2d-1    [1, 32, 32, 32]            [32, 3, 3, 3]        896                     (864 + 32)              True True
-       BatchNorm2d-2    [1, 32, 32, 32]                 [32]            64                      (32 + 32)               True True
-              ReLU-3    [1, 32, 32, 32]
-            Conv2d-4    [1, 32, 32, 32]            [32, 32, 3, 3]       9248                    (9216 + 32)             True True
-       BatchNorm2d-5    [1, 32, 32, 32]                 [32]            64                      (32 + 32)               True True
-            Conv2d-6    [1, 32, 32, 32]            [32, 3, 1, 1]        128                     (96 + 32)               True True
-              ReLU-7    [1, 32, 32, 32]
-         MaxPool2d-8    [1, 32, 16, 16]
-         AvgPool2d-9    [1, 32, 8, 8]
-AdaptiveAvgPool2d-10    [1, 32, 1, 1]
-           Linear-11    [1, 32]                       [32, 32]          1056                    (1024 + 32)             True True
-             ReLU-12    [1, 32]
-           Linear-13    [1, 4]                        [4, 32]           132                     (128 + 4)               True True
-______________________________________________________________________________________________________________________________________________________
 
-Total parameters 11,588
-Total Non-Trainable parameters 0
-Total Trainable parameters 11,588
-(11588, 11588, 0)
+## 5. How to load saved model:
+```python
+myModel = CNN(3,10)
+myModel.load(PATH='./best models/mnistmodel.pth',config_path="./best models/mnistcfg.json",printmodel=True)
+```
+??? OUTPUT
+    ```{r}
+      Network Architecture loaded!
+      CNN(
+        (network): Sequential(
+          (0): SkipLayer(
+            (skiplayers): Sequential(
+              (0): Conv2d(3, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+              (1): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): ReLU()
+              (3): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+              (4): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+            (skip_connection): Conv2d(3, 16, kernel_size=(1, 1), stride=(1, 1))
+            (relu): ReLU()
+          )
+          (1): SkipLayer(
+            (skiplayers): Sequential(
+              (0): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+              (1): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (2): ReLU()
+              (3): Conv2d(16, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+              (4): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+            (skip_connection): Conv2d(16, 128, kernel_size=(1, 1), stride=(1, 1))
+            (relu): ReLU()
+          )
+        )
+        (avgpool): AdaptiveAvgPool2d(output_size=(1, 1))
+        (classifier): Sequential(
+          (0): Linear(in_features=128, out_features=32, bias=True)
+          (1): ReLU()
+          (2): Linear(in_features=32, out_features=10, bias=True)
+        )
+      )
+      Loading complete, your model is now ready for evaluation!
+    ``` 
+
+
+## 6. How to use Loaded model on new images:
+
+```python
+test_images = ['E:/output/cifar10/cifar10/test/bird/0012.png', # bird
+'E:/output/cifar10/cifar10/train/ship/0002.png'] # ship
+
+myModel.predict(paths=test_images)
 
 ```
+??? OUTPUT
+    ```
+    ['bird', 'ship']
+    ```

@@ -2,7 +2,7 @@ import random,torch,os,json
 from torch import nn 
 from numpy import argmax,array
 from .cnnBlocks import SkipLayer,Pooling
-from typing import List,Tuple,Any
+from typing import List,Tuple,Any,Optional,Union
 from torchvision.datasets import ImageFolder
 from torchvision import transforms
 from pytorchsummary import summary as summ
@@ -11,7 +11,7 @@ from tqdm import tqdm
 from .models.resnet import resnet
 from datetime import datetime
 from AutoNN.exceptions import *
-
+from PIL import Image
 
 
 class CNN(nn.Module):
@@ -20,6 +20,7 @@ class CNN(nn.Module):
         self.config=config
         self.inchannels = in_channels
         self.numClasses = numClasses
+        self.__ig = None
         self.__buildNetwork()
 
     def __buildNetwork(self):
@@ -53,29 +54,42 @@ class CNN(nn.Module):
         x = self.classifier(x)
         return x
 
-    def save(self,path='./best_models/',filename='Model.pth',
-                config_file_path='./config_files/',config_filename='cfg1.json'):
+    def save(self,classes:List[Union[int,str]],
+                image_shape,
+                path:Optional[str]=None,
+                filename:str='Model')->None:
         '''
         Args:
+            classes: class list of images
             path: path to the best models
-            filename: name of the .pth file (by default it will save the model as model.pth)
-            config_file_path: path to the configuration file, a .json file
-            config_filename: name of the configuration.json file
-        
+            filename: name of the .pth file (by default 
+            it will save the model as model.pth)
         '''
+        with open('AutoNN/default_config.json') as f:
+            data = json.load(f)
+        if data['path_cnn_models']:
+            path = data['path_cnn_models']
+        else: 
+            if not path:
+                raise InvalidPathError
+            data['path_cnn_models'] = path
+
+        with open("AutoNN/default_config.json", "w") as f:
+            json.dump(data, f)  
+
         if not os.path.exists(path):
             os.makedirs(path)
-        path = os.path.join(path,filename)
-        torch.save(self.state_dict(),path)
+        
+        torch.save(self.state_dict(),os.path.join(path,f'{filename}.pth'))
+
+        with open(os.path.join(path,f'{filename}.json'),'w') as f:
+            d = {"config":self.config,"classes":classes,"image shape":image_shape}
+            json.dump(d, f)
+
         print(f'Model saved in directory: {path}')
 
-        if not os.path.exists(config_file_path):
-            os.makedirs(config_file_path)
-        with open(os.path.join(config_file_path,config_filename),'w') as f:
-            json.dump(self.config, f)
-
     
-    def summary(self,input_shape:tuple,border:bool=True):
+    def summary(self,input_shape:tuple,border:bool=True)->None:
         '''
         Args:
             input_shape = (num_channels,height,width)
@@ -90,10 +104,10 @@ class CNN(nn.Module):
         self.eval()
         print('Loading complete, your model is now ready for evaluation!')
     
-    def load(self,PATH='./best_models/',
-                config_path='./config_files/cfg1.json',
-                printmodel=False,
-                loadmodel=True):
+    def load(self,PATH:str='./best_models/',
+                config_path:str='./config_files/cfg1.json',
+                printmodel:bool=False,
+                loadmodel:bool=True)->None:
         '''
         Args:
             PATH: path to the saved model.pth file
@@ -105,7 +119,10 @@ class CNN(nn.Module):
         '''
         
         with open(config_path,'r') as f:
-            self.config = json.load(f)
+            data = json.load(f)
+            self.config = data['config'] 
+            self.__classes = data['classes']
+            self.__ig = data['image shape']
         self.__buildNetwork()
 
         print('Network Architecture loaded!')
@@ -114,19 +131,24 @@ class CNN(nn.Module):
         if loadmodel:
             self.__load(PATH)
         
-    def predict(self,imgs,classes:list,image_shape:tuple):
+    def predict(self,paths:Union[list,tuple])-> List[Union[int,str]]:
         """
         This will predict the class of an unknown image
         """
         transform = transforms.Compose([transforms.ToTensor(),
-                transforms.Resize(image_shape)])
-        x = transform(imgs)
-        x = x.unsqueeze(0)
-        output = self.forward(x)
-        pred = torch.argmax(output,1) # pred index
-        return classes[pred]
+                transforms.Resize(self.__ig)])
+    
+        preds=list()
+        for img in paths:
+            image = Image.open(img)
+            x = transform(image).float()
+            x = x.unsqueeze(0)
+            output = self.forward(x)
+            preds.append(self.__classes[torch.argmax(output,1).item()])
+        
+        return preds
 
-        pass
+        
 
 
 class CreateCNN:
@@ -139,6 +161,8 @@ class CreateCNN:
         self.size=_size
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.cnns=[]
+        self.__classes = None
+        self.__image_shape:tuple = None
 
 
     @staticmethod
@@ -191,6 +215,13 @@ class CreateCNN:
         
         return l2rg* lambda_
         
+    @property    
+    def get_classes(self):
+        return self.__classes
+
+    @property
+    def get_imageshape(self)-> tuple:
+        return self.__image_shape
 
     def print_all_cnn_configs(self): 
         for x,i in enumerate(self.configuration): 
@@ -254,19 +285,19 @@ class CreateCNN:
 
     def get_bestCNN(self,
                     path_trainset:str,
-                    path_testset:str=None,
+                    path_testset:Optional[str]=None,
                     split_required:bool=False,
                     batch_size:int=16,
                     lossFn:str='cross-entropy',
-                    LR=3e-4,
-                    EPOCHS=10,
+                    LR:float=3e-4,
+                    EPOCHS:int=10,
                     image_shape:tuple=(28,28),
                     **kwargs
                     )->Tuple[float,Any,list,dict]:
         '''
         NOTE: make sure the path to your dataset is of 
             format 
-        >>> "../dataset/train/"
+             "../dataset/train/"
             "../dataset/test/"
 
             i.e name your training image dataset folder
@@ -292,13 +323,13 @@ class CreateCNN:
 
 
         Example:
-        >>> pop = CreateCNN(3,3,10) # first create an instance of the CreateCNN class 
-            model,model_config,_ = pop.get_bestCNN('dataset',split_required=True)
+        >>> pop = CreateCNN() # first create an instance of the CreateCNN class 
+        >>> model,model_config,_ = pop.get_bestCNN('dataset',split_required=True)
 
         '''
         print(f'Default computing platform: {self.device}')
         start = datetime.now()
-
+        self.__image_shape = image_shape
         if lossFn == 'cross-entropy':
             criterion=nn.CrossEntropyLoss()
         if not split_required:
@@ -308,6 +339,7 @@ class CreateCNN:
             ))
             
             len_classes = len(trainSet.classes)
+            self.__classes = trainSet.classes
             print('Classes: ',trainSet.classes, '# Classes: ',len_classes)
             validlen = int(len(trainSet)*0.2)
             trainlen = len(trainSet)-validlen
@@ -321,9 +353,9 @@ class CreateCNN:
             trainSet = ImageFolder(path_trainset,transforms.Compose(
                 [transforms.ToTensor(),transforms.Resize(image_shape)]
             ))
-            len_classes = len(trainSet.classes)
-            print('Classes: ',trainSet.classes, '# Classes: ',len_classes)
-            
+            self.__classes = trainSet.classes
+            len_classes = len(self.__classes)
+            print('Classes: ',self.__classes, '# Classes: ',len_classes)
             trainlen = int(len(trainSet)*0.7)
             testlen = len(trainSet) - trainlen # rest 30%
             validlen = int(testlen*0.5) #this is 50% of remaining 30%
@@ -336,7 +368,7 @@ class CreateCNN:
             
         
         input_shape = tuple(trainSet[0][0].shape)
-# ______________________________________________________________
+        # ______________________________________________________________
         # self.val2 = kwargs.get('val2',"default value")
         self.inChannels = kwargs.get('in_channels',input_shape[0])
         self.numClasses = kwargs.get('num_classes',len_classes)
@@ -350,7 +382,7 @@ class CreateCNN:
         print("Architecture search Complete..!",'Time Taken: ',datetime.now()-start)
         print(f'Number of models generated: {len(self.cnns)}')
 
-# ___________________DATALOADERS___________________________________________
+        #        ___________________DATALOADERS___________________________________________
 
 
         trainloader = DataLoader(trainSet,batch_size,shuffle=True)

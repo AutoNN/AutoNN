@@ -14,12 +14,14 @@ class TooLowDatasetWarning(Exception):
         super().__init__(self.message) 
     
 
-class IvalidPathError(Exception):
-    pass 
+class InvalidPathError(Exception):
+  
+    def __init__(self):
+        self.message= '''your path is either None or a filename,
+         You are requested to provide a valid path to a directory not a FILE'''
+        super().__init__(self.message)
 
 class InvalidImageFileError(Exception):
     """Make sure you have only images inside 
         your dataset folder the correct image format"""
     pass 
-
-
