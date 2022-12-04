@@ -4,6 +4,12 @@
 
 class Augment(path)
 ```
+This class will augment the image dataset using the following image operations: 
+
+- Rotations
+- Horizontal Flip
+- Vertical Flip
+
 
 <span style="color:yellow">Parameters</span> :
 

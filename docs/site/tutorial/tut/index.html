@@ -1,0 +1,1044 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for AutoNN">
+      
+      
+      
+      <link rel="icon" href="../../img/icon.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
+    
+    
+      
+        <title>Image Classification - AutoNN</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.975780f9.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.2505c338.min.css">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#image-classification-using-autonn" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AutoNN" class="md-header__button md-logo" aria-label="AutoNN" data-md-component="logo">
+      
+  <img src="../../img/ico.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AutoNN
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Image Classification
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9h-1.9M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69m-9.15 3.96h2.3L12 9l-1.15 3.65Z"/></svg>
+            </label>
+          
+        
+          
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/AutoNN/AutoNN" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AutoNN" class="md-nav__button md-logo" aria-label="AutoNN" data-md-component="logo">
+      
+  <img src="../../img/ico.png" alt="logo">
+
+    </a>
+    AutoNN
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/AutoNN/AutoNN" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Installation & Intro
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Documentation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Documentation" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Documentation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/cnn1/" class="md-nav__link">
+        class CNN
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/cnn2/" class="md-nav__link">
+        class CreateCNN
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/utils1/" class="md-nav__link">
+        class Augment
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Tutorial
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tutorial" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Tutorial
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Image Classification
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Image Classification
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-how-to-train-a-cnn-model-for-image-classification" class="md-nav__link">
+    1. How to train a CNN model for image classification:
+  </a>
+  
+    <nav class="md-nav" aria-label="1. How to train a CNN model for image classification:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#print-the-model" class="md-nav__link">
+    Print the model:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-list-of-all-classes-example" class="md-nav__link">
+    Get list of all classes. Example:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#print-model-configuration" class="md-nav__link">
+    Print Model configuration:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#print-history-of-all-training-data" class="md-nav__link">
+    Print history of all training data:
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-plot-the-training-loss-vs-validation-loss" class="md-nav__link">
+    2. Plot the Training loss vs Validation loss:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-how-to-save-the-model" class="md-nav__link">
+    3. How to save the model:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-to-check-the-summary-of-the-model" class="md-nav__link">
+    4. To check the summary of the model:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-how-to-load-saved-model" class="md-nav__link">
+    5. How to load saved model:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-how-to-use-loaded-model-on-new-images" class="md-nav__link">
+    6. How to use Loaded model on new images:
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tut1/" class="md-nav__link">
+        Handle Tabular Dataset
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          GUI
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="GUI" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          GUI
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gui/lesson1/" class="md-nav__link">
+        For Tabular Dataset
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gui/lesson2/" class="md-nav__link">
+        For Image Dataset
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/" class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-how-to-train-a-cnn-model-for-image-classification" class="md-nav__link">
+    1. How to train a CNN model for image classification:
+  </a>
+  
+    <nav class="md-nav" aria-label="1. How to train a CNN model for image classification:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#print-the-model" class="md-nav__link">
+    Print the model:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-list-of-all-classes-example" class="md-nav__link">
+    Get list of all classes. Example:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#print-model-configuration" class="md-nav__link">
+    Print Model configuration:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#print-history-of-all-training-data" class="md-nav__link">
+    Print history of all training data:
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-plot-the-training-loss-vs-validation-loss" class="md-nav__link">
+    2. Plot the Training loss vs Validation loss:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-how-to-save-the-model" class="md-nav__link">
+    3. How to save the model:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-to-check-the-summary-of-the-model" class="md-nav__link">
+    4. To check the summary of the model:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-how-to-load-saved-model" class="md-nav__link">
+    5. How to load saved model:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-how-to-use-loaded-model-on-new-images" class="md-nav__link">
+    6. How to use Loaded model on new images:
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <a href="https://github.com/AutoNN/AutoNN/edit/master/docs/tutorial/tut.md" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+<h1 id="image-classification-using-autonn">Image Classification Using AutoNN</h1>
+<p>AutoNN's CNN (Convolutional Neural Network) Models are built on PyTorch.</p>
+<h2 id="1-how-to-train-a-cnn-model-for-image-classification">1. How to train a CNN model for image classification:</h2>
+<p>Import <code>CreateCNN</code> from CNN's <code>cnn_generator</code> module</p>
+<p>Example
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">AutoNN.CNN.cnn_generator</span> <span class="kn">import</span> <span class="n">CreateCNN</span><span class="p">,</span> <span class="n">CNN</span> 
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">inst</span> <span class="o">=</span> <span class="n">CreateCNN</span><span class="p">()</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">model</span><span class="p">,</span><span class="n">model_config</span><span class="p">,</span><span class="n">history</span><span class="o">=</span><span class="n">inst</span><span class="o">.</span><span class="n">get_bestCNN</span><span class="p">(</span><span class="n">path_trainset</span><span class="o">=</span><span class="s2">&quot;E:/output/cifar10/cifar10/train&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">path_testset</span><span class="o">=</span><span class="s2">&quot;E:/output/cifar10/cifar10/test&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">split_required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">EPOCHS</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">image_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span><span class="mi">32</span><span class="p">))</span>
+</code></pre></div></p>
+<details class="output"><summary>Output</summary><div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>  ░█▀▀█ █░░█ ▀▀█▀▀ █▀▀█ ▒█▄░▒█ ▒█▄░▒█ 
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  ▒█▄▄█ █░░█ ░░█░░ █░░█ ▒█▒█▒█ ▒█▒█▒█ 
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  ▒█░▒█ ░▀▀▀ ░░▀░░ ▀▀▀▀ ▒█░░▀█ ▒█░░▀█
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  Version: 2.0.0
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  An AutoML framework by
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  Anish Konar, Arjun Ghosh, Rajarshi Banerjee, Sagnik Nayak.
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>  Default computing platform: cuda
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>  Classes:  [&#39;airplane&#39;, &#39;automobile&#39;, &#39;bird&#39;, &#39;cat&#39;, &#39;deer&#39;, &#39;dog&#39;, &#39;frog&#39;, &#39;horse&#39;, &#39;ship&#39;, &#39;truck&#39;] # Classes:  10
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>  Training set size: 40000 | Validation Set size: 10000 | Test Set size: 10000
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>  Architecture search Complete..! Time Taken:  0:00:01.688582
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>  Number of models generated: 2
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>  Searching for the best model. Please be patient. Thank you....
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>  Training CNN model cnn0
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>  Epoch: 1/10
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>  100%|██████████| 2500/2500 [01:08&lt;00:00, 36.24it/s]
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>  Training Accuracy: 35.1775     Training Loss:1.7207594780921935
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>  100%|██████████| 625/625 [00:09&lt;00:00, 65.11it/s]
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>  Validation Accuracy: 43.38     Validation Loss:1.5083902006149292
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>  Epoch: 2/10
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>  100%|██████████| 2500/2500 [01:03&lt;00:00, 39.34it/s]
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>  Training Accuracy: 44.7975     Training Loss:1.483097927236557
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 70.63it/s]
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>  Validation Accuracy: 47.59     Validation Loss:1.4107291974067688
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>  Epoch: 3/10
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>  100%|██████████| 2500/2500 [01:03&lt;00:00, 39.67it/s]
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>  Training Accuracy: 49.26   Training Loss:1.3825817276716232
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 70.44it/s]
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>  Validation Accuracy: 49.26     Validation Loss:1.3538662633895875
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>  Epoch: 4/10
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>  100%|██████████| 2500/2500 [01:02&lt;00:00, 39.78it/s]
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>  Training Accuracy: 51.4975     Training Loss:1.3264493201732634
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 70.79it/s]
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>  Validation Accuracy: 54.59     Validation Loss:1.263453982925415
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>  Epoch: 5/10
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>  100%|██████████| 2500/2500 [01:03&lt;00:00, 39.61it/s]
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>  Training Accuracy: 53.3775     Training Loss:1.2788944167137146
+<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 70.93it/s]
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>  Validation Accuracy: 53.4  Validation Loss:1.2734063954353332
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>  Epoch: 6/10
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>  100%|██████████| 2500/2500 [01:03&lt;00:00, 39.67it/s]
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>  Training Accuracy: 54.59   Training Loss:1.2445036834478378
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 70.81it/s]
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>  Validation Accuracy: 54.01     Validation Loss:1.2412574873924256
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>  Epoch: 7/10
+<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a>  100%|██████████| 2500/2500 [01:03&lt;00:00, 39.66it/s]
+<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a>  Training Accuracy: 56.045  Training Loss:1.2121670446991921
+<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 70.66it/s]
+<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>  Validation Accuracy: 57.49     Validation Loss:1.1828145512580872
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>  Epoch: 8/10
+<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a>  100%|██████████| 2500/2500 [01:02&lt;00:00, 39.71it/s]
+<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a>  Training Accuracy: 56.75   Training Loss:1.1846893740534783
+<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 70.39it/s]
+<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a>  Validation Accuracy: 58.49     Validation Loss:1.1632665138721465
+<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a>  Epoch: 9/10
+<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>  100%|██████████| 2500/2500 [01:02&lt;00:00, 39.73it/s]
+<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a>  Training Accuracy: 58.13   Training Loss:1.153260654783249
+<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 70.20it/s]
+<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a>  Validation Accuracy: 60.65     Validation Loss:1.1054361756324769
+<a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a>  Epoch: 10/10
+<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a>  100%|██████████| 2500/2500 [01:02&lt;00:00, 40.28it/s]
+<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a>  Training Accuracy: 58.895  Training Loss:1.1318354423761368
+<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 73.48it/s]
+<a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a>  Validation Accuracy: 59.0  Validation Loss:1.1538037222385407
+<a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a>  Calculating test accuracy CNN model cnn0
+<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a>  Test ACCuracy: 59.84   Test Loss: 1.13254158577919
+<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a>  ------------------------------------------------------------------------------------------------------------------------------------------------------
+<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a>  ______________________________________________________________________________________________________________________________________________________
+<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a>  Training CNN model cnn1
+<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a>  Epoch: 1/10
+<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a>  100%|██████████| 2500/2500 [00:41&lt;00:00, 59.80it/s]
+<a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a>  Training Accuracy: 30.5625     Training Loss:1.8546679210186006
+<a id="__codelineno-1-74" name="__codelineno-1-74" href="#__codelineno-1-74"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 76.54it/s]
+<a id="__codelineno-1-75" name="__codelineno-1-75" href="#__codelineno-1-75"></a>  Validation Accuracy: 33.79     Validation Loss:1.7818523860931397
+<a id="__codelineno-1-76" name="__codelineno-1-76" href="#__codelineno-1-76"></a>  Epoch: 2/10
+<a id="__codelineno-1-77" name="__codelineno-1-77" href="#__codelineno-1-77"></a>  100%|██████████| 2500/2500 [00:41&lt;00:00, 60.42it/s]
+<a id="__codelineno-1-78" name="__codelineno-1-78" href="#__codelineno-1-78"></a>  Training Accuracy: 39.33   Training Loss:1.6098018644332885
+<a id="__codelineno-1-79" name="__codelineno-1-79" href="#__codelineno-1-79"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 76.10it/s]
+<a id="__codelineno-1-80" name="__codelineno-1-80" href="#__codelineno-1-80"></a>  Validation Accuracy: 43.24     Validation Loss:1.520786734867096
+<a id="__codelineno-1-81" name="__codelineno-1-81" href="#__codelineno-1-81"></a>  Epoch: 3/10
+<a id="__codelineno-1-82" name="__codelineno-1-82" href="#__codelineno-1-82"></a>  100%|██████████| 2500/2500 [00:41&lt;00:00, 60.35it/s]
+<a id="__codelineno-1-83" name="__codelineno-1-83" href="#__codelineno-1-83"></a>  Training Accuracy: 44.2325     Training Loss:1.5038440037250518
+<a id="__codelineno-1-84" name="__codelineno-1-84" href="#__codelineno-1-84"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 76.69it/s]
+<a id="__codelineno-1-85" name="__codelineno-1-85" href="#__codelineno-1-85"></a>  Validation Accuracy: 45.07     Validation Loss:1.4924028639793396
+<a id="__codelineno-1-86" name="__codelineno-1-86" href="#__codelineno-1-86"></a>  Epoch: 4/10
+<a id="__codelineno-1-87" name="__codelineno-1-87" href="#__codelineno-1-87"></a>  100%|██████████| 2500/2500 [00:41&lt;00:00, 60.33it/s]
+<a id="__codelineno-1-88" name="__codelineno-1-88" href="#__codelineno-1-88"></a>  Training Accuracy: 47.06   Training Loss:1.438860204720497
+<a id="__codelineno-1-89" name="__codelineno-1-89" href="#__codelineno-1-89"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 76.10it/s]
+<a id="__codelineno-1-90" name="__codelineno-1-90" href="#__codelineno-1-90"></a>  Validation Accuracy: 47.9  Validation Loss:1.4355408569335937
+<a id="__codelineno-1-91" name="__codelineno-1-91" href="#__codelineno-1-91"></a>  Epoch: 5/10
+<a id="__codelineno-1-92" name="__codelineno-1-92" href="#__codelineno-1-92"></a>  100%|██████████| 2500/2500 [00:41&lt;00:00, 60.41it/s]
+<a id="__codelineno-1-93" name="__codelineno-1-93" href="#__codelineno-1-93"></a>  Training Accuracy: 49.3625     Training Loss:1.3855291500329971
+<a id="__codelineno-1-94" name="__codelineno-1-94" href="#__codelineno-1-94"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 76.00it/s]
+<a id="__codelineno-1-95" name="__codelineno-1-95" href="#__codelineno-1-95"></a>  Validation Accuracy: 51.42     Validation Loss:1.328598715877533
+<a id="__codelineno-1-96" name="__codelineno-1-96" href="#__codelineno-1-96"></a>  Epoch: 6/10
+<a id="__codelineno-1-97" name="__codelineno-1-97" href="#__codelineno-1-97"></a>  100%|██████████| 2500/2500 [00:41&lt;00:00, 59.96it/s]
+<a id="__codelineno-1-98" name="__codelineno-1-98" href="#__codelineno-1-98"></a>  Training Accuracy: 51.2    Training Loss:1.3459105017662047
+<a id="__codelineno-1-99" name="__codelineno-1-99" href="#__codelineno-1-99"></a>  100%|██████████| 625/625 [00:09&lt;00:00, 66.04it/s]
+<a id="__codelineno-1-100" name="__codelineno-1-100" href="#__codelineno-1-100"></a>  Validation Accuracy: 53.64     Validation Loss:1.2791677060127258
+<a id="__codelineno-1-101" name="__codelineno-1-101" href="#__codelineno-1-101"></a>  Epoch: 7/10
+<a id="__codelineno-1-102" name="__codelineno-1-102" href="#__codelineno-1-102"></a>  100%|██████████| 2500/2500 [00:44&lt;00:00, 56.65it/s]
+<a id="__codelineno-1-103" name="__codelineno-1-103" href="#__codelineno-1-103"></a>  Training Accuracy: 52.4025     Training Loss:1.3105635814905168
+<a id="__codelineno-1-104" name="__codelineno-1-104" href="#__codelineno-1-104"></a>  100%|██████████| 625/625 [00:08&lt;00:00, 69.72it/s]
+<a id="__codelineno-1-105" name="__codelineno-1-105" href="#__codelineno-1-105"></a>  Validation Accuracy: 52.93     Validation Loss:1.2803085575103759
+<a id="__codelineno-1-106" name="__codelineno-1-106" href="#__codelineno-1-106"></a>  Epoch: 8/10
+<a id="__codelineno-1-107" name="__codelineno-1-107" href="#__codelineno-1-107"></a>  100%|██████████| 2500/2500 [00:44&lt;00:00, 56.75it/s]
+<a id="__codelineno-1-108" name="__codelineno-1-108" href="#__codelineno-1-108"></a>  Training Accuracy: 53.41   Training Loss:1.2841510282278061
+<a id="__codelineno-1-109" name="__codelineno-1-109" href="#__codelineno-1-109"></a>  100%|██████████| 625/625 [00:09&lt;00:00, 69.40it/s]
+<a id="__codelineno-1-110" name="__codelineno-1-110" href="#__codelineno-1-110"></a>  Validation Accuracy: 55.3  Validation Loss:1.2356650713443755
+<a id="__codelineno-1-111" name="__codelineno-1-111" href="#__codelineno-1-111"></a>  Epoch: 9/10
+<a id="__codelineno-1-112" name="__codelineno-1-112" href="#__codelineno-1-112"></a>  100%|██████████| 2500/2500 [00:43&lt;00:00, 57.20it/s]
+<a id="__codelineno-1-113" name="__codelineno-1-113" href="#__codelineno-1-113"></a>  Training Accuracy: 54.435  Training Loss:1.2552653106451035
+<a id="__codelineno-1-114" name="__codelineno-1-114" href="#__codelineno-1-114"></a>  100%|██████████| 625/625 [00:09&lt;00:00, 67.85it/s]
+<a id="__codelineno-1-115" name="__codelineno-1-115" href="#__codelineno-1-115"></a>  Validation Accuracy: 57.19     Validation Loss:1.1992870372772217
+<a id="__codelineno-1-116" name="__codelineno-1-116" href="#__codelineno-1-116"></a>  Epoch: 10/10
+<a id="__codelineno-1-117" name="__codelineno-1-117" href="#__codelineno-1-117"></a>  100%|██████████| 2500/2500 [00:43&lt;00:00, 57.08it/s]
+<a id="__codelineno-1-118" name="__codelineno-1-118" href="#__codelineno-1-118"></a>  Training Accuracy: 55.0625     Training Loss:1.2330288346767426
+<a id="__codelineno-1-119" name="__codelineno-1-119" href="#__codelineno-1-119"></a>  100%|██████████| 625/625 [00:09&lt;00:00, 67.08it/s]
+<a id="__codelineno-1-120" name="__codelineno-1-120" href="#__codelineno-1-120"></a>  Validation Accuracy: 56.51     Validation Loss:1.2072079391002655
+<a id="__codelineno-1-121" name="__codelineno-1-121" href="#__codelineno-1-121"></a>  Calculating test accuracy CNN model cnn1
+<a id="__codelineno-1-122" name="__codelineno-1-122" href="#__codelineno-1-122"></a>  Test ACCuracy: 55.25   Test Loss: 1.2267251291751862
+<a id="__codelineno-1-123" name="__codelineno-1-123" href="#__codelineno-1-123"></a>  ------------------------------------------------------------------------------------------------------------------------------------------------------
+<a id="__codelineno-1-124" name="__codelineno-1-124" href="#__codelineno-1-124"></a>  ______________________________________________________________________________________________________________________________________________________
+<a id="__codelineno-1-125" name="__codelineno-1-125" href="#__codelineno-1-125"></a>  Best test accuracy achieved by model cnn0:  59.84
+</code></pre></div>
+</details>
+<h3 id="print-the-model">Print the model:</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</code></pre></div>
+<details class="output"><summary>Output</summary><div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>CNN(
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  (network): Sequential(
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    (0): SkipLayer(
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>      (skiplayers): Sequential(
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        (0): Conv2d(3, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        (1): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        (2): ReLU()
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        (3): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        (4): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>      )
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>      (skip_connection): Conv2d(3, 16, kernel_size=(1, 1), stride=(1, 1))
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>      (relu): ReLU()
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    )
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    (1): SkipLayer(
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>      (skiplayers): Sequential(
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>        (0): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        (1): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>        (2): ReLU()
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>        (3): Conv2d(16, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>        (4): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>      )
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>      (skip_connection): Conv2d(16, 128, kernel_size=(1, 1), stride=(1, 1))
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>      (relu): ReLU()
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>    )
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>  )
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>  (avgpool): AdaptiveAvgPool2d(output_size=(1, 1))
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>  (classifier): Sequential(
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>    (0): Linear(in_features=128, out_features=32, bias=True)
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>    (1): ReLU()
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>    (2): Linear(in_features=32, out_features=10, bias=True)
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>  )
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>)
+</code></pre></div>
+</details>
+<h3 id="get-list-of-all-classes-example">Get list of all classes. Example:</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">inst</span><span class="o">.</span><span class="n">get_classes</span><span class="p">)</span>
+</code></pre></div>
+<details class="output"><summary>Output</summary><div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>[&#39;airplane&#39;, &#39;automobile&#39;, &#39;bird&#39;, &#39;cat&#39;, &#39;deer&#39;, &#39;dog&#39;, &#39;frog&#39;, &#39;horse&#39;, &#39;ship&#39;, &#39;truck&#39;]
+</code></pre></div>
+</details>
+<h3 id="print-model-configuration">Print Model configuration:</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">model_config</span><span class="p">)</span>
+</code></pre></div>
+<details class="output"><summary>Output</summary><div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>[(&#39;conv&#39;, 16, 16), (&#39;conv&#39;, 16, 128)]
+</code></pre></div>
+</details>
+<h3 id="print-history-of-all-training-data">Print history of all training data:</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">history</span><span class="p">)</span>
+</code></pre></div>
+<details class="output"><summary>Output</summary><div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>{
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>  &#39;cnn0&#39;: {
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    &#39;trainloss&#39;: [1.7207594780921935,   1.483097927236557,   1.3825817276716232,   1.3264493201732634,   1.2788944167137146,   1.2445036834478378,   1.2121670446991921,   1.1846893740534783,   1.153260654783249,
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>  1.1318354423761368],
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>  &#39;trainacc&#39;: [35.1775,   44.7975,   49.26,   51.4975,   53.3775,   54.59,   56.045,   56.75,   58.13,   58.895],
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>  &#39;valloss&#39;: [1.5083902006149292,   1.4107291974067688,   1.3538662633895875,   1.263453982925415,   1.2734063954353332,   1.2412574873924256,   1.1828145512580872,   1.1632665138721465,   1.1054361756324769,   1.1538037222385407],
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>  &#39;valacc&#39;: [43.38,   47.59,   49.26,   54.59,   53.4,   54.01,   57.49,   58.49,   60.65,   59.0]},
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>&#39;cnn1&#39;: {
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>  &#39;trainloss&#39;: [1.8546679210186006,   1.6098018644332885,   1.5038440037250518,   1.438860204720497,   1.3855291500329971,   1.3459105017662047,   1.3105635814905168,   1.2841510282278061,   1.2552653106451035,   1.2330288346767426],
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>  &#39;trainacc&#39;: [30.5625,   39.33,   44.2325,   47.06,   49.3625,   51.2,   52.4025,   53.41,   54.435,   55.0625],
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>  &#39;valloss&#39;: [1.7818523860931397,   1.520786734867096,   1.4924028639793396,   1.4355408569335937,   1.328598715877533,   1.2791677060127258,   1.2803085575103759,   1.2356650713443755,   1.1992870372772217,   1.2072079391002655],
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>  &#39;valacc&#39;: [33.79,   43.24,   45.07,   47.9,   51.42,   53.64,   52.93,   55.3,   57.19,   56.51]
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>  }
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>}
+</code></pre></div>
+</details>
+<h2 id="2-plot-the-training-loss-vs-validation-loss">2. Plot the Training loss vs Validation loss:</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span> <span class="nn">AutoNN.CNN.utils.EDA</span> <span class="kn">import</span> <span class="n">plot_graph</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">plot_graph</span><span class="p">(</span><span class="n">history</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="3-how-to-save-the-model">3. How to save the model:</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">inst</span><span class="o">.</span><span class="n">get_classes</span><span class="p">,</span><span class="n">inst</span><span class="o">.</span><span class="n">get_imageshape</span><span class="p">,</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;./best models/&#39;</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;mnistmodel.pth&#39;</span><span class="p">,</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="n">config_file_path</span><span class="o">=</span><span class="s1">&#39;./best models/&#39;</span><span class="p">,</span><span class="n">config_filename</span> <span class="o">=</span> <span class="s1">&#39;mnistcfg.json&#39;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="4-to-check-the-summary-of-the-model">4. To check the summary of the model:</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span><span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">32</span><span class="p">))</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="c1"># this method will print the keras like summary of the model</span>
+</code></pre></div>
+<h2 id="5-how-to-load-saved-model">5. How to load saved model:</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">myModel</span> <span class="o">=</span> <span class="n">CNN</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">myModel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">PATH</span><span class="o">=</span><span class="s1">&#39;./best models/mnistmodel.pth&#39;</span><span class="p">,</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;./best models/mnistcfg.json&quot;</span><span class="p">,</span><span class="n">printmodel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<details class="output"><summary>Output</summary><div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>  Network Architecture loaded!
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>  CNN(
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    (network): Sequential(
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>      (0): SkipLayer(
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>        (skiplayers): Sequential(
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>          (0): Conv2d(3, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>          (1): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>          (2): ReLU()
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>          (3): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>          (4): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>        )
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>        (skip_connection): Conv2d(3, 16, kernel_size=(1, 1), stride=(1, 1))
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>        (relu): ReLU()
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>      )
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>      (1): SkipLayer(
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>        (skiplayers): Sequential(
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>          (0): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a>          (1): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+<a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>          (2): ReLU()
+<a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>          (3): Conv2d(16, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a>          (4): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+<a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>        )
+<a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a>        (skip_connection): Conv2d(16, 128, kernel_size=(1, 1), stride=(1, 1))
+<a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a>        (relu): ReLU()
+<a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a>      )
+<a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a>    )
+<a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a>    (avgpool): AdaptiveAvgPool2d(output_size=(1, 1))
+<a id="__codelineno-14-28" name="__codelineno-14-28" href="#__codelineno-14-28"></a>    (classifier): Sequential(
+<a id="__codelineno-14-29" name="__codelineno-14-29" href="#__codelineno-14-29"></a>      (0): Linear(in_features=128, out_features=32, bias=True)
+<a id="__codelineno-14-30" name="__codelineno-14-30" href="#__codelineno-14-30"></a>      (1): ReLU()
+<a id="__codelineno-14-31" name="__codelineno-14-31" href="#__codelineno-14-31"></a>      (2): Linear(in_features=32, out_features=10, bias=True)
+<a id="__codelineno-14-32" name="__codelineno-14-32" href="#__codelineno-14-32"></a>    )
+<a id="__codelineno-14-33" name="__codelineno-14-33" href="#__codelineno-14-33"></a>  )
+<a id="__codelineno-14-34" name="__codelineno-14-34" href="#__codelineno-14-34"></a>  Loading complete, your model is now ready for evaluation!
+</code></pre></div>
+</details>
+<h2 id="6-how-to-use-loaded-model-on-new-images">6. How to use Loaded model on new images:</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">test_images</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;E:/output/cifar10/cifar10/test/bird/0012.png&#39;</span><span class="p">,</span> <span class="c1"># bird</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="s1">&#39;E:/output/cifar10/cifar10/train/ship/0002.png&#39;</span><span class="p">]</span> <span class="c1"># ship</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">myModel</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">paths</span><span class="o">=</span><span class="n">test_images</span><span class="p">)</span>
+</code></pre></div>
+<details class="output"><summary>Output</summary><div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>[&#39;bird&#39;, &#39;ship&#39;]
+</code></pre></div>
+</details>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../../documentation/utils1/" class="md-footer__link md-footer__link--prev" aria-label="Previous: class Augment" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              class Augment
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../tut1/" class="md-footer__link md-footer__link--next" aria-label="Next: Handle Tabular Dataset" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Handle Tabular Dataset
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.annotate"], "search": "../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5a2dcb6a.min.js"></script>
+      
+    
+    
+  </body>
+</html>

@@ -1,6 +1,6 @@
 # Welcome to AutoNN
 
-![AutoNN logo](https://github.com/AutoNN/AutoNN/blob/main/docs/docs/img/logowhite.png)
+<img src="img/logowhite.png" style="display: block; margin-left: auto; margin-right: auto"/>
 
 
 An AutoML (Automated machine learning) / No-Code ML Framework for beginners.

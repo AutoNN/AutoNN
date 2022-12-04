@@ -7,7 +7,14 @@ theme:
   features:
     - content.code.annotate 
   palette:
-      # Palette toggle for dark mode
+
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme: dark)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       toggle:
@@ -22,8 +29,6 @@ site_description: 'Documentation for AutoNN'
 markdown_extensions:
   - attr_list
   - md_in_html
-
-markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
@@ -36,6 +41,7 @@ markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
+
 nav:
   - Installation & Intro: "index.md"
   - Documentation:

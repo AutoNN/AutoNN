@@ -1,4 +1,4 @@
-import random,torch,os,json
+import random,torch,os,json,sys
 from torch import nn 
 from numpy import argmax,array
 from .cnnBlocks import SkipLayer,Pooling
@@ -8,11 +8,13 @@ from torchvision import transforms
 from pytorchsummary import summary as summ
 from torch.utils.data import DataLoader,random_split
 from tqdm import tqdm
-from .models.resnet import resnet
+from AutoNN.CNN.models.resnet import resnet
 from datetime import datetime
 from AutoNN.exceptions import *
 from PIL import Image
 
+
+# sys.path.append("D:/GitHub/AutoNN/AutoNN/AutoNN/")
 
 class CNN(nn.Module):
     def __init__(self,in_channels,numClasses,config=None) -> None:

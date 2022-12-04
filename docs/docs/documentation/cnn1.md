@@ -5,7 +5,7 @@
 class CNN(in_channels:int,numClasses:int,config: Optional[list[tuple]]=None):
 ```
 
-## Parameters:
+<span style="color:yellow">Parameters</span>:
 
 - <span style="color:violet">in_channels</span> :  The number of channels in an image
 
@@ -17,7 +17,7 @@ class CNN(in_channels:int,numClasses:int,config: Optional[list[tuple]]=None):
 
 - <span style="color:red">**summary()**</span> :
     
-    Parameters:
+    <span style="color:yellow">Parameters</span>:
 
     <span style="color:violet">input_shape</span> : Shape of the image `torch.tensor`  [C, H, W] 
     <pre>
@@ -43,7 +43,7 @@ class CNN(in_channels:int,numClasses:int,config: Optional[list[tuple]]=None):
 
 - <span style="color:red">**load()**</span>
 
-    Parameters: 
+    <span style="color:yellow">Parameters</span>:
 
    
     <span style="color:violet">PATH</span> : Path to the trained `model.pth`.

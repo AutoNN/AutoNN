@@ -6,8 +6,10 @@ import threading,sys,ctypes,os,json
 from AutoNN.CNN.cnn_generator import CreateCNN,CNN
 from AutoNN.CNN.utils.EDA import plot_graph
 from AutoNN.CNN.utils.Device import DeviceInfo
+from AutoNN.CNN.utils.image_augmentation import Augment
 from AutoNN.main import Autonn
 
+# sys.path.append("D:/GitHub/AutoNN/AutoNN/AutoNN")
 
 timeVar = False
 run = True
@@ -27,7 +29,7 @@ class TerminalOutput(object):
 
 
 class App:
-    def __init__(self,root,title,resolution,size) -> None:
+    def __init__(self,root,title,resolution) -> None:
         self.root = root
         self.root.title(title)
         self.root.geometry(resolution)
@@ -56,8 +58,6 @@ class App:
 
         self.men.add_separator()
         self.men.add_command(label='Show Graphs',command=self.show_graphs)
-        self.men.add_separator()
-        self.men.add_command(label='Exit Program', command=self.root.quit)
         self.root.bind('<Button-3>', self.popup)
 
         # ---------------TABS-
@@ -77,9 +77,6 @@ class App:
         ttk.Label(F1,text='Label Name').grid(row=0,column=0,pady=5,padx=5)
         ttk.Entry(F1,width=20,textvariable=self.nam).grid(row=0,column=1,pady=5,padx=5)
 
-        # self.epochs=IntVar()
-        # ttk.Label(F1,text='Epochs').grid(row=0,column=2,pady=5,padx=5)
-        # ttk.Entry(F1,width=5,textvariable=self.epochs).grid(row=0,column=3,pady=5,padx=5)
 
         # BUTTONS
         ttk.Button(F1,text = 'Open File',width=20,style='info.TButton',
@@ -120,7 +117,7 @@ class App:
 
         self.imgEpoch=IntVar()
         ttk.Label(image_frame,text='Epochs').grid(row=0,column=2,pady=5,padx=5)
-        ttk.Entry(image_frame,width=10,textvariable=self.imgEpoch).grid(row=0,column=3,pady=5,padx=5)
+        ttk.Entry(image_frame,width=15,textvariable=self.imgEpoch).grid(row=0,column=3,pady=5,padx=5)
 
         self.lr= DoubleVar()
         ttk.Label(image_frame,text='Learning Rate').grid(row=0,column=0,pady=5,padx=5)
@@ -145,15 +142,18 @@ class App:
          style='success.Horizontal.TProgressbar')
 
         self.input_shape = StringVar()
-        ttk.Entry(image_frame,width=20,textvariable=self.input_shape).grid(row=0,column=8,padx=5,pady=5)
-        self.input_shape.set('Enter image shape')
+        ttk.Label(image_frame,text='Enter image shape').grid(row=2,column=7)
+        ttk.Entry(image_frame,width=20,textvariable=self.input_shape).grid(row=2,column=8,padx=5,pady=5)
         
+        
+
         self.channels = IntVar()
         self.numclass = IntVar()
-        ttk.Entry(image_frame,width=10,textvariable=self.channels).grid(row=1,column=1)
-        ttk.Entry(image_frame,width=10,textvariable=self.numclass).grid(row=1,column=2)
-        self.channels.set('#channels')
-        self.numclass.set('#Classes')
+        ttk.Label(image_frame,text="Enter number of Channels").grid(row=2,column=0,columnspan=2)
+        ttk.Entry(image_frame,width=10,textvariable=self.channels).grid(row=2,column=2)
+        ttk.Label(image_frame,text="Enter number of Classes").grid(row=2,column=4)
+        ttk.Entry(image_frame,width=20,textvariable=self.numclass).grid(row=2,column=5)
+        
 
         self.display_btn = ttk.Button(image_frame,text='Display Graphs',command=self.show_graphs)
         self.display_btn.grid(row=1,column=3)
@@ -162,15 +162,21 @@ class App:
         self.load_cnn = ttk.Button(image_frame,text='Load Model',command=self.load_cnn_model,width=20)
         self.load_cnn.grid(row=1,column=4)
 
-        self.disp = Text(image_frame,height=10,width=130,background='black',foreground='lime')
-        self.disp.grid(row=4,column=0,columnspan=7)
+        ttk.Button(image_frame,text="Open Test Folder",style="info.TButton",
+        width=20).grid(row=2,column=6,padx=5,pady=5)
+        
+        ttk.Button(image_frame,text='Predict',command=self.doPrediction,
+        width=20,style='success.TButton').grid(row=0,column=8,padx=5,pady=5)
 
-        self.disp1 = Text(image_frame,height=10,width=40,background='black',foreground='yellow')
-        self.disp1.grid(row=4,column=7,columnspan=4)
+        self.disp = Text(image_frame,height=6,width=130,background='black',foreground='lime')
+        self.disp.grid(row=5,column=0,columnspan=7)
+
+        self.disp1 = Text(image_frame,height=6,width=40,background='black',foreground='yellow')
+        self.disp1.grid(row=5,column=7,columnspan=4)
 
         self.aug_btn = ttk.Button(image_frame,text='Augment Dataset',command=self.__augment,width=20)
         self.aug_btn.grid(row=1,column=8,pady=5,padx=5)
-        self.aug_btn['state']='disabled'
+        # self.aug_btn['state']='disabled'
         # ----combobox------------
         self.batch_sizes = ttk.Combobox(image_frame,values=[2**i for i in range(9)])
         self.batch_sizes.grid(row=0,column=7)
@@ -182,7 +188,7 @@ class App:
         self.textBox.pack()
 
         self.clockwid = ttk.Label(image_frame)
-        self.clockwid.grid(row=1,column=0)
+        self.clockwid.grid(row=3,column=0)
         info = DeviceInfo()
         x_ =ttk.Label(self.root,text='', font=("Arial", 9),foreground='yellow')
         x_.pack(side='right')
@@ -220,8 +226,13 @@ class App:
             widget.after(1000,lambda :App.Timer(widget,clock))
 
     def __augment(self):
+        folder = filedialog.askdirectory()
+        inst = Augment(folder)
+        inst.augment()
+        messagebox.showinfo('Operation Completed',f"Dataset at path {folder}\n has been augmented")
         
-        pass
+    
+    def doPrediction(self):pass
 
     def img_file_testing(self):
         filenames = filedialog.askopenfilenames()
@@ -270,7 +281,7 @@ class App:
     def __Func(self):
         global timeVar
         timeVar=True
-        self.pb2.grid(row=3,column=0,columnspan=20)
+        self.pb2.grid(row=4,column=0,columnspan=20)
         self.pb2.start()
         try:
             t=(28,28)
@@ -294,6 +305,7 @@ class App:
             self.pb2.stop()
             self.pb2.grid_remove()
         except Exception as e:
+            print(e)
             messagebox.showerror('Error encountered',e)
         timeVar = False
 
@@ -405,7 +417,7 @@ def main():
     if os.name =='nt':
         ctypes.windll.shcore.SetProcessDpiAwareness(0)
     win = Style(theme='darkly').master 
-    App(win,'AutoNN GUI','1280x720',40)
+    App(win,'AutoNN GUI','1280x720')
     win.mainloop()
 
 if __name__=='__main__':

@@ -26,7 +26,7 @@ This function will create configuration based on which CNN models will be genera
 
 ??? example
     ```python
-    >>> print(create_config(3,10))
+    >>> print(CreateCNN.create_config(3,10))
     >>> [('conv', 64, 64),
         ('pool', 1, 64),
         ('conv', 256, 512),
@@ -72,6 +72,6 @@ Parameters:    </span>
 <span style="color:yellow">
 Returns :</span>
 
-Tuple containing the best model, it's accuracy and configuration
+Returns a tuple containing the best CNN model generated, its configuration, and history of all models generated 
 
-( best_CNN_model, best_model_config, history_of_all_models)
+`( best_CNN_model, best_model_config, history_of_all_models)`
