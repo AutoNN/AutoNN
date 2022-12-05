@@ -12,7 +12,7 @@ pip install nocode-autonn
 autonn
 ```
 
-![The GUI interface](./gui/screenshots/1.png)
+![The GUI interface](./screenshots/1.png)
 
 ## <span style="color :yellow">Buttons</span> 
  
@@ -41,16 +41,16 @@ autonn
 
 
 ### Results upon pressing `Display graphs` after completion of the training process
-![Alt text](./gui/screenshots/2.png)
+![Alt text](./screenshots/2.png)
 
 ### Saving the model after training
-![Alt text](./gui/screenshots/3.png)
+![Alt text](./screenshots/3.png)
 
 ### Select the path where you want to store the trained model
-![Alt text](./gui/screenshots/4.png)
+![Alt text](./screenshots/4.png)
 
 ### To load the trained model 
 
 - Select `Load Model`
 
-![Alt text](./gui/screenshots/5.png)
+![Alt text](./screenshots/5.png)
