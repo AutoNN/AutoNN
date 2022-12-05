@@ -8,8 +8,8 @@ class TooLowDatasetWarning(Exception):
     '''
     def __init__(self) -> None:
         self.message="""
-        Number of datapoints is lower than the
-        number of trainable parameters
+        Number of datapoints is lower than the number of
+        trainable parameters. Try augmenting the dataset first.
         """
         super().__init__(self.message) 
     
@@ -25,3 +25,11 @@ class InvalidImageFileError(Exception):
     """Make sure you have only images inside 
         your dataset folder the correct image format"""
     pass 
+
+
+class InvalidFolderStructureError(Exception):
+    '''
+    Make sure all the folders are in the specified 
+    format accepted by the function
+    '''
+    pass

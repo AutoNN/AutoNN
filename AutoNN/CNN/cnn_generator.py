@@ -14,7 +14,6 @@ from AutoNN.exceptions import *
 from PIL import Image
 
 
-# sys.path.append("D:/GitHub/AutoNN/AutoNN/AutoNN/")
 
 class CNN(nn.Module):
     def __init__(self,in_channels,numClasses,config=None) -> None:
@@ -122,6 +121,7 @@ class CNN(nn.Module):
             data = json.load(f)
             self.config = data['config'] 
             self.__classes = data['classes']
+            self.numClasses = len(data['classes'])
             self.__ig = data['image shape']
         self.__buildNetwork()
 
@@ -161,6 +161,7 @@ class CreateCNN:
         self.size=_size
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.cnns=[]
+        self.configuration  = []
         self.__classes = None
         self.__image_shape:tuple = None
 
@@ -242,7 +243,6 @@ class CreateCNN:
 
     def __create_Cnns(self,len_dataset,input_shape):
         
-        self.configuration  = []
         for _ in range(self.size):
             try:
                 config_ = CreateCNN.create_config(2,10) #this will generate ranodm cnn configuration 
@@ -372,7 +372,8 @@ class CreateCNN:
         # self.val2 = kwargs.get('val2',"default value")
         self.inChannels = kwargs.get('in_channels',input_shape[0])
         self.numClasses = kwargs.get('num_classes',len_classes)
-        if 4000<len_dataset < 10000:
+        
+        if 5000<len_dataset < 10000:
             self.cnns.append(resnet(-1,in_channels=self.inChannels,num_residual_block=[0,1],num_class=self.numClasses))
             self.configuration.append('num_residual_block=[0,1] | resnet')
         elif len_dataset<=5000:

@@ -1,15 +1,16 @@
+import threading,sys,ctypes,os,json
 from tkinter import *
 from tkinter import ttk,messagebox,filedialog
 import pandas as pd
 from ttkbootstrap import * 
-import threading,sys,ctypes,os,json
+import webbrowser
 from AutoNN.CNN.cnn_generator import CreateCNN,CNN
 from AutoNN.CNN.utils.EDA import plot_graph
 from AutoNN.CNN.utils.Device import DeviceInfo
+from AutoNN.CNN.models.resnet import resnet
 from AutoNN.CNN.utils.image_augmentation import Augment
 from AutoNN.main import Autonn
 
-# sys.path.append("D:/GitHub/AutoNN/AutoNN/AutoNN")
 
 timeVar = False
 run = True
@@ -31,6 +32,7 @@ class TerminalOutput(object):
 class App:
     def __init__(self,root,title,resolution) -> None:
         self.root = root
+        self.root.iconbitmap("./docs/docs/img/ico.ico")
         self.root.title(title)
         self.root.geometry(resolution)
         self.root.resizable(0,0)
@@ -38,15 +40,16 @@ class App:
         # ---------------- HEADER MENU BAR --------------------------------
         menu = Menu(self.root)
         self.file = Menu(menu)
-        self.file.add_command(label='New')
         self.file.add_command(label='Open CSV File',command=self.File_open)
-        self.file.add_command(label='Open Image File',command=self.img_file_testing)
         self.file.add_separator()
         self.file.add_command(label='Exit', command=self.root.quit)
         menu.add_cascade(label='File', menu=self.file)
         self.edit = Menu(menu)
-        self.edit.add_command(label='Undo')
-        menu.add_cascade(label='Edit', menu=self.edit)
+        self.edit.add_command(label='Help T_T',command= lambda : webbrowser.open("https://autonn.github.io/AutoNN/gui/lesson2/"))
+        self.edit.add_command(label='About ', command = lambda: webbrowser.open("https://autonn.github.io/AutoNN/about/"))
+        self.file.add_separator()
+        self.edit.add_command(label="DO NOT Click ME!!", command = lambda: webbrowser.open("https://www.youtube.com/shorts/aJ2POGrAp84"))
+        menu.add_cascade(label='Help', menu=self.edit)
         self.root.config(menu=menu)
 
 
@@ -122,7 +125,7 @@ class App:
         self.lr= DoubleVar()
         ttk.Label(image_frame,text='Learning Rate').grid(row=0,column=0,pady=5,padx=5)
         ttk.Entry(image_frame,width=10,textvariable=self.lr).grid(row=0,column=1,pady=5,padx=5)
-        self.lr.set(0.003)
+        self.lr.set(3e-4)
         # BUTTONS
         ttk.Button(image_frame,text = 'Open folder',width=20,style='info.TButton',
         command=self.get_img_dataset).grid(row=0,column=4,pady=5,padx=5)
@@ -162,11 +165,13 @@ class App:
         self.load_cnn = ttk.Button(image_frame,text='Load Model',command=self.load_cnn_model,width=20)
         self.load_cnn.grid(row=1,column=4)
 
-        ttk.Button(image_frame,text="Open Test Folder",style="info.TButton",
-        width=20).grid(row=2,column=6,padx=5,pady=5)
+        ttk.Button(image_frame,text="Open Test Folder",style="info.TButton",command=self.__open_testFolder,
+        width=20,).grid(row=2,column=6,padx=5,pady=5)
         
-        ttk.Button(image_frame,text='Predict',command=self.doPrediction,
-        width=20,style='success.TButton').grid(row=0,column=8,padx=5,pady=5)
+        self.pred_btn=ttk.Button(image_frame,text='Predict',command=self.doPrediction,
+        width=20,style='success.TButton')
+        self.pred_btn.grid(row=0,column=8,padx=5,pady=5)
+        self.pred_btn['state']='disabled'
 
         self.disp = Text(image_frame,height=6,width=130,background='black',foreground='lime')
         self.disp.grid(row=5,column=0,columnspan=7)
@@ -188,11 +193,11 @@ class App:
         self.textBox.pack()
 
         self.clockwid = ttk.Label(image_frame)
-        self.clockwid.grid(row=3,column=0)
+        self.clockwid.grid(row=1,column=0)
         info = DeviceInfo()
         x_ =ttk.Label(self.root,text='', font=("Arial", 9),foreground='yellow')
         x_.pack(side='right')
-        ttk.Label(self.root,text= u"  \u00A9"+ 'AutoNN', font=("Arial", 9)).pack(side='left')
+        ttk.Label(self.root,text= u"  \u00A9  "+ 'AutoNN', font=("Arial", 9)).pack(side='left')
         sys.stdout = TerminalOutput(self.textBox)
         usage = threading.Thread(target=App._usages,args=(info,self.disp1,x_))
         usage.start()
@@ -219,26 +224,31 @@ class App:
     @staticmethod
     def Timer(widget,clock):
         global timeVar
-
         if timeVar:
             clock +=1
-            widget.config(text='{:.2f} mins'.format(clock/60))
+            widget.config(text='{} seconds'.format(clock))
             widget.after(1000,lambda :App.Timer(widget,clock))
+        else:
+            return
 
     def __augment(self):
         folder = filedialog.askdirectory()
+        t0 = threading.Thread(target=self.__augmentation,args=(folder,))
+        t0.start()
+    
+    def __augmentation(self,folder):
         inst = Augment(folder)
         inst.augment()
+        inst.get_info()
         messagebox.showinfo('Operation Completed',f"Dataset at path {folder}\n has been augmented")
-        
-    
-    def doPrediction(self):pass
+        return  
 
-    def img_file_testing(self):
+
+    def doPrediction(self):
         filenames = filedialog.askopenfilenames()
         print('Image Files selected are:\n',filenames)
-
-        self.new_model.predict(paths=filenames)
+        outputs = self.new_model.predict(paths=filenames)
+        print('Prediction vactor is: ',outputs)
         
 
     def load_cnn_model(self):
@@ -247,37 +257,47 @@ class App:
         filetypes=(('Model files','*.pth'),('model files','*.pt'),
         ('All files','*.*'))
         )
-        
+        channels = self.channels.get()
+        classes = self.numclass.get()
         try:
-            self.new_model = CNN(self.channels.get(),self.numclass.get())
-            self.new_model.load(PATH=path,
-            printmodel=True)
-            self.new_model.summary((3,32,32))
-        except:
-            messagebox.showerror('Invalid Input','Make sure #channels and #classes\n are INTEGER VALUES.')
-    # -------Progress bar FOR IMAGE TRAINING________________
+            self.new_model = CNN(channels,classes)
+            self.new_model.load(PATH=path,printmodel=True)
+            self.new_model.summary((channels,*tuple(map(int,(self.input_shape.get()).split('x')))))
+            self.pred_btn['state']='normal'
+            
+        except FileNotFoundError:
+            self.new_model = resnet(-1,in_channels=channels,num_residual_block=[0,1],num_class=classes)
+            self.new_model.load_model(PATH=path)
+            self.new_model.summary((channels,*tuple(map(int,(self.input_shape.get()).split('x')))))
+            self.pred_btn['state']='normal'
 
+        except Exception as e:
+            messagebox.showerror('Invalid Input',e)
+
+    # -------Progress bar FOR IMAGE TRAINING________________
     def get_img_dataset(self):
         self.folder = filedialog.askdirectory(title='Open Folder')
         self.gen_cnn_object = CreateCNN()
+        self.show_all_configurations()
 
     def show_all_configurations(self):
         try:
             self.disp.configure(state="normal")
             self.disp.delete('1.0',END)
             self.disp.insert(END,f'''
-            Training Set Path:  {self.folder}
-            Epochs:             {self.imgEpoch.get()}
-            Split Required:     {self.split.get()}
-            Batch Size:         {self.batch_sizes.get()}
+            Training Set Path:  {self.folder}             Epochs:     {self.imgEpoch.get()}
+            Split Required:     {self.split.get()}        Batch Size: {self.batch_sizes.get()}
             Learning Rate:      {self.lr.get()}
                 ''')
             self.disp.configure(state="disabled")
 
         except Exception as e:
-            messagebox.showerror('Empty Path','Please provide the training folder path.\n click "Open Folder"')
+            messagebox.showerror('Empty Path',e)
     
-    
+
+    def __open_testFolder(self):
+        self.imgTestdir = filedialog.askdirectory(title='Select Testset Path')
+            
     def __Func(self):
         global timeVar
         timeVar=True
@@ -285,11 +305,18 @@ class App:
         self.pb2.start()
         try:
             t=(28,28)
-            if not self.input_shape.get() == 'Enter image shape':
+            if self.input_shape.get():
                 t=tuple(map(int,(self.input_shape.get()).split('x')))
-
+            path = None  
+            try:
+                if (self.split.get() is False) and self.imgTestdir:
+                    path = self.imgTestdir
+            except AttributeError:
+                messagebox.showerror('AttributeError',"Make sure testset path is selected\n Hint: Press Open Test Folder")
+                return
             self.cnn_model,bestconfig,self.history =self.gen_cnn_object.get_bestCNN(
             path_trainset=self.folder,
+            path_testset=path,
             split_required=self.split.get(), 
             batch_size=int(self.batch_sizes.get()), 
             EPOCHS= self.imgEpoch.get(),
@@ -299,18 +326,19 @@ class App:
             self.display_btn['state']='normal'
             self.savecnn_btn['state']='normal'
             print('Trainig Completed!')
-            self.textBox.insert('end',self.cnn_model.__str__())
+            print('Best Model :\n',self.cnn_model)
             print('History List: ',self.history)
             print('Best Configuration architecture: ',bestconfig)
-            self.pb2.stop()
-            self.pb2.grid_remove()
         except Exception as e:
-            print(e)
             messagebox.showerror('Error encountered',e)
+            return
+        self.pb2.stop()
+        self.pb2.grid_remove()
         timeVar = False
+        return
 
-    def Start_training(self):
         
+    def Start_training(self):
         clock_thread = threading.Thread(target=App.Timer,args=(self.clockwid,0))
         process1 = threading.Thread(target=self.__Func)
         process1.start()
@@ -343,17 +371,21 @@ class App:
         ttk.Label(pop_model_save_window, text = 'Save Model as').pack()
         ttk.Entry(pop_model_save_window,textvariable=name).pack()
         ttk.Button(pop_model_save_window,text="SAVE",width=18,
-        command = lambda :save(name.get(),path,shape)).pack()
+        command = lambda :save(name.get(),path,shape)).pack(padx=5,pady=5)
         
 
     # -----------------methods to control csv datasets------------------
 
     def __start_training_csv(self,a,b):
-        atonn = Autonn(a,b)
-        atonn.preprocessing()
-        atonn.neuralnetworkgeneration()
+        try:
+            atonn = Autonn(a,b)
+            atonn.preprocessing()
+            atonn.neuralnetworkgeneration()
+        except Exception as e:
+            messagebox.showerror('Error encountered',e)
+            return  
         self.pb1.stop()
-        pass
+        return 
 
     def start_training_csv(self):
         self.pb1.start()

@@ -1,5 +1,9 @@
-import torch 
+import torch,json,os 
 from torch import nn 
+from AutoNN.exceptions import InvalidPathError
+from torchvision import transforms 
+from PIL import Image
+from pytorchsummary import summary as summ
 
 class BasicBlock(nn.Module):
     def __init__(self,in_features=64,out_features=64,stride=[1,1],down_sample=False):
@@ -85,6 +89,8 @@ class ResNet(nn.Module):
     """
     def __init__(self,in_channels=3,num_residual_block=[3,4,6,3],num_class=10,block_type='normal'):
         super(ResNet,self).__init__()
+        self.__ig=None 
+        self.__classes=None
 
         self.conv1 = nn.Conv2d(in_channels,64,7,2,3,bias=False)
         self.bn1 = nn.BatchNorm2d(64)
@@ -155,6 +161,64 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layer),inchan
 
+    def save(self,**kwargs):
+        # self.val2 = kwargs.get('val2',"default value")
+        path = kwargs.get('path',None)
+        filename = kwargs.get('filename','resnet0')
+        image_shape = kwargs.get('image_shape')
+        classes = kwargs.get('classes')
+
+        with open('AutoNN/default_config.json') as f:
+            data = json.load(f)
+        if data['path_cnn_models']:
+            path = data['path_cnn_models']
+        else: 
+            if not path:
+                raise InvalidPathError
+            data['path_cnn_models'] = path
+
+        with open("AutoNN/default_config.json", "w") as f:
+            json.dump(data, f)  
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
+        torch.save(self,os.path.join(path,f'{filename}.pth'))
+        print(f'Model saved in directory: {path}')
+
+        with open(os.path.join(path,f'{filename}.json'),'w') as f:
+            d = {"classes":classes,"image shape":image_shape}
+            json.dump(d, f)
+
+    def load_model(self,PATH,**kwargs):
+
+        configfile = os.path.split(PATH)[-1].replace('.pth','.json')
+        with open(os.path.join(os.path.split(PATH)[0],configfile),'r') as f:
+            data = json.load(f)
+            
+            self.__classes = data['classes']
+            self.__ig = data['image shape']
+
+        self.load(PATH)
+        self.eval()
+        print('Resnet Model Loaded')
+
+    def predict(self,paths):
+        transform = transforms.Compose([transforms.ToTensor(),
+                transforms.Resize(self.__ig)])
+        
+        preds=list()
+        for img in paths:
+            image = Image.open(img)
+            x = transform(image).float()
+            x = x.unsqueeze(0)
+            output = self.forward(x)
+            preds.append(self.__classes[torch.argmax(output,1).item()])
+        
+        return preds
+
+    def summary(self,input_shape,**kwargs):
+        print(summ(input_shape,**kwargs))
+        
 
 def  resnet(architecture:int=18,**kwargs)->ResNet:
     '''
