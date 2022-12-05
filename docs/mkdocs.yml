@@ -48,6 +48,7 @@ nav:
     - class CNN : "documentation/cnn1.md"
     - class CreateCNN : "documentation/cnn2.md"
     - class Augment : "documentation/utils1.md"
+    - def resnet : "documentation/resnet.md"
   - Tutorial: 
     - Image Classification: "tutorial/tut.md"
     - Handle Tabular Dataset: "tutorial/tut1.md"

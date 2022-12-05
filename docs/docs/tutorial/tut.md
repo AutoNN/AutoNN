@@ -256,8 +256,7 @@ plot_graph(history)
 
 ## 3. How to save the model:
 ```python
-model.save(inst.get_classes,inst.get_imageshape,path='./best models/',filename='mnistmodel.pth',
-    config_file_path='./best models/',config_filename = 'mnistcfg.json')
+model.save(inst.get_classes,inst.get_imageshape,path='./best models/',filename='mnistmodel.pth')
 ```
 
 ## 4. To check the summary of the model:
@@ -265,7 +264,37 @@ model.save(inst.get_classes,inst.get_imageshape,path='./best models/',filename='
 model.summary(input_shape=(3,32,32))
 # this method will print the keras like summary of the model
 ```
+This function returns a tuple of `(trainable parameters, total parameters, non-trainable parameters)`.  See the output section below.
+??? Output
+    ```
+                          Layer    Output Shape                Kernal Shape        #params                 #(weights + bias)       requires_grad
+        ------------------------------------------------------------------------------------------------------------------------------------------------------
+                    Conv2d-1    [1, 16, 32, 32]            [16, 3, 3, 3]        448                     (432 + 16)              True True
+              BatchNorm2d-2    [1, 16, 32, 32]                 [16]            32                      (16 + 16)               True True
+                      ReLU-3    [1, 16, 32, 32]
+                    Conv2d-4    [1, 16, 32, 32]            [16, 16, 3, 3]       2320                    (2304 + 16)             True True
+              BatchNorm2d-5    [1, 16, 32, 32]                 [16]            32                      (16 + 16)               True True
+                    Conv2d-6    [1, 16, 32, 32]            [16, 3, 1, 1]        64                      (48 + 16)               True True
+                      ReLU-7    [1, 16, 32, 32]
+                    Conv2d-8    [1, 16, 32, 32]            [16, 16, 3, 3]       2320                    (2304 + 16)             True True
+              BatchNorm2d-9    [1, 16, 32, 32]                 [16]            32                      (16 + 16)               True True
+                    ReLU-10    [1, 16, 32, 32]
+                  Conv2d-11    [1, 128, 32, 32]          [128, 16, 3, 3]       18560                   (18432 + 128)           True True
+              BatchNorm2d-12    [1, 128, 32, 32]               [128]            256                     (128 + 128)             True True
+                  Conv2d-13    [1, 128, 32, 32]          [128, 16, 1, 1]       2176                    (2048 + 128)            True True
+                    ReLU-14    [1, 128, 32, 32]
+        AdaptiveAvgPool2d-15    [1, 128, 1, 1]
+                  Linear-16    [1, 32]                      [32, 128]          4128                    (4096 + 32)             True True
+                    ReLU-17    [1, 32]
+                  Linear-18    [1, 10]                       [10, 32]          330                     (320 + 10)              True True
+        ______________________________________________________________________________________________________________________________________________________
 
+        Total parameters 30,698
+        Total Non-Trainable parameters 0
+        Total Trainable parameters 30,698
+        (30698, 30698, 0)
+
+    ```
 
 
 ## 5. How to load saved model:
