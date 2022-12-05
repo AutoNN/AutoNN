@@ -16,10 +16,18 @@ Upgrade the package using the following command:
 ```python
 pip install --upgrade nocode-autonn
 ```
+
+## Install all the dependencies 
+
+```
+pip install -r requirements.txt
+```
 ## How to run the file:
 
 Open terminal and write the following command:
 ```
 autonn
 ```
+# GUI Interface
 
+![The GUI interface](./docs/docs/gui/screenshots/1.png)
