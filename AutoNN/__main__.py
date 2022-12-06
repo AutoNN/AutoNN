@@ -32,7 +32,7 @@ class TerminalOutput(object):
 class App:
     def __init__(self,root,title,resolution) -> None:
         self.root = root
-        self.root.iconbitmap("./docs/docs/img/ico.ico")
+        self.root.iconbitmap("./icon/ico.ico")
         self.root.title(title)
         self.root.geometry(resolution)
         self.root.resizable(0,0)
