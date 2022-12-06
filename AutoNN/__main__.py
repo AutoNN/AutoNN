@@ -4,13 +4,13 @@ from tkinter import ttk,messagebox,filedialog
 import pandas as pd
 from ttkbootstrap import * 
 import webbrowser
+sys.path.append(os.getcwd())
 from AutoNN.CNN.cnn_generator import CreateCNN,CNN
 from AutoNN.CNN.utils.EDA import plot_graph
 from AutoNN.CNN.utils.Device import DeviceInfo
 from AutoNN.CNN.models.resnet import resnet
 from AutoNN.CNN.utils.image_augmentation import Augment
 from AutoNN.main import Autonn
-
 
 timeVar = False
 run = True
@@ -32,7 +32,6 @@ class TerminalOutput(object):
 class App:
     def __init__(self,root,title,resolution) -> None:
         self.root = root
-        self.root.iconbitmap("./icon/ico.ico")
         self.root.title(title)
         self.root.geometry(resolution)
         self.root.resizable(0,0)

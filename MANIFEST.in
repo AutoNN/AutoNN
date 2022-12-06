@@ -1,2 +1,2 @@
-include AutoNN/*.ico
+include AutoNN/icon/ico.ico
 include AutoNN/*.json

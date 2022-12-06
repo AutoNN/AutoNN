@@ -47,6 +47,7 @@ setup(
         "Topic :: Software Development :: Libraries",
     ],
     license="Apache License 2.0",
+    include_package_data=True,
     packages=find_packages(exclude=["*test*","docs"]),
 
 )
