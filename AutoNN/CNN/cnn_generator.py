@@ -1,4 +1,4 @@
-import random,torch,os,json,sys
+import random,torch,os,json
 from torch import nn 
 from numpy import argmax,array
 from .cnnBlocks import SkipLayer,Pooling
@@ -319,12 +319,12 @@ class CreateCNN:
             
         Returns:
             Tuple containing the best model, it's accuracy and configuration
-            (model_accuracy, CNN_model, model_config history_of_all_models)
+            (CNN_model, model_config, history_of_all_models)
 
 
         Example:
         >>> pop = CreateCNN() # first create an instance of the CreateCNN class 
-        >>> model,model_config,_ = pop.get_bestCNN('dataset',split_required=True)
+        >>> model,model_config,history = pop.get_bestCNN('dataset',split_required=True)
 
         '''
         print(f'Default computing platform: {self.device}')

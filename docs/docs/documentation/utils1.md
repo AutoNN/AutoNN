@@ -15,7 +15,7 @@ This class will augment the image dataset using the following image operations:
 
 path : `str` |  path to the image dataset folder
 
-??? note 
+??? tip 
         '''
             path: provide the path to your image folder
             which you want to augment

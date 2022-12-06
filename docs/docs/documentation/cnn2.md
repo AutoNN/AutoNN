@@ -61,7 +61,10 @@ Parameters:    </span>
 
 <span style="color:violet">batch_size</span> : `int` | default = `16` | Batch size 
 
-<span style="color:violet">lossFn</span> : `str` | default = `crossentropy` | Most multiclass image classification problems use `CrossEntropyLoss`
+<span style="color:violet">lossFn</span> : `str` | default = `cross-entropy` | Most multiclass image classification problems use `CrossEntropyLoss`
+
+!!! info
+    Only `Cross Entropy Loss` has been implemented. Since most image classification tasks uses cross entropy loss as the preferred loss function. 
 
 <span style="color:violet">LR</span> : `float` | default = `3e4` | Learning Rate
 

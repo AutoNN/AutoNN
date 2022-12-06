@@ -8,6 +8,10 @@ from .preprocessing import encoding_v3 as enc
 from .networkbuilding.final import *
 from .exceptions import *
 
+
+import sys,os 
+sys.path.append(os.getcwd())
+
 __all__ = ['exceptions',
             'main',
             'preprocessing',

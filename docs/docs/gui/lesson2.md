@@ -39,6 +39,13 @@ autonn
 -  <span style="color :violet">Enter number of Classes</span> : `int` | Enter the total number of classes to be classified in 
 -  <span style="color :red">Enter image shape</span> : `str` | **height** x **width** | Should be a string and in the following format `32x32`
 
+!!! info
+    The GUI will run on the `main thread` and all the training and other reasonably heavy computation will be carried on different threads.
+
+
+!!! danger 
+    DO NOT CLOSE THE `MAIN GUI WINDOW` during the training process. This is not at all recommended, wait till the training process is over.   
+
 
 ### Results upon pressing `Display graphs` after completion of the training process
 ![Alt text](./screenshots/2.png)

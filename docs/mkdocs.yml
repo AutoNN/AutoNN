@@ -22,7 +22,7 @@ theme:
         name: Switch to system preference
 
 repo_url: https://github.com/AutoNN/AutoNN
-site_url: ""
+site_url: https://autonn.github.io/AutoNN/
 
 site_description: 'Documentation for AutoNN'
 
@@ -42,6 +42,10 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.superfences
 
+
+plugins:
+  - search
+
 nav:
   - Installation & Intro: "index.md"
   - Documentation:
@@ -56,3 +60,13 @@ nav:
     - For Tabular Dataset: "gui/lesson1.md"
     - For Image Dataset: "gui/lesson2.md"
   - About: "about.md"
+
+
+extra:
+  consent:
+    title: Cookie consent
+    description: >- 
+      We use cookies to recognize your repeated visits and preferences, as well
+      as to measure the effectiveness of our documentation and whether users
+      find what they're searching for. With your consent, you're helping us to
+      make our documentation better.

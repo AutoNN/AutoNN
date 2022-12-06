@@ -17,6 +17,12 @@ pip install nocode-autonn
 pip install --upgrade nocodenn-autonn
 ```
 
+## Install all the dependencies
+
+```
+pip install -r requirements.txt
+```
+
 ## How to use? 
 
 - Open Terminal after installing the package
@@ -24,3 +30,5 @@ pip install --upgrade nocodenn-autonn
 ```python 
 autonn
 ```
+!!! info
+    Whole image classification API has been implemented in `PyTorch`, and the rest is implemented in `Tensorflow` & `keras`.

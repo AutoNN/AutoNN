@@ -4,7 +4,7 @@
 AutoNN's CNN (Convolutional Neural Network) Models are built on PyTorch.
 
 
-
+## <span style="color :yellow">Use AutoNN to classify cifar-10 Dataset</span>
 
 ## 1. How to train a CNN model for image classification:
 
@@ -354,3 +354,8 @@ myModel.predict(paths=test_images)
     ```
     ['bird', 'ship']
     ```
+
+
+## <span style="color :yellow"> Use AutoNN for MNIST classification</span>
+
+[Open :fontawesome-brands-kaggle:aggle Notebook](https://www.kaggle.com/code/banerz/autonn/notebook){ .md-button .md-button--primary }
