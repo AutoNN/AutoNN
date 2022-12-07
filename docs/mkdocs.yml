@@ -2,7 +2,7 @@ site_name: AutoNN
 
 theme:
   logo : img/ico.png  
-  favicon : img/icon.png  
+  favicon : img/ico.png  
   name: material
   features:
     - content.code.annotate 
