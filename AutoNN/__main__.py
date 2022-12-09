@@ -82,12 +82,13 @@ class App:
 
         # BUTTONS
         ttk.Button(F1,text = 'Open File',width=20,style='info.TButton',
-        command=self.File_open).grid(row=0,column=4,pady=5,padx=5)
+        command=self.File_open).grid(row=0,column=2,pady=5,padx=5)
+
 
         ttk.Button(F1,text = 'Start Training',width=20,style='success.TButton',
-        command=self.start_training_csv).grid(row=0,column=6,pady=5,padx=5)
+        command=self.start_training_csv).grid(row=0,column=3,pady=5,padx=5)
         ttk.Button(F1,text = 'Save the Model',width=20,style='success.Outline.TButton',
-        command=self.SaveCsvModel).grid(row=0,column=7,pady=5,padx=5)
+        command=self.SaveCsvModel).grid(row=0,column=4,pady=5,padx=5)
 
         # RADIO BUTTON------------
         self.split = BooleanVar()
@@ -286,7 +287,7 @@ class App:
             self.disp.insert(END,f'''
             Training Set Path:  {self.folder}             Epochs:     {self.imgEpoch.get()}
             Split Required:     {self.split.get()}        Batch Size: {self.batch_sizes.get()}
-            Learning Rate:      {self.lr.get()}
+            Learning Rate:      {self.lr.get()}           
                 ''')
             self.disp.configure(state="disabled")
 
@@ -375,25 +376,26 @@ class App:
 
     # -----------------methods to control csv datasets------------------
 
-    def __start_training_csv(self,a,b):
+    def __start_training_csv(self,a,b,SAVEHERE):
         try:
-            atonn = Autonn(a,b,save_path = SAVEHERE)
-            atonn.preprocessing()
-            atonn.neuralnetworkgeneration()
+            self._atonn = Autonn(a,b,save_path = SAVEHERE)
+            self._atonn.preprocessing()
+            self._atonn.neuralnetworkgeneration()
         except Exception as e:
-            print(e)
             messagebox.showerror('Error encountered',e)
             return  
         self.pb1.stop()
         return 
 
     def start_training_csv(self):
+        _path = filedialog.askdirectory("Select Model save path")
         self.pb1.start()
         self.pb1.grid(row=3,column=0,columnspan=20)
-        p1 = threading.Thread(target=self.__start_training_csv,args=(self.csv_file,self.nam.get()))
+        p1 = threading.Thread(target=self.__start_training_csv,args=(self.csv_file,self.nam.get(),_path))
         p1.start()
 
     def SaveCsvModel(self):
+        self._atonn.save_models()
         pass
 
     def File_open(self):

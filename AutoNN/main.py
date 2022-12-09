@@ -175,9 +175,9 @@ class Autonn:
                input_shape = self._input_shape, 
                 max_no_layers = 3, 
                 model_per_batch = 10, 
-                output_shape = self._output_shape, output_activation = self._output_activation
+                output_shape = self._output_shape, output_activation = self._output_activation,
                 save_dir = self._save_path)
-        self._history_list = f.get_all_best_models()
+        self._history_list = self._f.get_all_best_models()
 
     def save_models(self):
         self._f.save_model()

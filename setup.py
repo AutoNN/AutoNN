@@ -22,7 +22,6 @@ setup(
         'torchaudio',
         'ttkbootstrap==0.5.1',
         'pytorchsummary',
-        'tensorflow==2.8.0',
         'sklearn',
         'pandas',
         'dask',
@@ -30,7 +29,8 @@ setup(
         'tqdm',
         'psutil',
         'matplotlib',
-        'tensorflow-gpu==2.8.0'
+        'tensorflow-gpu==2.8.0',
+        "protobuf==3.19.0"
     ],
     entry_points={
         'console_scripts': [
