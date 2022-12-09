@@ -85,10 +85,18 @@ class App:
         command=self.File_open).grid(row=0,column=2,pady=5,padx=5)
 
 
-        ttk.Button(F1,text = 'Start Training',width=20,style='success.TButton',
-        command=self.start_training_csv).grid(row=0,column=3,pady=5,padx=5)
-        ttk.Button(F1,text = 'Save the Model',width=20,style='success.Outline.TButton',
-        command=self.SaveCsvModel).grid(row=0,column=4,pady=5,padx=5)
+        self.__b0 = ttk.Button(F1,text = 'Start Training',width=20,style='success.TButton',
+        command=self.start_training_csv)
+        self.__b0.grid(row=0,column=3,pady=5,padx=5)
+        self.__b0['state'] = 'disabled'
+        self.__b1 = ttk.Button(F1,text = 'Save the Model',width=20,style='success.Outline.TButton',
+        command=self.SaveCsvModel)
+        self.__b1.grid(row=0,column=4,pady=5,padx=5)
+        self.__b1['state'] = 'disabled'
+        self.__b2 = ttk.Button(F1,text = 'Generate Stacked Models',width=20,style='info.Outline.TButton',
+        command=self.__StackedModel)
+        self.__b2.grid(row=0,column=5,pady=5,padx=5)
+        self.__b2['state'] = 'disabled'
 
         # RADIO BUTTON------------
         self.split = BooleanVar()
@@ -385,10 +393,11 @@ class App:
             messagebox.showerror('Error encountered',e)
             return  
         self.pb1.stop()
+        self.__b1['state']='normal'
         return 
 
     def start_training_csv(self):
-        _path = filedialog.askdirectory(title = "Select Model save path")
+        _path = filedialog.askdirectory(title = "Select Model save path")        
         self.pb1.start()
         self.pb1.grid(row=3,column=0,columnspan=20)
         p1 = threading.Thread(target=self.__start_training_csv,args=(self.csv_file,self.nam.get(),_path))
@@ -402,11 +411,18 @@ class App:
         else:
             self._atonn.save_stacked_models()
             switch = True
-        pass
+        
+        self.__b2['state'] = 'normal'
+
     
     def __StackedModel(self):
-        self._atonn.get_stacked_models()
+        stackedThread = threading.Thread(target=self.__gen_StackedModel)
+        stackedThread.start()
 
+    
+    def __gen_StackedModel(self):
+        self._atonn.get_stacked_models()
+        return
     
 
     def File_open(self):
@@ -435,6 +451,7 @@ class App:
             for row in df_rows:
                 self.tree.insert('','end',values=row)
 
+        self.__b0['state'] = 'normal'
             # -------OTHER FUNCTIONALITIES--------       
 
     def clcOutput(self):
