@@ -377,10 +377,11 @@ class App:
 
     def __start_training_csv(self,a,b):
         try:
-            atonn = Autonn(a,b)
+            atonn = Autonn(a,b,save_path = SAVEHERE)
             atonn.preprocessing()
             atonn.neuralnetworkgeneration()
         except Exception as e:
+            print(e)
             messagebox.showerror('Error encountered',e)
             return  
         self.pb1.stop()

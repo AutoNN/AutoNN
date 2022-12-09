@@ -20,6 +20,7 @@ class Model_Stacking:
         self._loss_fn = loss_fn
         self._save_dir = save_dir
         self._stacked_model_paths = []
+        self._stacked_models = []
 
     def _stacked_model_generator(self):
         for path in self._model_path_list:
@@ -60,7 +61,8 @@ class Model_Stacking:
             print(f"DROPOUT RATES : {best_dropout_rates}")
             
             model = self._train_models(model = model, lr = best_lr, batch_size = best_batch_size)
-            self._save_model(model)
+            # self._save_model(model)
+            self._stacked_models.append(model)
     
     def _train_models(self, model, lr, batch_size):
         optimizer = Adam(learning_rate = lr)
@@ -91,7 +93,8 @@ class Model_Stacking:
         for layer in model.layers:
             layer.set_weights([initializer(shape=w.shape) for w in layer.get_weights()])
             
-    def _save_model(self, model):
-        path = os.path.join(self._save_dir,model.name)
-        model.save(path)
-        self._stacked_model_paths.append(path)
+    def save_model(self, model):
+        for model in self._stacked_models:
+            path = os.path.join(self._save_dir,model.name)
+            model.save(path)
+            self._stacked_model_paths.append(path)

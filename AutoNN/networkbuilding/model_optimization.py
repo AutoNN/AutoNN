@@ -90,7 +90,7 @@ class Model_Optimization:
             # if save==True:
             #     self.save_weights(model)
         print(self._evaluate_dict_list)
-        self.save_weights()
+        # self.save_weights()
     
     # def save_weights(self, model):
     #     # save_dir = os.path.join(self._save_dir,"/candidate_models")

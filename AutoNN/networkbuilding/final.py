@@ -23,16 +23,25 @@ class Final:
         self._evaluate_dict_list = []
         self._no_top_model = 10
 
+        self._opt = None
+        self._stacked_models = None
+
     def get_all_best_models(self):
         m = multiple.Multiple_Model_Gen_V3(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, self._epochs, self._batch_size, input_shape = self._input_shape, 
                                    max_no_layers = self._max_no_layers, model_per_batch = self._model_per_batch, output_shape = self._output_shape, output_activation = self._output_activation,
-                                   save_dir = "/home/anish/AutoNN_test_weights/")
+                                   save_dir = "")
         m.get_best_models(save = False)
-        opt = model_opt.Model_Optimization(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, 200, m.evaluate_dict_list, save_dir = "/home/anish/AutoNN_test_weights/candidate_models/")
-        opt.optimize_models(save=True)
+
+        self._opt = model_opt.Model_Optimization(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, 200, m.evaluate_dict_list, save_dir = self._save_dir)
+        self._opt.optimize_models(save=True)
         model_history_list = []
-        for model_dict in opt.evaluate_dict_list:
+        for model_dict in self._opt.evaluate_dict_list:
             model_history_list.append(model_dict["model_history"])
-        stacked_models = model_stacking.Model_Stacking(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, opt.saved_paths, opt.opt_model_confs, save_dir = "/home/anish/AutoNN_test_weights/stacked_models/")
-        stacked_models.optimize_stacked_models()
+
+        self._stacked_models = model_stacking.Model_Stacking(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, opt.saved_paths, opt.opt_model_confs, save_dir = self._save_dir)
+        self._stacked_models.optimize_stacked_models()
         return model_history_list
+    
+    def save_model(self):
+        self._opt.save_weights()
+        self._stacked_models.save_model()
