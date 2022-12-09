@@ -11,3 +11,5 @@ dask
 dask-ml
 tqdm
 psutil
+matplotlib
+tensorflow-gup==2.8.0

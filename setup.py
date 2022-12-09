@@ -9,7 +9,7 @@ readme = currect_file.parent/"README.md"
 
 setup(
     name = "nocode-autonn",
-    version = "2.3.3",
+    version = "2.3.4",
     author_email="raju.banerjee.720@gmail.com",
     description="An AutoML framework for deep learning",
     long_description=readme.read_text(),
@@ -29,6 +29,8 @@ setup(
         'dask-ml',
         'tqdm',
         'psutil',
+        'matplotlib',
+        'tensorflow-gup==2.8.0'
     ],
     entry_points={
         'console_scripts': [
