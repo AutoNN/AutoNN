@@ -4,7 +4,6 @@ from tkinter import ttk,messagebox,filedialog
 import pandas as pd
 from ttkbootstrap import * 
 import webbrowser
-sys.path.append(os.getcwd())
 from AutoNN.CNN.cnn_generator import CreateCNN,CNN
 from AutoNN.CNN.utils.EDA import plot_graph
 from AutoNN.CNN.utils.Device import DeviceInfo
@@ -14,6 +13,7 @@ from AutoNN.main import Autonn
 
 timeVar = False
 run = True
+switch = True
 
 class TerminalOutput(object):
     def __init__(self,Widget,mode = 'stdout') -> None:
@@ -388,15 +388,26 @@ class App:
         return 
 
     def start_training_csv(self):
-        _path = filedialog.askdirectory("Select Model save path")
+        _path = filedialog.askdirectory(title = "Select Model save path")
         self.pb1.start()
         self.pb1.grid(row=3,column=0,columnspan=20)
         p1 = threading.Thread(target=self.__start_training_csv,args=(self.csv_file,self.nam.get(),_path))
         p1.start()
 
     def SaveCsvModel(self):
-        self._atonn.save_models()
+        global switch
+        if switch:
+            self._atonn.save_candidate_models()
+            switch = False
+        else:
+            self._atonn.save_stacked_models()
+            switch = True
         pass
+    
+    def __StackedModel(self):
+        self._atonn.get_stacked_models()
+
+    
 
     def File_open(self):
         self.csv_file = filedialog.askopenfilename(title='Open CSV file',

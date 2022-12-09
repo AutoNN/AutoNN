@@ -38,10 +38,16 @@ class Final:
         for model_dict in self._opt.evaluate_dict_list:
             model_history_list.append(model_dict["model_history"])
 
-        self._stacked_models = model_stacking.Model_Stacking(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, opt.saved_paths, opt.opt_model_confs, save_dir = self._save_dir)
-        self._stacked_models.optimize_stacked_models()
+        # self._stacked_models = model_stacking.Model_Stacking(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, self._opt.saved_paths, self._opt.opt_model_confs, save_dir = self._save_dir)
+        # self._stacked_models.optimize_stacked_models()
         return model_history_list
     
+    def get_all_best_stacked(self):
+        self._stacked_models = model_stacking.Model_Stacking(self._train_x, self._train_y, self._test_x, self._test_y, self._loss_fn, self._opt.saved_paths, self._opt.opt_model_confs, save_dir = self._save_dir)
+        self._stacked_models.optimize_stacked_models()
+
     def save_model(self):
         self._opt.save_weights()
+    
+    def save_stacked_model(self):
         self._stacked_models.save_model()

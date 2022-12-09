@@ -46,7 +46,7 @@ class Multiple_Model_Gen_V3:
         self._save_dir = save_dir
         self._model_confs = []
         self._evaluate_dict_list = []
-        self._no_top_model = 6
+        self._no_top_model = 2
         self.get_model_confs()
     
     @property
@@ -70,11 +70,9 @@ class Multiple_Model_Gen_V3:
             self._evaluate_save_model(input_data = input_data, parallelModel = Pmodel, metrics_names=metrics_names, scores=scores_test, n=n, model_conf_batch_list = model_conf_batch_list)
         
         # 2nd Loop, Tune best model architectures
-        print("\n-------------------------------------------------------------------------------")
-        print(self._evaluate_dict_list)
+        # print(self._evaluate_dict_list)
         if save:
             self.save_weights()
-        print("\n-------------------------------------------------------------------------------")
         tf.keras.backend.clear_session()
 
     def train_model(self, input_data, Pmodel, n_model, epochs, loss_fn, lr = 1e-3, batch_size = 64, activation = None, initializer = None):
@@ -160,8 +158,8 @@ class Multiple_Model_Gen_V3:
     def get_model_confs(self):
         model_confs = []
         # [16,32,64,128,256,512,1024]
-        # [16,64,128,512,1024]
-        s = search.Search_Space_Gen_1(node_options = [16,32,64,128,512,1024], min_no_layers = 2, max_no_layers = self._max_no_layers, input_shape = self._input_shape)
+        # [16,32,64,128,512,1024]
+        s = search.Search_Space_Gen_1(node_options = [16,64,128], min_no_layers = 2, max_no_layers = self._max_no_layers, input_shape = self._input_shape)
         model_conf_batch = []
 
         # print(s.no_of_perm)

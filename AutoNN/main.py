@@ -178,6 +178,12 @@ class Autonn:
                 output_shape = self._output_shape, output_activation = self._output_activation,
                 save_dir = self._save_path)
         self._history_list = self._f.get_all_best_models()
+    
+    def get_stacked_models():
+        self._f.get_all_best_stacked()
 
-    def save_models(self):
+    def save_candidate_models(self):
         self._f.save_model()
+    
+    def save_stacked_models(self):
+        self._f.save_stacked_model()

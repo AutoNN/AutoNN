@@ -36,7 +36,7 @@ class Model_Optimization:
         self._model_confs = []
         self._opt_model_confs = []
         self._best_hyp_permodel = []
-        self._no_top_model = 3
+        self._no_top_model = 2
         self._evaluate_dict_list = []
 
     @property
