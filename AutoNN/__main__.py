@@ -393,6 +393,7 @@ class App:
             messagebox.showerror('Error encountered',e)
             return  
         self.pb1.stop()
+        self.pb1.grid_remove()
         self.__b1['state']='normal'
         return 
 
@@ -416,12 +417,15 @@ class App:
 
     
     def __StackedModel(self):
+        self.pb1.start()
         stackedThread = threading.Thread(target=self.__gen_StackedModel)
         stackedThread.start()
 
     
     def __gen_StackedModel(self):
         self._atonn.get_stacked_models()
+        self.pb1.stop()
+        self.pb1.grid_remove()
         return
     
 
