@@ -12,4 +12,4 @@ dask-ml
 tqdm
 psutil
 matplotlib
-tensorflow-gup==2.8.0
+tensorflow-gpu==2.8.0

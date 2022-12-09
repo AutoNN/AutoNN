@@ -9,7 +9,7 @@ readme = currect_file.parent/"README.md"
 
 setup(
     name = "nocode-autonn",
-    version = "2.3.4",
+    version = "2.3.5",
     author_email="raju.banerjee.720@gmail.com",
     description="An AutoML framework for deep learning",
     long_description=readme.read_text(),
@@ -30,7 +30,7 @@ setup(
         'tqdm',
         'psutil',
         'matplotlib',
-        'tensorflow-gup==2.8.0'
+        'tensorflow-gpu==2.8.0'
     ],
     entry_points={
         'console_scripts': [
