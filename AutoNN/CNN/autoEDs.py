@@ -4,7 +4,7 @@ from tqdm import tqdm
 import torch 
 from torchvision.datasets import ImageFolder
 from torchvision import transforms
-from torch.utils.data import DataLoader,random_split
+from torch.utils.data import DataLoader
 from matplotlib import pyplot as plt
 
 class Autoencoders(nn.Module):

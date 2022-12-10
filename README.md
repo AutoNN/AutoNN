@@ -33,3 +33,4 @@ autonn
 # GUI Interface
 
 ![The GUI interface](./docs/docs/gui/screenshots/1.png)
+

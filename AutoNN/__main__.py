@@ -169,6 +169,7 @@ class App:
         self.input_shape = StringVar()
         ttk.Label(image_frame,text='Enter image shape').grid(row=2,column=7)
         ttk.Entry(image_frame,width=20,textvariable=self.input_shape).grid(row=2,column=8,padx=5,pady=5)
+        self.input_shape.set('28x28')
         
         
 
@@ -203,7 +204,7 @@ class App:
 
         self.aug_btn = ttk.Button(image_frame,text='Augment Dataset',command=self.__augment,width=20)
         self.aug_btn.grid(row=1,column=8,pady=5,padx=5)
-        # self.aug_btn['state']='disabled'
+        self.aug_btn['state']='disabled'
         # ----combobox------------
         self.batch_sizes = ttk.Combobox(image_frame,values=[2**i for i in range(9)])
         self.batch_sizes.grid(row=0,column=7)
@@ -319,6 +320,9 @@ class App:
         )
         channels = self.channels.get()
         classes = self.numclass.get()
+        if channels <=0 or type(channels)!=int or classes<=0 or type(channels)!=int:
+            messagebox.showerror('Invalid Input','Classes or Channels should be\n a NON-Zero integer')
+            return
         try:
             self.new_model = CNN(channels,classes)
             self.new_model.load(PATH=path,printmodel=True)

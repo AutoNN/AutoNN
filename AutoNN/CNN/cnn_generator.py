@@ -308,7 +308,7 @@ class CreateCNN:
             path_trainset: path to the training set
             path_testset: path to the test set
             split_required: default set to False 
-                IF YOU ONLY HAVE TEH TRAINING DATA
+                IF YOU ONLY HAVE THE TRAINING DATA
                 AND NOT VALIDATION SET AND TEST SET
                 THEN set this to TRUE
             image_shape: (height,width) of the input image
