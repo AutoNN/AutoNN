@@ -75,9 +75,10 @@ class App:
         F2 = Frame(csv_frame,width=1280,height=280)
         F2.pack()
         # ------------------tabs end-----------------------
-        self.nam=StringVar()
-        ttk.Label(F1,text='Label Name').grid(row=0,column=0,pady=5,padx=5)
-        ttk.Entry(F1,width=20,textvariable=self.nam).grid(row=0,column=1,pady=5,padx=5)
+        
+        self.__epochs_csv=IntVar()
+        ttk.Label(F1,text='Epochs').grid(row=0,column=0,pady=5,padx=5)
+        ttk.Entry(F1,width=20,textvariable=self.__epochs_csv).grid(row=0,column=1,pady=5,padx=5)
 
 
         # BUTTONS
@@ -98,6 +99,7 @@ class App:
         self.__b2.grid(row=0,column=5,pady=5,padx=5)
         self.__b2['state'] = 'disabled'
 
+        
         # RADIO BUTTON------------
         self.split = BooleanVar()
         ttk.Radiobutton(image_frame,text='Split required',variable=self.split,value=True,width=20,
@@ -145,6 +147,12 @@ class App:
         command=self.save_model)
         self.savecnn_btn.grid(row=1,column=5,pady=5,padx=5)
         self.savecnn_btn['state']='disabled'
+
+
+        self.nam = ttk.Combobox(F1)
+        self.nam.grid(row=0,column=7)
+        self.nam.set('Select Test Label')
+        self.nam['state']='readonly'
 
         self.pb2 = ttk.Progressbar(image_frame, value=0,length=1280,mode='indeterminate',
          style='success.Horizontal.TProgressbar')
@@ -199,7 +207,7 @@ class App:
         ttk.Label(self.root,text='OUTPUT').pack()
         self.textBox = Text(self.root,height=17,width=180)
         self.textBox.pack()
-
+        self.imgTestdir = None # test image path variable
         self.clockwid = ttk.Label(image_frame)
         self.clockwid.grid(row=1,column=0)
         info = DeviceInfo()
@@ -295,7 +303,7 @@ class App:
             self.disp.insert(END,f'''
             Training Set Path:  {self.folder}             Epochs:     {self.imgEpoch.get()}
             Split Required:     {self.split.get()}        Batch Size: {self.batch_sizes.get()}
-            Learning Rate:      {self.lr.get()}           
+            Learning Rate:      {self.lr.get()}           Test Set path: {self.imgTestdir} 
                 ''')
             self.disp.configure(state="disabled")
 
@@ -384,7 +392,7 @@ class App:
 
     # -----------------methods to control csv datasets------------------
 
-    def __start_training_csv(self,a,b,SAVEHERE):
+    def __start_training_csv(self,a,b,epochs,SAVEHERE):
         try:
             self._atonn = Autonn(a, b, epochs = epochs,save_path = SAVEHERE)
             self._atonn.preprocessing()
@@ -401,19 +409,24 @@ class App:
         _path = filedialog.askdirectory(title = "Select Model save path")        
         self.pb1.start()
         self.pb1.grid(row=3,column=0,columnspan=20)
-        p1 = threading.Thread(target=self.__start_training_csv,args=(self.csv_file,self.nam.get(),_path))
-        p1.start()
+        if self.__epochs_csv.get() >0 and self.nam.get():
+            p1 = threading.Thread(target=self.__start_training_csv,args=(self.csv_file,
+                self.nam.get(),self.__epochs_csv.get(),_path))
+            p1.start()
+        else:    
+            messagebox.showerror('Invalid Input','Number of Epochs (int)\n should be  >0')
 
     def SaveCsvModel(self):
         global switch
         if switch:
             self._atonn.save_candidate_models()
             switch = False
-            print("MODELS SAVED")
+            messagebox.showinfo('Info','MODELS SAVED')
         else:
             self._atonn.save_stacked_models()
             switch = True
-            print("STACKED MODELS SAVED")
+            messagebox.showinfo('Info','STACKED MODELS SAVED')
+            
         
         self.__b2['state'] = 'normal'
 
@@ -429,7 +442,7 @@ class App:
         self._atonn.get_stacked_models()
         self.pb1.stop()
         self.pb1.grid_remove()
-        print("Model Stacking DONE")
+        messagebox.showinfo('Info','Model Stacking DONE')
         return
     
 
@@ -449,9 +462,9 @@ class App:
 
         if self.csv_file:
             self.tree['column']=list(df.columns)
+            self.nam.config(values=list(df.columns))
             self.tree['show']='headings'
             for column in self.tree['column']:
-            # for i,column in enumerate(df.columns):
                 self.tree.column(column,width=90,minwidth=100,stretch=False)
                 self.tree.heading(column,text=column)
             self.tree.update()    

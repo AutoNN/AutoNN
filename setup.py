@@ -9,7 +9,7 @@ readme = currect_file.parent/"README.md"
 
 setup(
     name = "nocode-autonn",
-    version = "2.3.5",
+    version = "2.3.6",
     author_email="raju.banerjee.720@gmail.com",
     description="An AutoML framework for deep learning",
     long_description=readme.read_text(),
@@ -43,6 +43,7 @@ setup(
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Topic :: Scientific/Engineering :: Mathematics",
