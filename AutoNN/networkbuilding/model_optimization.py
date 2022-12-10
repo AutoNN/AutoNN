@@ -149,7 +149,7 @@ class Model_Optimization:
 
         model_name = Model.name
         model_name = model_name.removesuffix("_loss")
-        curr_model_dict = {"model_name":model_name, "score":model_score, "path_weights":self._save_dir + model_name, 
+        curr_model_dict = {"model_name":model_name, "score":model_score, "path_weights":os.path.join(self._save_dir, model_name), 
                             "model_conf":model_conf, "model":Model, "model_history": model_history}
 
         if len(self._evaluate_dict_list) == 0:

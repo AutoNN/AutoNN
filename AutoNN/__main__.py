@@ -386,7 +386,7 @@ class App:
 
     def __start_training_csv(self,a,b,SAVEHERE):
         try:
-            self._atonn = Autonn(a,b,save_path = SAVEHERE)
+            self._atonn = Autonn(a, b, epochs = epochs,save_path = SAVEHERE)
             self._atonn.preprocessing()
             self._atonn.neuralnetworkgeneration()
         except Exception as e:
@@ -409,9 +409,11 @@ class App:
         if switch:
             self._atonn.save_candidate_models()
             switch = False
+            print("MODELS SAVED")
         else:
             self._atonn.save_stacked_models()
             switch = True
+            print("STACKED MODELS SAVED")
         
         self.__b2['state'] = 'normal'
 
@@ -423,9 +425,11 @@ class App:
 
     
     def __gen_StackedModel(self):
+        print("Model Stacking STARTED")
         self._atonn.get_stacked_models()
         self.pb1.stop()
         self.pb1.grid_remove()
+        print("Model Stacking DONE")
         return
     
 

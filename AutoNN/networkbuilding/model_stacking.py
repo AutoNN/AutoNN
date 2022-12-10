@@ -93,7 +93,7 @@ class Model_Stacking:
         for layer in model.layers:
             layer.set_weights([initializer(shape=w.shape) for w in layer.get_weights()])
             
-    def save_model(self, model):
+    def save_model(self):
         for model in self._stacked_models:
             path = os.path.join(self._save_dir,model.name)
             model.save(path)

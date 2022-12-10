@@ -5,13 +5,14 @@ from AutoNN.preprocessing import encoding_v3 as enc
 from AutoNN.networkbuilding import final
 
 class Autonn:
-    def __init__(self, train_csv_path, label_name, loss = None, save_path = None):
+    def __init__(self, train_csv_path, label_name, epochs = 100, loss = None, save_path = None):
         self._train_csv_path = train_csv_path
         self._label_name = label_name
         self._output_shape = None
         self._output_activation = None
         self._loss = loss
         self._save_path = save_path
+        self._epochs = epoch
         
         self._train_X = None
         self._train_Y = None
@@ -170,7 +171,7 @@ class Autonn:
           self._test_X,
            self._test_Y,
             self._loss,
-             75,
+             self._epochs,
               64,
                input_shape = self._input_shape, 
                 max_no_layers = 3, 
@@ -179,7 +180,7 @@ class Autonn:
                 save_dir = self._save_path)
         self._history_list = self._f.get_all_best_models()
     
-    def get_stacked_models():
+    def get_stacked_models(self):
         self._f.get_all_best_stacked()
 
     def save_candidate_models(self):
