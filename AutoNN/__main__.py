@@ -2,6 +2,7 @@ import threading,sys,ctypes,os,json
 from tkinter import *
 from tkinter import ttk,messagebox,filedialog
 import pandas as pd
+sys.path.append(os.getcwd())
 from ttkbootstrap import * 
 import webbrowser
 from AutoNN.CNN.cnn_generator import CreateCNN,CNN
@@ -40,15 +41,20 @@ class App:
         menu = Menu(self.root)
         self.file = Menu(menu)
         self.file.add_command(label='Open CSV File',command=self.File_open)
+        self.file.add_command(label='Clear OUTPUT',command=self.clcOutput)
+        self.file.add_command(label='Clear Table',command=self.clcTable)
         self.file.add_separator()
-        self.file.add_command(label='Exit', command=self.root.quit)
+        self.file.add_command(label='Exit', command=self.on_closing)
         menu.add_cascade(label='File', menu=self.file)
-        self.edit = Menu(menu)
-        self.edit.add_command(label='Help T_T',command= lambda : webbrowser.open("https://autonn.github.io/AutoNN/gui/lesson2/"))
-        self.edit.add_command(label='About ', command = lambda: webbrowser.open("https://autonn.github.io/AutoNN/about/"))
-        self.file.add_separator()
-        self.edit.add_command(label="DO NOT Click ME!!", command = lambda: webbrowser.open("https://www.youtube.com/shorts/aJ2POGrAp84"))
-        menu.add_cascade(label='Help', menu=self.edit)
+        edit = Menu(menu)
+        edit.add_command(label='Path Settings',command=self.__path_settings)
+        menu.add_cascade(label='Edit', menu=edit)
+        self.HELP = Menu(menu)
+        self.HELP.add_command(label='Help T_T',command= lambda : webbrowser.open("https://autonn.github.io/AutoNN/gui/lesson2/"))
+        self.HELP.add_command(label='About ', command = lambda: webbrowser.open("https://autonn.github.io/AutoNN/about/"))
+        self.HELP.add_separator()
+        self.HELP.add_command(label="DO NOT Click ME!!", command = lambda: webbrowser.open("https://www.youtube.com/shorts/aJ2POGrAp84"))
+        menu.add_cascade(label='Help', menu=self.HELP)
         self.root.config(menu=menu)
 
 
@@ -247,6 +253,44 @@ class App:
         else:
             return
 
+
+    def __path_settings(self):
+        with open("AutoNN/default_config.json", "r+") as f:
+            data = json.load(f)
+
+        def updatecsvpath():
+            __x = filedialog.askdirectory(title='Select Path')
+            data['path_csv_models']=__x
+            l1.config(text=__x)
+            with open("AutoNN/default_config.json", "w") as f:
+                json.dump(data,f)
+            messagebox.showinfo('SAVED',"Saved")
+    
+        def updatecnnpath():
+            _x = filedialog.askdirectory(title='Select Path')
+            data['path_cnn_models']= _x
+            l2.config(text=_x)
+            with open("AutoNN/default_config.json", "w") as f:
+                json.dump(data,f)
+            messagebox.showinfo('SAVED',"Saved")
+    
+
+        topwindow= Toplevel(self.root)
+        topwindow.geometry('500x200')
+        ttk.Label(topwindow,text='CNN Models Path: ').pack()
+        l1 = ttk.Label(topwindow,text=data['path_cnn_models'],width=50)
+        l1.pack()
+        ttk.Button(topwindow,text='Update' if data['path_cnn_models'] else 'Add',width=20,
+        style='danger.TButton',command= updatecnnpath).pack(padx=5,pady=7)
+
+        ttk.Label(topwindow,text='ANN models Path: ').pack()
+        l2 = ttk.Label(topwindow,text=data['path_csv_models'])
+        l2.pack()
+        ttk.Button(topwindow,text='Update' if data['path_csv_models'] else 'Add',width=20,
+        command= updatecsvpath).pack(padx=5,pady=7)
+        
+
+
     def __augment(self):
         folder = filedialog.askdirectory()
         t0 = threading.Thread(target=self.__augmentation,args=(folder,))
@@ -406,7 +450,17 @@ class App:
         return 
 
     def start_training_csv(self):
-        _path = filedialog.askdirectory(title = "Select Model save path")        
+        with open('AutoNN/default_config.json') as f:
+            data = json.load(f)
+        if data['path_csv_models']:
+            _path = data['path_csv_models']
+        else: 
+            _path = filedialog.askdirectory(title = "Select Model save path")
+            data['path_csv_models'] = _path
+        
+        with open("AutoNN/default_config.json", "w") as f:
+            json.dump(data, f)  
+
         self.pb1.start()
         self.pb1.grid(row=3,column=0,columnspan=20)
         if self.__epochs_csv.get() >0 and self.nam.get():
