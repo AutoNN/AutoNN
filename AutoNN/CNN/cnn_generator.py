@@ -13,6 +13,8 @@ from datetime import datetime
 from AutoNN.exceptions import *
 from PIL import Image
 
+PATH2JSON = os.path.dirname(__file__).removesuffix('\CNN')
+PATH2JSON= os.path.join(PATH2JSON,'default_config.json')
 
 
 class CNN(nn.Module):
@@ -66,7 +68,7 @@ class CNN(nn.Module):
             filename: name of the .pth file (by default 
             it will save the model as model.pth)
         '''
-        with open('AutoNN/default_config.json') as f:
+        with open(PATH2JSON) as f:
             data = json.load(f)
         if data['path_cnn_models']:
             path = data['path_cnn_models']
@@ -75,7 +77,7 @@ class CNN(nn.Module):
                 raise InvalidPathError
             data['path_cnn_models'] = path
 
-        with open("AutoNN/default_config.json", "w") as f:
+        with open(PATH2JSON, "w") as f:
             json.dump(data, f)  
 
         if not os.path.exists(path):

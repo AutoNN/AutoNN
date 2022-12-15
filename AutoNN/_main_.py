@@ -15,6 +15,9 @@ timeVar = False
 run = True
 switch = True
 
+PATH2JSON = os.path.join(os.path.dirname(__file__),'default_config.json')
+
+
 class TerminalOutput(object):
     def __init__(self,Widget,mode = 'stdout') -> None:
         self.widget = Widget
@@ -255,24 +258,26 @@ class App:
 
 
     def __path_settings(self):
-        with open("AutoNN/default_config.json", "r+") as f:
+        with open(PATH2JSON, "r+") as f:
             data = json.load(f)
 
         def updatecsvpath():
             __x = filedialog.askdirectory(title='Select Path')
             data['path_csv_models']=__x
             l1.config(text=__x)
-            with open("AutoNN/default_config.json", "w") as f:
+            with open(PATH2JSON, "w") as f:
                 json.dump(data,f)
-            messagebox.showinfo('SAVED',"Saved")
+            messagebox.showinfo('SAVED',"Saved at {__x}")
+            topwindow.destroy()
     
         def updatecnnpath():
             _x = filedialog.askdirectory(title='Select Path')
             data['path_cnn_models']= _x
             l2.config(text=_x)
-            with open("AutoNN/default_config.json", "w") as f:
+            with open(PATH2JSON, "w") as f:
                 json.dump(data,f)
-            messagebox.showinfo('SAVED',"Saved")
+            messagebox.showinfo('SAVED',"Saved at {_x}")
+            topwindow.destroy()
     
 
         topwindow= Toplevel(self.root)
@@ -422,7 +427,7 @@ class App:
             pop_model_save_window.destroy()
         
         shape = tuple(map(int,(self.input_shape.get()).split('x')))
-        with open('AutoNN/default_config.json') as f:
+        with open(PATH2JSON) as f:
             data = json.load(f)
             if data['path_cnn_models'] == '':
                 data['path_cnn_models'] =filedialog.askdirectory(title='Select Path')
@@ -453,7 +458,7 @@ class App:
         return 
 
     def start_training_csv(self):
-        with open('AutoNN/default_config.json') as f:
+        with open(PATH2JSON) as f:
             data = json.load(f)
         if data['path_csv_models']:
             _path = data['path_csv_models']
@@ -461,7 +466,7 @@ class App:
             _path = filedialog.askdirectory(title = "Select Model save path")
             data['path_csv_models'] = _path
         
-        with open("AutoNN/default_config.json", "w") as f:
+        with open(PATH2JSON, "w") as f:
             json.dump(data, f)  
 
         self.pb1.start()
