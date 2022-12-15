@@ -2,7 +2,6 @@ import threading,sys,ctypes,os,json
 from tkinter import *
 from tkinter import ttk,messagebox,filedialog
 import pandas as pd
-sys.path.append(os.getcwd())
 from ttkbootstrap import * 
 import webbrowser
 from AutoNN.CNN.cnn_generator import CreateCNN,CNN
