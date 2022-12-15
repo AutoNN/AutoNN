@@ -3,7 +3,7 @@
 </p></a>
 
 ***
-# AutoNN : An AutoML/ No Code ML Framework For Deep Learning enthusiast.
+# AutoNN : A No-Code Automated Machine Learning Framework For Deep Learning enthusiast.
 
 ## Official <a href="https://autonn.github.io/AutoNN/">Website</a>
 
