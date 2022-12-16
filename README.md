@@ -31,4 +31,8 @@ Open terminal and write the following command:
 autonn
 ```
 
+## Wanna what's the user interface looks like? (scroll down)
+
+![ezgif com-gif-maker](https://user-images.githubusercontent.com/55054089/208089822-6167f0c4-6ff5-4952-815d-ee9c74e09641.gif)
+
 
