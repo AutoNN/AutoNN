@@ -61,3 +61,6 @@ autonn
 - Select `Load Model`
 
 ![Alt text](./screenshots/5.png)
+
+!!! attention
+    This demonstration was carried out in an old version of `AutoNN` hence the interface looks a bit different, but the functionalities are same so you needn't worry about that. 

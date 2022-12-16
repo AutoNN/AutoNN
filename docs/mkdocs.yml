@@ -9,7 +9,7 @@ theme:
     - navigation.instant
     - navigation.tracking
     - navigation.sections
-    - navigation.tabs
+    # - navigation.tabs
     - navigation.expand
     - toc.follow
     # - toc.integrate 
@@ -59,10 +59,11 @@ nav:
   - Documentation:
     - class CNN : "documentation/cnn1.md"
     - class CreateCNN : "documentation/cnn2.md"
+    - CNN.codeBlocks : "documentation/cnn3.md"
     - class Augment : "documentation/utils1.md"
     - def resnet : "documentation/resnet.md"
-    - day : "documentation/doc.md"
-    - Preprocess : "documentation/preprocess1.md"
+    # - day : "documentation/doc.md"
+    # - Preprocess : "documentation/preprocess1.md"
   - Tutorial: 
     - Image Classification: "tutorial/tut.md"
     - Handle Tabular Dataset: "tutorial/tut1.md"

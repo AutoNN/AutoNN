@@ -359,3 +359,5 @@ myModel.predict(paths=test_images)
 ## <span style="color :yellow"> Use AutoNN for MNIST classification</span>
 
 [Open :fontawesome-brands-kaggle:aggle Notebook](https://www.kaggle.com/code/banerz/autonn/notebook){ .md-button .md-button--primary }
+
+

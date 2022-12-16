@@ -30,5 +30,10 @@ pip install -r requirements.txt
 ```python 
 autonn
 ```
+!!! Attention
+    Documentation for ANN models are yet to be uploaded, you are requested to be patient. Aplogies from our end. Thank you. 
+
+
 !!! info
     Whole image classification API has been implemented in `PyTorch`, and the rest is implemented in `Tensorflow` & `keras`.
+
