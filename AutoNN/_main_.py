@@ -420,7 +420,8 @@ class App:
     def save_model(self):
         def save(x,path,shape):
             
-            self.cnn_model.save(self.gen_cnn_object.get_classes,shape,
+            self.cnn_model.save(classes=self.gen_cnn_object.get_classes,
+                        image_shape=shape,
                         path=path,filename=x)
             messagebox.showinfo('Model Saved',
             f'Model saved at location "{path}/{x}.pth"')

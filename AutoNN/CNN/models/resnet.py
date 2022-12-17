@@ -5,6 +5,9 @@ from torchvision import transforms
 from PIL import Image
 from pytorchsummary import summary as summ
 
+PATHJSON = os.path.dirname(__file__).removesuffix('\CNN\models')
+PATHJSON= os.path.join(PATHJSON,'default_config.json')
+
 class BasicBlock(nn.Module):
     def __init__(self,in_features=64,out_features=64,stride=[1,1],down_sample=False):
         super(BasicBlock,self).__init__()
@@ -168,7 +171,7 @@ class ResNet(nn.Module):
         image_shape = kwargs.get('image_shape')
         classes = kwargs.get('classes')
 
-        with open('AutoNN/default_config.json') as f:
+        with open(PATHJSON) as f:
             data = json.load(f)
         if data['path_cnn_models']:
             path = data['path_cnn_models']
@@ -177,7 +180,7 @@ class ResNet(nn.Module):
                 raise InvalidPathError
             data['path_cnn_models'] = path
 
-        with open("AutoNN/default_config.json", "w") as f:
+        with open(PATHJSON, "w") as f:
             json.dump(data, f)  
         if not os.path.exists(path):
             os.makedirs(path)
@@ -198,7 +201,8 @@ class ResNet(nn.Module):
             self.__classes = data['classes']
             self.__ig = data['image shape']
 
-        self.load(PATH)
+        # self.load_state_dict(torch.load(PATH))
+        self = torch.load(PATH)
         self.eval()
         print('Resnet Model Loaded')
 
@@ -319,4 +323,5 @@ def  resnet(architecture:int=18,**kwargs)->ResNet:
         return ResNet(num_residual_block=[3,8,36,3],block_type='bottleneck',**kwargs)
     else:
         return ResNet(**kwargs)
+
 

@@ -70,6 +70,8 @@ nav:
   - GUI:
     - For Tabular Dataset: "gui/lesson1.md"
     - For Image Dataset: "gui/lesson2.md"
+  # - Contributing Guide: Contribution.md
+  - Benchmarks: benchmarks.md
   - About: "about.md"
 
 
